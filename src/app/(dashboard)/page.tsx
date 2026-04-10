@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import { db } from "@/lib/db";
 import { Candidate, Vacancy, FollowUp } from "@/lib/types";
 import { Users, Briefcase, TrendingUp, CheckCircle, FileText, Zap, Clock, AlertCircle, Bell, Send, Check, Moon } from "lucide-react";
@@ -8,38 +9,37 @@ import Link from "next/link";
 import EmailComposer from "@/components/EmailComposer";
 import CalendarWidget from "@/components/CalendarWidget";
 import { TimelineEntry } from "@/lib/types";
-import { v4 as uuidv4 } from "uuid";
 
-const STATUS_COLORS: Record<string, string> = {
-  sourced: "bg-[#94a3b8]",
-  screened: "bg-[#3b82f6]",
-  shortlisted: "bg-[#f59e0b]",
-  interviewed: "bg-[#7C3AED]",
-  placed: "bg-[#10b981]",
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  sourced:     { bg: "rgba(148,163,184,0.15)", text: "#94a3b8" },
+  screened:    { bg: "rgba(59,130,246,0.15)",  text: "#60a5fa" },
+  shortlisted: { bg: "rgba(245,158,11,0.15)",  text: "#fbbf24" },
+  interviewed: { bg: "rgba(124,58,237,0.15)",  text: "#A855F7" },
+  placed:      { bg: "rgba(16,185,129,0.15)",  text: "#34d399" },
 };
 
 function getEffectiveDueDate(f: FollowUp): Date {
-  if (f.status === 'snoozed' && f.snoozedUntil) return new Date(f.snoozedUntil);
+  if (f.status === "snoozed" && f.snoozedUntil) return new Date(f.snoozedUntil);
   return new Date(f.dueDate);
 }
 
-function getFollowUpBucket(f: FollowUp): 'overdue' | 'today' | 'week' | 'future' {
+function getFollowUpBucket(f: FollowUp): "overdue" | "today" | "week" | "future" {
   const due = getEffectiveDueDate(f);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const dueDay = new Date(due);
   dueDay.setHours(0, 0, 0, 0);
-  const diffDays = Math.floor((dueDay.getTime() - today.getTime()) / 86400000);
-  if (diffDays < 0) return 'overdue';
-  if (diffDays === 0) return 'today';
-  if (diffDays <= 7) return 'week';
-  return 'future';
+  const diff = Math.floor((dueDay.getTime() - today.getTime()) / 86400000);
+  if (diff < 0) return "overdue";
+  if (diff === 0) return "today";
+  if (diff <= 7) return "week";
+  return "future";
 }
 
 function daysSinceContact(f: FollowUp): number {
-  const last = new Date(f.lastContactDate);
-  const now = new Date();
-  return Math.floor((now.getTime() - last.getTime()) / 86400000);
+  return Math.floor((Date.now() - new Date(f.lastContactDate).getTime()) / 86400000);
 }
 
 function daysUntilDue(f: FollowUp): number {
@@ -51,9 +51,15 @@ function daysUntilDue(f: FollowUp): number {
   return Math.floor((dueDay.getTime() - today.getTime()) / 86400000);
 }
 
+function getInitials(name: string) {
+  return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+}
+
+// ── FollowUpItem ──────────────────────────────────────────────────────────────
+
 interface FollowUpItemProps {
   followUp: FollowUp;
-  bucket: 'overdue' | 'today' | 'week';
+  bucket: "overdue" | "today" | "week";
   onDone: (id: string) => void;
   onSnooze: (id: string) => void;
   onSendFollowUp: (followUp: FollowUp) => void;
@@ -63,61 +69,91 @@ function FollowUpItem({ followUp, bucket, onDone, onSnooze, onSendFollowUp }: Fo
   const days = daysSinceContact(followUp);
   const daysLeft = daysUntilDue(followUp);
 
-  const borderColor = bucket === 'overdue' ? 'border-red-500/30' : bucket === 'today' ? 'border-amber-500/30' : 'border-[#1e3a5f]';
-  const dotColor = bucket === 'overdue' ? 'bg-red-500' : bucket === 'today' ? 'bg-amber-500' : 'bg-[#94a3b8]';
-  const dueBadge = bucket === 'overdue'
-    ? `${Math.abs(daysLeft)}d overdue`
-    : bucket === 'today'
-    ? 'Due today'
-    : `Due in ${daysLeft}d`;
-  const dueBadgeColor = bucket === 'overdue'
-    ? 'bg-red-500/20 text-red-400'
-    : bucket === 'today'
-    ? 'bg-amber-500/20 text-amber-400'
-    : 'bg-[#1e3a5f] text-[#94a3b8]';
+  const accentColor =
+    bucket === "overdue" ? "#EF4444" : bucket === "today" ? "#F59E0B" : "#A0A0A0";
+  const dueBadgeText =
+    bucket === "overdue"
+      ? `${Math.abs(daysLeft)}d overdue`
+      : bucket === "today"
+      ? "Due today"
+      : `Due in ${daysLeft}d`;
 
   return (
-    <div className={`border ${borderColor} rounded-lg p-3 bg-[#0a1628]`}>
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="group relative rounded-xl p-4 transition-all"
+      style={{
+        background: "#162032",
+        border: `1px solid ${accentColor}22`,
+        borderLeft: `3px solid ${accentColor}`,
+      }}
+    >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2.5 min-w-0">
-          <div className={`w-2 h-2 rounded-full ${dotColor} mt-1.5 flex-shrink-0`} />
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-white text-sm font-medium">{followUp.contactName}</span>
-              <span className="text-[#4a6fa5] text-xs">·</span>
-              <span className="text-[#94a3b8] text-xs">{followUp.company}</span>
-            </div>
-            <p className="text-[#4a6fa5] text-xs truncate mt-0.5">Re: {followUp.originalEmailSubject}</p>
-            <p className="text-[#4a6fa5] text-xs mt-0.5">{days === 0 ? 'Contacted today' : `${days}d since last contact`}</p>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[#F5F5F5] text-sm font-medium">{followUp.contactName}</span>
+            <span className="text-[#4B5563] text-xs">·</span>
+            <span className="text-[#A0A0A0] text-xs">{followUp.company}</span>
           </div>
+          <p className="text-[#4B5563] text-xs truncate mt-0.5">Re: {followUp.originalEmailSubject}</p>
+          <p className="text-[#4B5563] text-xs mt-0.5">
+            {days === 0 ? "Contacted today" : `${days}d since last contact`}
+          </p>
         </div>
-        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${dueBadgeColor}`}>
-          {dueBadge}
+        <span
+          className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap"
+          style={{ background: `${accentColor}18`, color: accentColor }}
+        >
+          {dueBadgeText}
         </span>
       </div>
-      <div className="flex items-center gap-2 mt-2.5">
-        <button
+      <div className="flex items-center gap-2 mt-3">
+        <motion.button
+          whileTap={{ scale: 0.96 }}
           onClick={() => onSendFollowUp(followUp)}
-          className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
+          className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
         >
           <Send size={11} /> Send Follow-up
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.96 }}
           onClick={() => onSnooze(followUp.id)}
-          className="flex items-center gap-1.5 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-3 py-1.5 rounded-md text-xs transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#A0A0A0] hover:text-[#F5F5F5] text-xs transition-colors"
+          style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.15)" }}
         >
           <Moon size={11} /> Snooze 2d
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileTap={{ scale: 0.96 }}
           onClick={() => onDone(followUp.id)}
-          className="flex items-center gap-1.5 bg-[#1e3a5f] hover:bg-[#10b981]/20 text-[#94a3b8] hover:text-[#10b981] px-3 py-1.5 rounded-md text-xs transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#A0A0A0] hover:text-[#10B981] text-xs transition-colors"
+          style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.15)" }}
         >
           <Check size={11} /> Done
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
+
+// ── Animation variants ────────────────────────────────────────────────────────
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.07, duration: 0.35, ease: [0.4, 0, 0.2, 1] as const },
+  }),
+};
+
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+};
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -128,13 +164,13 @@ export default function Dashboard() {
 
   const loadFollowUps = useCallback(async () => {
     const all = await db.getFollowUps();
-    const pending = all.filter(f => f.status !== 'done');
-    const relevant = pending.filter(f => {
-      const bucket = getFollowUpBucket(f);
-      return bucket !== 'future';
-    });
-    relevant.sort((a, b) => getEffectiveDueDate(a).getTime() - getEffectiveDueDate(b).getTime());
-    setFollowUps(relevant);
+    const pending = all
+      .filter((f) => f.status !== "done")
+      .filter((f) => getFollowUpBucket(f) !== "future");
+    pending.sort(
+      (a, b) => getEffectiveDueDate(a).getTime() - getEffectiveDueDate(b).getTime()
+    );
+    setFollowUps(pending);
   }, []);
 
   useEffect(() => {
@@ -144,20 +180,23 @@ export default function Dashboard() {
   }, [loadFollowUps]);
 
   const handleDone = (id: string) => {
-    db.getFollowUps().then(all => {
-      db.saveFollowUps(all.map(f => f.id === id ? { ...f, status: 'done' as const } : f));
+    db.getFollowUps().then((all) => {
+      db.saveFollowUps(all.map((f) => (f.id === id ? { ...f, status: "done" as const } : f)));
       loadFollowUps();
     });
   };
 
   const handleSnooze = (id: string) => {
-    db.getFollowUps().then(all => {
+    db.getFollowUps().then((all) => {
       const snoozedUntil = new Date();
       snoozedUntil.setDate(snoozedUntil.getDate() + 2);
-      db.saveFollowUps(all.map(f => f.id === id
-        ? { ...f, status: 'snoozed' as const, snoozedUntil: snoozedUntil.toISOString() }
-        : f
-      ));
+      db.saveFollowUps(
+        all.map((f) =>
+          f.id === id
+            ? { ...f, status: "snoozed" as const, snoozedUntil: snoozedUntil.toISOString() }
+            : f
+        )
+      );
       loadFollowUps();
     });
   };
@@ -168,73 +207,150 @@ export default function Dashboard() {
   };
 
   const handleFollowUpSent = (entry: TimelineEntry) => {
-    // Mark original follow-up done (the new one is created by EmailComposer via followUpConfig)
     if (composerFollowUp) {
-      db.getFollowUps().then(all => {
-        db.saveFollowUps(all.map(f => f.id === composerFollowUp.id ? { ...f, status: 'done' as const } : f));
+      db.getFollowUps().then((all) => {
+        db.saveFollowUps(
+          all.map((f) => (f.id === composerFollowUp.id ? { ...f, status: "done" as const } : f))
+        );
       });
     }
     loadFollowUps();
-    void entry; // suppress unused warning - entry is handled by EmailComposer's followUpConfig
+    void entry;
   };
 
-  const placed = candidates.filter(c => c.status === "placed").length;
-  const openVacancies = vacancies.filter(v => v.status === "open").length;
-  const activeInPipeline = candidates.filter(c => c.status !== "placed").length;
+  // Derived
+  const placed = candidates.filter((c) => c.status === "placed").length;
+  const openVacancies = vacancies.filter((v) => v.status === "open").length;
+  const activeInPipeline = candidates.filter((c) => c.status !== "placed").length;
 
   const stats = [
-    { label: "Total Candidates", value: candidates.length, icon: Users,        color: "text-[#7C3AED]", bg: "bg-[#7C3AED20]", href: "/candidates" },
-    { label: "Open Vacancies",   value: openVacancies,     icon: Briefcase,    color: "text-[#3b82f6]", bg: "bg-[#3b82f620]", href: "/vacancies" },
-    { label: "Active in Pipeline", value: activeInPipeline, icon: TrendingUp,  color: "text-[#f59e0b]", bg: "bg-[#f59e0b20]", href: "/pipeline" },
-    { label: "Placements Made",  value: placed,             icon: CheckCircle, color: "text-[#10b981]", bg: "bg-[#10b98120]", href: "/placements" },
+    {
+      label: "Total Candidates",
+      value: candidates.length,
+      icon: Users,
+      color: "#A855F7",
+      accent: "rgba(124,58,237,0.15)",
+      href: "/candidates",
+    },
+    {
+      label: "Open Vacancies",
+      value: openVacancies,
+      icon: Briefcase,
+      color: "#60a5fa",
+      accent: "rgba(59,130,246,0.15)",
+      href: "/vacancies",
+    },
+    {
+      label: "Active in Pipeline",
+      value: activeInPipeline,
+      icon: TrendingUp,
+      color: "#fbbf24",
+      accent: "rgba(245,158,11,0.15)",
+      href: "/pipeline",
+    },
+    {
+      label: "Placements Made",
+      value: placed,
+      icon: CheckCircle,
+      color: "#34d399",
+      accent: "rgba(16,185,129,0.15)",
+      href: "/placements",
+    },
   ];
 
   const recentCandidates = [...candidates]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
-  const overdueFollowUps = followUps.filter(f => getFollowUpBucket(f) === 'overdue');
-  const todayFollowUps = followUps.filter(f => getFollowUpBucket(f) === 'today');
-  const weekFollowUps = followUps.filter(f => getFollowUpBucket(f) === 'week');
+  const overdueFollowUps = followUps.filter((f) => getFollowUpBucket(f) === "overdue");
+  const todayFollowUps = followUps.filter((f) => getFollowUpBucket(f) === "today");
+  const weekFollowUps = followUps.filter((f) => getFollowUpBucket(f) === "week");
   const totalDue = overdueFollowUps.length + todayFollowUps.length + weekFollowUps.length;
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-[#94a3b8] mt-1">TrueNorth Talent — Internal Overview</p>
-      </div>
+      {/* Page header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mb-8"
+      >
+        <h1 className="text-2xl font-semibold text-[#F5F5F5] tracking-tight">Dashboard</h1>
+        <p className="text-[#A0A0A0] text-sm mt-1">TrueNorth Talent — Internal Overview</p>
+      </motion.div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        {stats.map((s) => (
-          <Link
-            key={s.label}
-            href={s.href}
-            className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5 cursor-pointer transition-all duration-200 hover:brightness-125 hover:border-[#2a4f7a]"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[#94a3b8] text-sm">{s.label}</span>
-              <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center`}>
-                <s.icon size={16} className={s.color} />
-              </div>
-            </div>
-            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-          </Link>
+      {/* Stats grid */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+      >
+        {stats.map((s, i) => (
+          <motion.div key={s.label} variants={fadeUp} custom={i}>
+            <Link href={s.href} className="group block h-full">
+              <motion.div
+                whileHover={{ y: -2, boxShadow: `0 8px 24px ${s.color}18` }}
+                transition={{ duration: 0.2 }}
+                className="h-full rounded-xl p-5 cursor-pointer transition-colors"
+                style={{
+                  background: "linear-gradient(135deg, #162032 0%, #111e2d 100%)",
+                  border: "1px solid rgba(124,58,237,0.12)",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.borderColor = `${s.color}40`;
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(124,58,237,0.12)";
+                }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[#A0A0A0] text-xs font-medium tracking-wide">{s.label}</span>
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: s.accent }}
+                  >
+                    <s.icon size={15} style={{ color: s.color }} />
+                  </div>
+                </div>
+                <p className="text-3xl font-semibold" style={{ color: s.color }}>
+                  {s.value}
+                </p>
+                <p className="text-[#4B5563] text-xs mt-2 group-hover:text-[#A0A0A0] transition-colors">
+                  View all →
+                </p>
+              </motion.div>
+            </Link>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Follow-ups Section */}
+      {/* Follow-ups */}
       {totalDue > 0 && (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.28, duration: 0.35 }}
+          className="rounded-xl p-5 mb-6"
+          style={{
+            background: "linear-gradient(135deg, #162032 0%, #111e2d 100%)",
+            border: "1px solid rgba(239,68,68,0.18)",
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#ef444420] flex items-center justify-center">
-                <Bell size={16} className="text-[#ef4444]" />
+            <div className="flex items-center gap-3">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ background: "rgba(239,68,68,0.12)" }}
+              >
+                <Bell size={16} className="text-[#EF4444]" />
               </div>
               <div>
-                <h2 className="text-white font-semibold">Follow-ups</h2>
-                <p className="text-[#94a3b8] text-xs">{totalDue} {totalDue === 1 ? 'contact needs' : 'contacts need'} follow-up</p>
+                <h2 className="text-[#F5F5F5] font-semibold text-sm">Follow-ups</h2>
+                <p className="text-[#A0A0A0] text-xs">
+                  {totalDue} {totalDue === 1 ? "contact needs" : "contacts need"} attention
+                </p>
               </div>
             </div>
           </div>
@@ -243,120 +359,249 @@ export default function Dashboard() {
             {overdueFollowUps.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle size={13} className="text-red-400" />
-                  <span className="text-red-400 text-xs font-semibold uppercase tracking-wider">Overdue</span>
+                  <AlertCircle size={12} className="text-[#EF4444]" />
+                  <span className="text-[#EF4444] text-[10px] font-semibold uppercase tracking-[0.08em]">
+                    Overdue
+                  </span>
                 </div>
                 <div className="space-y-2">
-                  {overdueFollowUps.map(f => (
-                    <FollowUpItem key={f.id} followUp={f} bucket="overdue" onDone={handleDone} onSnooze={handleSnooze} onSendFollowUp={handleSendFollowUp} />
+                  {overdueFollowUps.map((f) => (
+                    <FollowUpItem
+                      key={f.id}
+                      followUp={f}
+                      bucket="overdue"
+                      onDone={handleDone}
+                      onSnooze={handleSnooze}
+                      onSendFollowUp={handleSendFollowUp}
+                    />
                   ))}
                 </div>
               </div>
             )}
-
             {todayFollowUps.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock size={13} className="text-amber-400" />
-                  <span className="text-amber-400 text-xs font-semibold uppercase tracking-wider">Due Today</span>
+                  <Clock size={12} className="text-[#F59E0B]" />
+                  <span className="text-[#F59E0B] text-[10px] font-semibold uppercase tracking-[0.08em]">
+                    Due Today
+                  </span>
                 </div>
                 <div className="space-y-2">
-                  {todayFollowUps.map(f => (
-                    <FollowUpItem key={f.id} followUp={f} bucket="today" onDone={handleDone} onSnooze={handleSnooze} onSendFollowUp={handleSendFollowUp} />
+                  {todayFollowUps.map((f) => (
+                    <FollowUpItem
+                      key={f.id}
+                      followUp={f}
+                      bucket="today"
+                      onDone={handleDone}
+                      onSnooze={handleSnooze}
+                      onSendFollowUp={handleSendFollowUp}
+                    />
                   ))}
                 </div>
               </div>
             )}
-
             {weekFollowUps.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock size={13} className="text-[#94a3b8]" />
-                  <span className="text-[#94a3b8] text-xs font-semibold uppercase tracking-wider">Coming Up This Week</span>
+                  <Clock size={12} className="text-[#A0A0A0]" />
+                  <span className="text-[#A0A0A0] text-[10px] font-semibold uppercase tracking-[0.08em]">
+                    This Week
+                  </span>
                 </div>
                 <div className="space-y-2">
-                  {weekFollowUps.map(f => (
-                    <FollowUpItem key={f.id} followUp={f} bucket="week" onDone={handleDone} onSnooze={handleSnooze} onSendFollowUp={handleSendFollowUp} />
+                  {weekFollowUps.map((f) => (
+                    <FollowUpItem
+                      key={f.id}
+                      followUp={f}
+                      bucket="week"
+                      onDone={handleDone}
+                      onSnooze={handleSnooze}
+                      onSendFollowUp={handleSendFollowUp}
+                    />
                   ))}
                 </div>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      {/* Bottom row: Recent Candidates + Quick Actions + Calendar */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.35 }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6"
+      >
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Recent Candidates */}
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-semibold">Recent Candidates</h2>
-            <Link href="/pipeline" className="text-[#7C3AED] text-sm hover:text-[#6d28d9]">View all →</Link>
+          <div
+            className="rounded-xl p-5"
+            style={{
+              background: "linear-gradient(135deg, #162032 0%, #111e2d 100%)",
+              border: "1px solid rgba(124,58,237,0.12)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[#F5F5F5] font-semibold text-sm">Recent Candidates</h2>
+              <Link
+                href="/pipeline"
+                className="text-[#7C3AED] hover:text-[#A855F7] text-xs font-medium transition-colors"
+              >
+                View all →
+              </Link>
+            </div>
+            {recentCandidates.length === 0 ? (
+              <div className="text-center py-10">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                  style={{ background: "rgba(124,58,237,0.1)" }}
+                >
+                  <Users size={20} className="text-[#7C3AED]" />
+                </div>
+                <p className="text-[#A0A0A0] text-sm mb-1">No candidates yet</p>
+                <Link
+                  href="/cv-processor"
+                  className="text-[#7C3AED] hover:text-[#A855F7] text-xs font-medium transition-colors"
+                >
+                  Process your first CV →
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {recentCandidates.map((c) => {
+                  const vacancy = vacancies.find((v) => v.id === c.vacancyId);
+                  const sc = STATUS_COLORS[c.status] ?? STATUS_COLORS.sourced;
+                  return (
+                    <motion.div
+                      key={c.id}
+                      whileHover={{ x: 2 }}
+                      className="flex items-center gap-3 py-2.5 rounded-lg px-2 -mx-2 transition-colors cursor-pointer"
+                      style={{ borderBottom: "1px solid rgba(124,58,237,0.08)" }}
+                    >
+                      {/* Avatar */}
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
+                        style={{ background: "rgba(124,58,237,0.15)", color: "#A855F7" }}
+                      >
+                        {c.firstName.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[#F5F5F5] text-sm font-medium truncate">{c.firstName}</p>
+                        <p className="text-[#4B5563] text-xs truncate">
+                          {c.currentRole}
+                          {vacancy ? ` · ${vacancy.title}` : ""}
+                        </p>
+                      </div>
+                      <span
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 uppercase"
+                        style={{ background: sc.bg, color: sc.text }}
+                      >
+                        {c.status}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-          {recentCandidates.length === 0 ? (
-            <div className="text-center py-8">
-              <Users size={32} className="text-[#1e3a5f] mx-auto mb-2" />
-              <p className="text-[#94a3b8] text-sm">No candidates yet</p>
-              <Link href="/cv-processor" className="text-[#7C3AED] text-sm mt-1 inline-block">Process your first CV →</Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentCandidates.map((c) => {
-                const vacancy = vacancies.find(v => v.id === c.vacancyId);
-                return (
-                  <div key={c.id} className="flex items-center justify-between py-2 border-b border-[#1e3a5f] last:border-0">
-                    <div>
-                      <p className="text-white text-sm font-medium">{c.firstName}</p>
-                      <p className="text-[#94a3b8] text-xs">{c.currentRole}{vacancy ? ` · ${vacancy.title}` : ""}</p>
+
+          {/* Quick Actions */}
+          <div
+            className="rounded-xl p-5"
+            style={{
+              background: "linear-gradient(135deg, #162032 0%, #111e2d 100%)",
+              border: "1px solid rgba(124,58,237,0.12)",
+            }}
+          >
+            <h2 className="text-[#F5F5F5] font-semibold text-sm mb-4">Quick Actions</h2>
+            <div className="space-y-2">
+              {[
+                {
+                  href: "/cv-processor",
+                  icon: FileText,
+                  label: "Process a CV",
+                  sub: "Upload and reformat with AI",
+                  color: "#A855F7",
+                  accent: "rgba(124,58,237,0.15)",
+                },
+                {
+                  href: "/screening",
+                  icon: Zap,
+                  label: "Screen a Candidate",
+                  sub: "Score against a vacancy",
+                  color: "#fbbf24",
+                  accent: "rgba(245,158,11,0.12)",
+                },
+                {
+                  href: "/vacancies",
+                  icon: Briefcase,
+                  label: "Add a Vacancy",
+                  sub: "Post a new open role",
+                  color: "#60a5fa",
+                  accent: "rgba(59,130,246,0.12)",
+                },
+                {
+                  href: "/pipeline",
+                  icon: Users,
+                  label: "View Pipeline",
+                  sub: "Track all candidates",
+                  color: "#34d399",
+                  accent: "rgba(16,185,129,0.12)",
+                },
+              ].map((a) => (
+                <Link key={a.href} href={a.href}>
+                  <motion.div
+                    whileHover={{ x: 3 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer group"
+                    style={{ border: "1px solid rgba(124,58,237,0.1)" }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.background =
+                        "rgba(124,58,237,0.06)";
+                      (e.currentTarget as HTMLDivElement).style.borderColor =
+                        "rgba(124,58,237,0.25)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.background = "";
+                      (e.currentTarget as HTMLDivElement).style.borderColor =
+                        "rgba(124,58,237,0.1)";
+                    }}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: a.accent }}
+                    >
+                      <a.icon size={15} style={{ color: a.color }} />
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white uppercase ${STATUS_COLORS[c.status]}`}>
-                      {c.status}
-                    </span>
-                  </div>
-                );
-              })}
+                    <div className="min-w-0">
+                      <p className="text-[#F5F5F5] text-sm font-medium truncate">{a.label}</p>
+                      <p className="text-[#4B5563] text-xs truncate">{a.sub}</p>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
-          <h2 className="text-white font-semibold mb-4">Quick Actions</h2>
-          <div className="space-y-3">
-            {[
-              { href: "/cv-processor", icon: FileText, label: "Process a CV", sub: "Upload and reformat with AI", color: "text-[#7C3AED]", bg: "bg-[#7C3AED20]" },
-              { href: "/screening", icon: Zap, label: "Screen a Candidate", sub: "Score against a vacancy", color: "text-[#f59e0b]", bg: "bg-[#f59e0b20]" },
-              { href: "/vacancies", icon: Briefcase, label: "Add a Vacancy", sub: "Post a new open role", color: "text-[#3b82f6]", bg: "bg-[#3b82f620]" },
-              { href: "/pipeline", icon: Users, label: "View Pipeline", sub: "Track all candidates", color: "text-[#10b981]", bg: "bg-[#10b98120]" },
-            ].map((a) => (
-              <Link key={a.href} href={a.href}
-                className="flex items-center gap-3 p-3 rounded-lg border border-[#1e3a5f] hover:border-[#7C3AED] hover:bg-[#7C3AED08] transition-all duration-200 group">
-                <div className={`w-8 h-8 rounded-lg ${a.bg} flex items-center justify-center flex-shrink-0`}>
-                  <a.icon size={16} className={a.color} />
-                </div>
-                <div>
-                  <p className="text-white text-sm font-medium group-hover:text-[#7C3AED] transition-colors">{a.label}</p>
-                  <p className="text-[#94a3b8] text-xs">{a.sub}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-        </div>
-        {/* Calendar widget */}
+        {/* Calendar Widget */}
         <div className="lg:col-span-1">
           <CalendarWidget />
         </div>
-      </div>
+      </motion.div>
 
-      {/* Follow-up EmailComposer */}
+      {/* Follow-up email composer */}
       {composerFollowUp && (
         <EmailComposer
           isOpen={composerOpen}
-          onClose={() => { setComposerOpen(false); setComposerFollowUp(null); }}
+          onClose={() => {
+            setComposerOpen(false);
+            setComposerFollowUp(null);
+          }}
           defaultTo={composerFollowUp.contactEmail}
           defaultSubject={`Follow-up: ${composerFollowUp.originalEmailSubject}`}
-          defaultBody={`Hi ${composerFollowUp.contactName.split(' ')[0]},\n\nI wanted to follow up on my previous email regarding ${composerFollowUp.originalEmailSubject}.\n\nI'd love to connect and discuss this further. Are you available for a brief call this week?\n\nBest regards,\nDani\nTrueNorth Talent`}
+          defaultBody={`Hi ${composerFollowUp.contactName.split(" ")[0]},\n\nI wanted to follow up on my previous email regarding ${composerFollowUp.originalEmailSubject}.\n\nI'd love to connect and discuss this further. Are you available for a brief call this week?\n\nBest regards,\nDani\nTrueNorth Talent`}
           followUpConfig={{
             contactType: composerFollowUp.contactType,
             contactId: composerFollowUp.contactId,

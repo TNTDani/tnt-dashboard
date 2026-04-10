@@ -6,15 +6,16 @@ import { CandidateProfile, TimelineEntry } from '@/lib/types';
 import { db } from '@/lib/db';
 import { geocodePostalCode, haversineDistance } from '@/lib/geocoding';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2 } from 'lucide-react';
+import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const BRANCHES = ['IT', 'Finance', 'Marketing', 'Sales', 'Engineering', 'Healthcare', 'Legal', 'HR', 'Other'];
 const RADIUS_OPTIONS = [10, 25, 50, 100];
 
-const STATUS_BADGE: Record<string, string> = {
-  active: 'bg-green-500/20 text-green-400',
-  passive: 'bg-amber-500/20 text-amber-400',
-  placed: 'bg-purple-500/20 text-purple-300',
+const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
+  active:  { bg: 'rgba(16,185,129,0.12)',  color: '#34d399' },
+  passive: { bg: 'rgba(245,158,11,0.12)',  color: '#fbbf24' },
+  placed:  { bg: 'rgba(124,58,237,0.15)', color: '#A855F7' },
 };
 
 const EMPTY_FORM = {
@@ -171,28 +172,38 @@ export default function CandidatesPage() {
     setDistanceFilter(new Map());
   };
 
+  const INP = "w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors";
+  const INP_STYLE = { background: '#0d1b2a', border: '1px solid rgba(124,58,237,0.15)' };
+
   return (
-    <div className="p-8">
+    <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex items-center justify-between mb-6"
+      >
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Candidates</h1>
-          <p className="text-[#94a3b8] text-sm">{filtered.length} of {candidates.length} candidates</p>
+          <h1 className="text-2xl font-semibold text-[#F5F5F5] tracking-tight">Candidates</h1>
+          <p className="text-[#A0A0A0] text-sm mt-0.5">{filtered.length} of {candidates.length} candidates</p>
         </div>
-        <button
+        <motion.button
+          whileTap={{ scale: 0.96 }}
           onClick={() => setShowAdd(true)}
           className="flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
-          <Plus size={16} /> Add Candidate
-        </button>
-      </div>
+          <Plus size={15} /> Add Candidate
+        </motion.button>
+      </motion.div>
 
       {/* Search + filter toggle */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-5">
         <div className="flex-1 relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
           <input
-            className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg pl-9 pr-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+            className={`${INP} pl-9`}
+            style={INP_STYLE}
             placeholder="Search by name, job title, branch..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -200,25 +211,39 @@ export default function CandidatesPage() {
         </div>
         <button
           onClick={() => setShowFilters(f => !f)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors border ${showFilters ? 'bg-[#7C3AED20] border-[#7C3AED] text-[#7C3AED]' : 'bg-[#0d1f3c] border-[#1e3a5f] text-[#94a3b8] hover:text-white'}`}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors"
+          style={{
+            background: showFilters ? 'rgba(124,58,237,0.12)' : '#162032',
+            border: showFilters ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(124,58,237,0.15)',
+            color: showFilters ? '#A855F7' : '#A0A0A0',
+          }}
         >
-          <SlidersHorizontal size={15} />
+          <SlidersHorizontal size={14} />
           Filters
         </button>
       </div>
 
       {/* Filter panel */}
+      <AnimatePresence>
       {showFilters && (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 mb-6">
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+          className="overflow-hidden mb-5"
+        >
+        <div className="rounded-xl p-5" style={{ background: '#162032', border: '1px solid rgba(124,58,237,0.12)' }}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-white font-semibold text-sm">Filter Candidates</p>
-            <button onClick={clearFilters} className="text-[#94a3b8] text-xs hover:text-white transition-colors">Clear all</button>
+            <p className="text-[#F5F5F5] font-medium text-sm">Filter Candidates</p>
+            <button onClick={clearFilters} className="text-[#4B5563] text-xs hover:text-[#A0A0A0] transition-colors">Clear all</button>
           </div>
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
             <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Branch</label>
+              <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Branch</label>
               <select
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className={INP}
+                style={INP_STYLE}
                 value={filterBranch}
                 onChange={e => setFilterBranch(e.target.value)}
               >
@@ -227,27 +252,30 @@ export default function CandidatesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Job Title</label>
+              <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Job Title</label>
               <input
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className={INP}
+                style={INP_STYLE}
                 placeholder="e.g. Developer"
                 value={filterJobTitle}
                 onChange={e => setFilterJobTitle(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Location</label>
+              <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Location</label>
               <input
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className={INP}
+                style={INP_STYLE}
                 placeholder="e.g. Amsterdam"
                 value={filterLocation}
                 onChange={e => setFilterLocation(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Status</label>
+              <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Status</label>
               <select
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className={INP}
+                style={INP_STYLE}
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value as typeof filterStatus)}
               >
@@ -258,19 +286,21 @@ export default function CandidatesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Postal Code (Distance Filter)</label>
+              <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Postal Code (Distance Filter)</label>
               <input
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className={INP}
+                style={INP_STYLE}
                 placeholder="e.g. 1234 AB"
                 value={filterPostalCode}
                 onChange={e => setFilterPostalCode(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Radius (km)</label>
+              <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Radius (km)</label>
               <div className="flex gap-2">
                 <select
-                  className="flex-1 bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className={`flex-1 ${INP}`}
+                  style={INP_STYLE}
                   value={filterRadius}
                   onChange={e => setFilterRadius(Number(e.target.value))}
                 >
@@ -279,7 +309,7 @@ export default function CandidatesPage() {
                 <button
                   onClick={applyDistanceFilter}
                   disabled={isGeocoding || !filterPostalCode.trim()}
-                  className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   {isGeocoding ? <Loader2 size={13} className="animate-spin" /> : null}
                   Apply
@@ -288,82 +318,137 @@ export default function CandidatesPage() {
             </div>
           </div>
         </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
-      {/* Results grid */}
+      {/* Table */}
       {candidates.length === 0 ? (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-16 text-center">
-          <UserCircle size={40} className="mx-auto mb-3 text-[#1e3a5f]" />
-          <p className="text-white font-semibold mb-1">No candidates yet</p>
-          <p className="text-[#94a3b8] text-sm mb-4">Add your first candidate to get started.</p>
+        <div className="rounded-xl p-20 text-center" style={{ background: '#162032', border: '1px solid rgba(124,58,237,0.12)' }}>
+          <div className="w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(124,58,237,0.1)' }}>
+            <UserCircle size={28} className="text-[#7C3AED]" />
+          </div>
+          <p className="text-[#F5F5F5] font-semibold mb-1">No candidates yet</p>
+          <p className="text-[#A0A0A0] text-sm mb-5">Add your first candidate to get started.</p>
           <button
             onClick={() => setShowAdd(true)}
             className="inline-flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
-            <Plus size={16} /> Add Candidate
+            <Plus size={15} /> Add your first candidate →
           </button>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-16 text-center">
-          <Search size={32} className="mx-auto mb-3 text-[#1e3a5f]" />
-          <p className="text-[#94a3b8] text-sm">No candidates match your filters.</p>
+        <div className="rounded-xl p-16 text-center" style={{ background: '#162032', border: '1px solid rgba(124,58,237,0.12)' }}>
+          <Search size={28} className="mx-auto mb-3 text-[#4B5563]" />
+          <p className="text-[#A0A0A0] text-sm">No candidates match your filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map(c => (
-            <div
-              key={c.id}
-              onClick={() => router.push(`/candidates/${c.id}`)}
-              className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5 cursor-pointer hover:border-[#7C3AED40] hover:bg-[#0d1f3c] transition-all duration-200 group"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#7C3AED30] flex items-center justify-center text-[#7C3AED] font-bold text-sm flex-shrink-0">
-                    {c.firstName.charAt(0)}{c.lastName.charAt(0)}
+        /* Clean table-row list */
+        <div className="rounded-xl overflow-hidden" style={{ background: '#162032', border: '1px solid rgba(124,58,237,0.12)' }}>
+          {/* Table header */}
+          <div className="grid grid-cols-[1fr_1fr_120px_100px_32px] gap-4 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#4B5563]"
+            style={{ borderBottom: '1px solid rgba(124,58,237,0.1)' }}
+          >
+            <span>Candidate</span>
+            <span>Location · Branch</span>
+            <span>Salary</span>
+            <span className="text-right">Status</span>
+            <span />
+          </div>
+          {/* Rows */}
+          <div>
+            {filtered.map((c, i) => {
+              const ss = STATUS_STYLE[c.status] ?? STATUS_STYLE.active;
+              return (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04, duration: 0.25 }}
+                  onClick={() => router.push(`/candidates/${c.id}`)}
+                  className="grid grid-cols-[1fr_1fr_120px_100px_32px] gap-4 items-center px-5 py-3.5 cursor-pointer group transition-colors"
+                  style={{ borderBottom: i < filtered.length - 1 ? '1px solid rgba(124,58,237,0.06)' : undefined }}
+                  onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(124,58,237,0.04)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = ''}
+                >
+                  {/* Name + avatar */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold"
+                      style={{ background: 'rgba(124,58,237,0.15)', color: '#A855F7' }}
+                    >
+                      {c.firstName.charAt(0)}{c.lastName.charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[#F5F5F5] text-sm font-medium truncate group-hover:text-[#A855F7] transition-colors">
+                        {c.firstName} {c.lastName}
+                      </p>
+                      <p className="text-[#4B5563] text-xs truncate">{c.jobTitle}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm group-hover:text-[#7C3AED] transition-colors">
-                      {c.firstName} {c.lastName}
-                    </p>
-                    <p className="text-[#94a3b8] text-xs">{c.jobTitle}</p>
+                  {/* Location · Branch */}
+                  <div className="min-w-0">
+                    {c.location && (
+                      <div className="flex items-center gap-1.5 text-[#A0A0A0] text-xs truncate">
+                        <MapPin size={10} className="flex-shrink-0 text-[#4B5563]" />
+                        <span className="truncate">{c.location}{c.postalCode ? ` · ${c.postalCode}` : ''}</span>
+                      </div>
+                    )}
+                    {c.branch && (
+                      <div className="flex items-center gap-1.5 text-[#4B5563] text-xs mt-0.5">
+                        <Briefcase size={10} className="flex-shrink-0" />
+                        <span>{c.branch}</span>
+                        {filterPostalCode.trim() && distanceFilter.has(c.id) && (
+                          <span className="text-[#A855F7] font-medium">· ~{Math.round(distanceFilter.get(c.id)!)}km</span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </div>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_BADGE[c.status]}`}>
-                  {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
-                </span>
-              </div>
-
-              <div className="space-y-1.5">
-                {c.location && (
-                  <div className="flex items-center gap-1.5 text-[#94a3b8] text-xs">
-                    <MapPin size={11} className="flex-shrink-0" />
-                    <span className="truncate">{c.location}{c.postalCode ? ` · ${c.postalCode}` : ''}</span>
+                  {/* Salary */}
+                  <div className="text-sm text-[#A0A0A0]">
+                    {c.salaryExpectation ? `€${c.salaryExpectation.toLocaleString()}` : <span className="text-[#4B5563]">—</span>}
                   </div>
-                )}
-                {c.branch && (
-                  <div className="flex items-center gap-1.5 text-[#94a3b8] text-xs">
-                    <Briefcase size={11} className="flex-shrink-0" />
-                    <span>{c.branch}</span>
+                  {/* Status */}
+                  <div className="flex justify-end">
+                    <span
+                      className="text-[10px] font-semibold px-2.5 py-1 rounded-full capitalize"
+                      style={{ background: ss.bg, color: ss.color }}
+                    >
+                      {c.status}
+                    </span>
                   </div>
-                )}
-                {filterPostalCode.trim() && distanceFilter.has(c.id) && (
-                  <div className="text-[10px] text-[#7C3AED] font-medium">
-                    ~{Math.round(distanceFilter.get(c.id)!)} km away
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+                  {/* Arrow */}
+                  <ChevronRight size={14} className="text-[#4B5563] group-hover:text-[#A855F7] transition-colors" />
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* Add Candidate Modal */}
+      <AnimatePresence>
       {showAdd && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.97 }}
+            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl shadow-black/60"
+            style={{ background: '#111e2d', border: '1px solid rgba(124,58,237,0.2)' }}
+          >
+          <div className="p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-semibold">Add New Candidate</h2>
-              <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-white transition-colors">
+              <h2 className="text-[#F5F5F5] font-semibold">Add New Candidate</h2>
+              <button onClick={() => setShowAdd(false)} className="text-[#4B5563] hover:text-[#F5F5F5] transition-colors">
                 <X size={18} />
               </button>
             </div>
@@ -371,18 +456,18 @@ export default function CandidatesPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">First Name *</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">First Name *</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                     placeholder="First name"
                     value={form.firstName}
                     onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Last Name *</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Last Name *</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                     placeholder="Last name"
                     value={form.lastName}
                     onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
@@ -392,19 +477,19 @@ export default function CandidatesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Email *</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Email *</label>
                   <input
                     type="email"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                     placeholder="email@example.com"
                     value={form.email}
                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Phone</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Phone</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                     placeholder="+31 6 12345678"
                     value={form.phone}
                     onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
@@ -414,18 +499,18 @@ export default function CandidatesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Location</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Location</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                     placeholder="Amsterdam"
                     value={form.location}
                     onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Postal Code</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Postal Code</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                     placeholder="1234 AB"
                     value={form.postalCode}
                     onChange={e => setForm(f => ({ ...f, postalCode: e.target.value }))}
@@ -434,9 +519,9 @@ export default function CandidatesPage() {
               </div>
 
               <div>
-                <label className="block text-[#94a3b8] text-xs font-medium mb-1">LinkedIn</label>
+                <label className="block text-[#A0A0A0] text-xs font-medium mb-1">LinkedIn</label>
                 <input
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                   placeholder="https://linkedin.com/in/..."
                   value={form.linkedin}
                   onChange={e => setForm(f => ({ ...f, linkedin: e.target.value }))}
@@ -445,18 +530,19 @@ export default function CandidatesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Job Title</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Job Title</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                     placeholder="Software Engineer"
                     value={form.jobTitle}
                     onChange={e => setForm(f => ({ ...f, jobTitle: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Branch</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Branch</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm focus:outline-none transition-colors"
+                    style={INP_STYLE}
                     value={form.branch}
                     onChange={e => setForm(f => ({ ...f, branch: e.target.value }))}
                   >
@@ -467,19 +553,20 @@ export default function CandidatesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Salary Expectation (€)</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Salary Expectation (€)</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none transition-colors" style={INP_STYLE}
                     placeholder="70000"
                     value={form.salaryExpectation}
                     onChange={e => setForm(f => ({ ...f, salaryExpectation: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Status</label>
+                  <label className="block text-[#A0A0A0] text-xs font-medium mb-1">Status</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full rounded-lg px-3 py-2 text-[#F5F5F5] text-sm focus:outline-none transition-colors"
+                    style={INP_STYLE}
                     value={form.status}
                     onChange={e => setForm(f => ({ ...f, status: e.target.value as CandidateProfile['status'] }))}
                   >
@@ -492,23 +579,27 @@ export default function CandidatesPage() {
             </div>
 
             <div className="flex gap-3 mt-5">
-              <button
+              <motion.button
+                whileTap={{ scale: 0.97 }}
                 onClick={addCandidate}
                 disabled={!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()}
-                className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
+                className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
               >
                 Add Candidate
-              </button>
+              </motion.button>
               <button
                 onClick={() => setShowAdd(false)}
-                className="flex-1 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white py-2.5 rounded-lg transition-colors text-sm"
+                className="flex-1 text-[#A0A0A0] hover:text-[#F5F5F5] py-2.5 rounded-lg transition-colors text-sm"
+                style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.15)' }}
               >
                 Cancel
               </button>
             </div>
           </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

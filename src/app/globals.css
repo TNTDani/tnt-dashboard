@@ -1,31 +1,49 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-navy: #0a1628;
-  --color-navy-light: #0d1f3c;
-  --color-navy-card: #112244;
-  --color-navy-border: #1e3a5f;
+  /* Brand palette */
+  --color-bg: #0d1b2a;
+  --color-surface: #111e2d;
+  --color-card: #162032;
   --color-purple: #7C3AED;
+  --color-purple-light: #A855F7;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+
+  /* Legacy aliases — keep so existing hardcoded classes don't break */
+  --color-navy: #0d1b2a;
+  --color-navy-light: #111e2d;
+  --color-navy-card: #162032;
+  --color-navy-border: rgba(124, 58, 237, 0.15);
   --color-purple-hover: #6d28d9;
-  --color-purple-dim: #7C3AED20;
-  --color-ink: #e2e8f0;
-  --color-muted: #94a3b8;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --color-purple-dim: rgba(124, 58, 237, 0.1);
+  --color-ink: #F5F5F5;
+  --color-muted: #A0A0A0;
 }
 
 * { box-sizing: border-box; }
 
 body {
-  background: #0a1628;
-  color: #e2e8f0;
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: #0d1b2a;
+  color: #F5F5F5;
+  font-family: var(--font-geist-sans), Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scrollbars */
 ::selection { background: #7C3AED; color: white; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0a1628; }
-::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.25); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: #7C3AED; }
+
+/* Focus rings */
+:focus-visible { outline: 2px solid rgba(124, 58, 237, 0.6); outline-offset: 2px; }
+
+/* Datetime-local input calendar icon colour */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.4) sepia(1) saturate(4) hue-rotate(230deg);
+  cursor: pointer;
+}

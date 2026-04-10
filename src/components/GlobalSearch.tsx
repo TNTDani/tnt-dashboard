@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/lib/db";
 import { CandidateProfile, Vacancy, Client } from "@/lib/types";
 import { Search, UserCircle, Briefcase, Building2, X, Command } from "lucide-react";
@@ -12,6 +13,39 @@ interface Result {
   name: string;
   sub: string;
   href: string;
+}
+
+const ICON: Record<Result["type"], React.ElementType> = {
+  candidate: UserCircle,
+  vacancy: Briefcase,
+  client: Building2,
+};
+
+const TYPE_LABEL: Record<Result["type"], string> = {
+  candidate: "Candidate",
+  vacancy: "Vacancy",
+  client: "Client",
+};
+
+const TYPE_COLOR: Record<Result["type"], string> = {
+  candidate: "text-[#A855F7]",
+  vacancy: "text-blue-400",
+  client: "text-[#10B981]",
+};
+
+const TYPE_BG: Record<Result["type"], string> = {
+  candidate: "bg-[rgba(124,58,237,0.15)]",
+  vacancy: "bg-blue-500/10",
+  client: "bg-[#10B981]/10",
+};
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 }
 
 export default function GlobalSearch() {
@@ -27,7 +61,6 @@ export default function GlobalSearch() {
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load data lazily when search opens
   const loadData = useCallback(async () => {
     if (allData) return;
     const [candidates, vacancies, clients] = await Promise.all([
@@ -43,7 +76,7 @@ export default function GlobalSearch() {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setOpen(o => !o);
+        setOpen((o) => !o);
         if (!open) loadData();
       }
       if (e.key === "Escape") setOpen(false);
@@ -52,10 +85,9 @@ export default function GlobalSearch() {
     return () => document.removeEventListener("keydown", handler);
   }, [open, loadData]);
 
-  // Focus input when opened
   useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setTimeout(() => inputRef.current?.focus(), 60);
       setQuery("");
       setResults([]);
       setHighlighted(0);
@@ -64,170 +96,246 @@ export default function GlobalSearch() {
 
   // Filter
   useEffect(() => {
-    if (!allData || !query.trim()) { setResults([]); return; }
+    if (!allData || !query.trim()) {
+      setResults([]);
+      return;
+    }
     const q = query.toLowerCase();
     const out: Result[] = [];
 
     allData.candidates
-      .filter(c => `${c.firstName} ${c.lastName} ${c.jobTitle} ${c.branch}`.toLowerCase().includes(q))
+      .filter((c) => `${c.firstName} ${c.lastName} ${c.jobTitle} ${c.branch}`.toLowerCase().includes(q))
       .slice(0, 4)
-      .forEach(c => out.push({
-        type: "candidate",
-        id: c.id,
-        name: `${c.firstName} ${c.lastName}`,
-        sub: c.jobTitle || c.branch,
-        href: `/candidates/${c.id}`,
-      }));
+      .forEach((c) =>
+        out.push({
+          type: "candidate",
+          id: c.id,
+          name: `${c.firstName} ${c.lastName}`,
+          sub: c.jobTitle || c.branch,
+          href: `/candidates/${c.id}`,
+        })
+      );
 
     allData.vacancies
-      .filter(v => `${v.title} ${v.company}`.toLowerCase().includes(q))
-      .slice(0, 4)
-      .forEach(v => out.push({
-        type: "vacancy",
-        id: v.id,
-        name: v.title,
-        sub: v.company,
-        href: "/vacancies",
-      }));
+      .filter((v) => `${v.title} ${v.company}`.toLowerCase().includes(q))
+      .slice(0, 3)
+      .forEach((v) =>
+        out.push({ type: "vacancy", id: v.id, name: v.title, sub: v.company, href: "/vacancies" })
+      );
 
     allData.clients
-      .filter(c => `${c.companyName} ${c.contactName} ${c.sector}`.toLowerCase().includes(q))
-      .slice(0, 4)
-      .forEach(c => out.push({
-        type: "client",
-        id: c.id,
-        name: c.companyName,
-        sub: c.contactName,
-        href: `/clients/${c.id}`,
-      }));
+      .filter((c) => `${c.companyName} ${c.contactName} ${c.sector}`.toLowerCase().includes(q))
+      .slice(0, 3)
+      .forEach((c) =>
+        out.push({
+          type: "client",
+          id: c.id,
+          name: c.companyName,
+          sub: c.contactName,
+          href: `/clients/${c.id}`,
+        })
+      );
 
     setResults(out);
     setHighlighted(0);
   }, [query, allData]);
 
-  const navigate = useCallback((href: string) => {
-    router.push(href);
-    setOpen(false);
-  }, [router]);
+  const navigate = useCallback(
+    (href: string) => {
+      router.push(href);
+      setOpen(false);
+    },
+    [router]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); setHighlighted(h => Math.min(h + 1, results.length - 1)); }
-    if (e.key === "ArrowUp") { e.preventDefault(); setHighlighted(h => Math.max(h - 1, 0)); }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlighted((h) => Math.min(h + 1, results.length - 1));
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlighted((h) => Math.max(h - 1, 0));
+    }
     if (e.key === "Enter" && results[highlighted]) navigate(results[highlighted].href);
   };
 
-  const ICON: Record<Result["type"], React.ElementType> = {
-    candidate: UserCircle,
-    vacancy: Briefcase,
-    client: Building2,
-  };
-
-  const TYPE_LABEL: Record<Result["type"], string> = {
-    candidate: "Candidate",
-    vacancy: "Vacancy",
-    client: "Client",
-  };
-
-  const TYPE_COLOR: Record<Result["type"], string> = {
-    candidate: "text-[#7C3AED]",
-    vacancy: "text-[#3b82f6]",
-    client: "text-[#10b981]",
-  };
-
-  if (!open) {
-    return (
-      <button
-        onClick={() => { setOpen(true); loadData(); }}
-        className="flex items-center gap-2 bg-[#112244] border border-[#1e3a5f] hover:border-[#2a4a7f] rounded-lg px-3 py-2 text-[#4a6fa5] hover:text-[#94a3b8] text-sm transition-all w-64"
+  return (
+    <>
+      {/* Trigger button */}
+      <motion.button
+        whileHover={{ borderColor: "rgba(124,58,237,0.3)" }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          setOpen(true);
+          loadData();
+        }}
+        className="flex items-center gap-2 rounded-lg px-3 py-2 text-[#4B5563] hover:text-[#A0A0A0] text-sm transition-colors w-64"
+        style={{
+          background: "#162032",
+          border: "1px solid rgba(124,58,237,0.15)",
+        }}
       >
-        <Search size={14} />
+        <Search size={14} className="text-[#A855F7] flex-shrink-0" />
         <span className="flex-1 text-left">Search everything...</span>
-        <span className="flex items-center gap-0.5 text-[10px] text-[#1e3a5f] bg-[#0d1f3c] border border-[#1e3a5f] px-1.5 py-0.5 rounded">
+        <span
+          className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded font-mono"
+          style={{
+            background: "#0d1b2a",
+            border: "1px solid rgba(124,58,237,0.15)",
+            color: "#4B5563",
+          }}
+        >
           <Command size={9} />K
         </span>
-      </button>
-    );
-  }
+      </motion.button>
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-24 px-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
+      {/* Modal */}
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-[300] flex items-start justify-center pt-20 px-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+            />
 
-      {/* Panel */}
-      <div className="relative w-full max-w-xl bg-[#0d1f3c] border border-[#1e3a5f] rounded-2xl shadow-2xl overflow-hidden">
-        {/* Input */}
-        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#1e3a5f]">
-          <Search size={16} className="text-[#7C3AED] flex-shrink-0" />
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Search candidates, vacancies, clients..."
-            className="flex-1 bg-transparent text-white placeholder-[#4a6080] text-sm focus:outline-none"
-          />
-          <button onClick={() => setOpen(false)} className="text-[#4a6080] hover:text-white transition-colors">
-            <X size={14} />
-          </button>
-        </div>
-
-        {/* Results */}
-        {results.length > 0 ? (
-          <div className="max-h-96 overflow-y-auto py-2">
-            {results.map((r, i) => {
-              const Icon = ICON[r.type];
-              return (
+            {/* Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: -12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+              className="relative w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl shadow-black/60"
+              style={{
+                background: "#111e2d",
+                border: "1px solid rgba(124,58,237,0.2)",
+              }}
+            >
+              {/* Input */}
+              <div
+                className="flex items-center gap-3 px-4 py-3.5"
+                style={{ borderBottom: "1px solid rgba(124,58,237,0.12)" }}
+              >
+                <Search size={16} className="text-[#7C3AED] flex-shrink-0" />
+                <input
+                  ref={inputRef}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Search candidates, vacancies, clients..."
+                  className="flex-1 bg-transparent text-[#F5F5F5] placeholder-[#4B5563] text-sm focus:outline-none"
+                />
                 <button
-                  key={`${r.type}-${r.id}`}
-                  onClick={() => navigate(r.href)}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-                    i === highlighted ? "bg-[#1e3a5f]" : "hover:bg-[#112244]"
-                  }`}
+                  onClick={() => setOpen(false)}
+                  className="text-[#4B5563] hover:text-[#F5F5F5] transition-colors"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-[#112244] flex items-center justify-center flex-shrink-0">
-                    <Icon size={13} className={TYPE_COLOR[r.type]} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-white text-sm font-medium truncate">{r.name}</p>
-                    <p className="text-[#4a6080] text-xs truncate">{r.sub}</p>
-                  </div>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#112244] ${TYPE_COLOR[r.type]} flex-shrink-0`}>
-                    {TYPE_LABEL[r.type]}
-                  </span>
+                  <X size={14} />
                 </button>
-              );
-            })}
-          </div>
-        ) : query.trim() ? (
-          <div className="py-10 text-center">
-            <p className="text-[#4a6080] text-sm">No results for &ldquo;{query}&rdquo;</p>
-          </div>
-        ) : (
-          <div className="py-6 px-4">
-            <p className="text-[#4a6080] text-xs uppercase tracking-widest font-semibold mb-3">Search across</p>
-            <div className="flex gap-3">
-              {(["candidate", "vacancy", "client"] as const).map(t => {
-                const Icon = ICON[t];
-                return (
-                  <div key={t} className="flex items-center gap-2 text-[#94a3b8] text-xs">
-                    <Icon size={12} className={TYPE_COLOR[t]} />
-                    {TYPE_LABEL[t]}s
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+              </div>
 
-        {results.length > 0 && (
-          <div className="px-4 py-2 border-t border-[#1e3a5f] flex items-center gap-3 text-[10px] text-[#4a6080]">
-            <span>↑↓ navigate</span>
-            <span>↵ open</span>
-            <span>esc close</span>
+              {/* Results */}
+              <AnimatePresence mode="wait">
+                {results.length > 0 ? (
+                  <motion.div
+                    key="results"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="max-h-96 overflow-y-auto py-2"
+                  >
+                    {results.map((r, i) => {
+                      const Icon = ICON[r.type];
+                      const isHighlighted = i === highlighted;
+                      return (
+                        <motion.button
+                          key={`${r.type}-${r.id}`}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.04 }}
+                          onClick={() => navigate(r.href)}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
+                          style={{
+                            background: isHighlighted ? "rgba(124,58,237,0.1)" : undefined,
+                          }}
+                          onMouseEnter={() => setHighlighted(i)}
+                        >
+                          {/* Avatar circle */}
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${TYPE_BG[r.type]} ${TYPE_COLOR[r.type]}`}
+                          >
+                            {r.type === "candidate" ? (
+                              getInitials(r.name)
+                            ) : (
+                              <Icon size={13} />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[#F5F5F5] text-sm font-medium truncate">{r.name}</p>
+                            <p className="text-[#4B5563] text-xs truncate">{r.sub}</p>
+                          </div>
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${TYPE_BG[r.type]} ${TYPE_COLOR[r.type]}`}
+                          >
+                            {TYPE_LABEL[r.type]}
+                          </span>
+                        </motion.button>
+                      );
+                    })}
+                  </motion.div>
+                ) : query.trim() ? (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="py-12 text-center"
+                  >
+                    <p className="text-[#4B5563] text-sm">No results for &ldquo;{query}&rdquo;</p>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="hint"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="py-6 px-4"
+                  >
+                    <p className="text-[#4B5563] text-[10px] uppercase tracking-widest font-semibold mb-3">
+                      Search across
+                    </p>
+                    <div className="flex gap-4">
+                      {(["candidate", "vacancy", "client"] as const).map((t) => {
+                        const Icon = ICON[t];
+                        return (
+                          <div key={t} className={`flex items-center gap-1.5 text-xs ${TYPE_COLOR[t]}`}>
+                            <Icon size={12} />
+                            <span className="text-[#A0A0A0]">{TYPE_LABEL[t]}s</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Keyboard hint */}
+              {results.length > 0 && (
+                <div
+                  className="px-4 py-2 flex items-center gap-4 text-[10px] text-[#4B5563]"
+                  style={{ borderTop: "1px solid rgba(124,58,237,0.12)" }}
+                >
+                  <span>↑↓ navigate</span>
+                  <span>↵ open</span>
+                  <span>esc close</span>
+                </div>
+              )}
+            </motion.div>
           </div>
         )}
-      </div>
-    </div>
+      </AnimatePresence>
+    </>
   );
 }

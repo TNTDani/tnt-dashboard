@@ -16,6 +16,7 @@
     "@supabase/supabase-js": "^2.103.0",
     "@types/recharts": "^1.8.29",
     "docx": "^9.6.1",
+    "framer-motion": "^12.38.0",
     "googleapis": "^171.4.0",
     "lucide-react": "^1.7.0",
     "mammoth": "^1.12.0",

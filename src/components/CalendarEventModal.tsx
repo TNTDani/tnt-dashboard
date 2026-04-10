@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarEvent, CalendarEventType, EVENT_COLORS, CandidateProfile, Vacancy, Client } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 import { X, Search, Trash2, MapPin, FileText, Clock, Bell } from 'lucide-react';
@@ -95,8 +96,6 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
     return () => document.removeEventListener('mousedown', handler, true);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const patch = (p: Partial<CalendarEvent>) => setForm(f => ({ ...f, ...p, updatedAt: new Date().toISOString() }));
 
   const filteredCandidates = candidates.filter(c =>
@@ -128,15 +127,32 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
   const colors = EVENT_COLORS[form.type];
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4">
-      <div ref={modalRef} className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+    <AnimatePresence>
+    {isOpen && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
+    >
+      <motion.div
+        ref={modalRef}
+        initial={{ opacity: 0, y: 20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 16, scale: 0.97 }}
+        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl shadow-black/60"
+        style={{ background: '#111e2d', border: '1px solid rgba(124,58,237,0.2)' }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e3a5f]">
+        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(124,58,237,0.12)' }}>
           <div className="flex items-center gap-2">
             <div className={`w-2.5 h-2.5 rounded-full ${colors.solid}`} />
-            <h2 className="text-white font-semibold text-sm">{event ? 'Edit Event' : 'New Event'}</h2>
+            <h2 className="text-[#F5F5F5] font-semibold text-sm">{event ? 'Edit Event' : 'New Event'}</h2>
           </div>
-          <button onClick={onClose} className="text-[#4a6fa5] hover:text-white transition-colors"><X size={16} /></button>
+          <button onClick={onClose} className="text-[#4B5563] hover:text-[#F5F5F5] transition-colors"><X size={16} /></button>
         </div>
 
         <div className="px-6 py-5 space-y-4">
@@ -373,31 +389,35 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-3 px-6 py-4 border-t border-[#1e3a5f]">
+        <div className="flex items-center gap-3 px-6 py-4" style={{ borderTop: '1px solid rgba(124,58,237,0.12)' }}>
           {event && onDelete && (
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="flex items-center gap-1.5 text-[#4a6fa5] hover:text-red-400 text-xs transition-colors mr-auto"
+              className="flex items-center gap-1.5 text-[#4B5563] hover:text-[#EF4444] text-xs transition-colors mr-auto"
             >
               <Trash2 size={13} /> {deleting ? 'Deleting...' : 'Delete'}
             </button>
           )}
           <button
             onClick={onClose}
-            className="flex-1 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white py-2.5 rounded-lg text-sm transition-colors"
+            className="flex-1 text-[#A0A0A0] hover:text-[#F5F5F5] py-2.5 rounded-lg text-sm transition-colors"
+            style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.15)' }}
           >
             Cancel
           </button>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.97 }}
             onClick={handleSave}
             disabled={saving || !form.title.trim()}
-            className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors"
+            className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors"
           >
             {saving ? 'Saving...' : event ? 'Save Changes' : 'Create Event'}
-          </button>
+          </motion.button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    )}
+    </AnimatePresence>
   );
 }
