@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { db } from "@/lib/db";
+import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   FileText,
@@ -13,25 +16,48 @@ import {
   Calculator,
   Mail,
   ListChecks,
+  Trophy,
+  Inbox,
+  Search,
+  BarChart2,
+  LogOut,
+  Radar,
 } from "lucide-react";
 
 const RECRUITMENT_NAV = [
   { href: "/", icon: LayoutDashboard, label: "Dashboard", exact: true },
   { href: "/candidates", icon: UserCircle, label: "Candidates", exact: false },
   { href: "/clients", icon: Building2, label: "Clients", exact: false },
-  { href: "/email", icon: Mail, label: "Email", exact: false },
+  { href: "/email", icon: Mail, label: "Email", exact: false, badgeKey: "followUps" as const },
   { href: "/pipeline", icon: Users, label: "Pipeline", exact: true },
-  { href: "/shortlist", icon: ListChecks, label: "Shortlist", exact: true },
-  { href: "/vacancies", icon: Briefcase, label: "Vacancies", exact: true },
+  { href: "/shortlist",   icon: ListChecks, label: "Shortlist",   exact: true },
+  { href: "/placements",  icon: Trophy,     label: "Placements",  exact: true },
+  { href: "/vacancies",   icon: Briefcase,  label: "Vacancies",   exact: true },
+  { href: "/tickets",     icon: Inbox,      label: "Tickets",     exact: false },
 ];
 
 const TOOLS_NAV = [
-  { href: "/cv-processor", icon: FileText, label: "CV Processor", exact: true },
-  { href: "/screening", icon: Zap, label: "AI Screening", exact: true },
-  { href: "/fee-calculator", icon: Calculator, label: "Fee Calculator", exact: false },
+  { href: "/cv-processor",       icon: FileText,   label: "CV Processor",      exact: true  },
+  { href: "/screening",          icon: Zap,        label: "AI Screening",      exact: true  },
+  { href: "/fee-calculator",     icon: Calculator, label: "Fee Calculator",    exact: false },
+  { href: "/sourcing",           icon: Search,     label: "Source Candidates", exact: true  },
+  { href: "/vacancy-monitor",    icon: Radar,      label: "Vacancy Monitor",   exact: true  },
+  { href: "/reports",            icon: BarChart2,  label: "Reports",           exact: false },
 ];
 
-function NavItem({ href, icon: Icon, label, exact }: { href: string; icon: React.ElementType; label: string; exact: boolean }) {
+function NavItem({
+  href,
+  icon: Icon,
+  label,
+  exact,
+  badge,
+}: {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  exact: boolean;
+  badge?: number;
+}) {
   const path = usePathname();
   const active = exact ? path === href : path === href || path.startsWith(href + "/");
 
@@ -45,12 +71,39 @@ function NavItem({ href, icon: Icon, label, exact }: { href: string; icon: React
       }`}
     >
       <Icon size={16} />
-      {label}
+      <span className="flex-1">{label}</span>
+      {badge !== undefined && badge > 0 && (
+        <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#ef4444] text-white text-[10px] font-bold leading-none">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
     </Link>
   );
 }
 
 export default function Sidebar() {
+  const [followUpCount, setFollowUpCount] = useState(0);
+
+  useEffect(() => {
+    const recalc = () => {
+      db.getFollowUps().then(followUps => {
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        const due = followUps.filter(f => {
+          if (f.status === 'done') return false;
+          const effectiveDate = f.status === 'snoozed' && f.snoozedUntil ? f.snoozedUntil : f.dueDate;
+          return new Date(effectiveDate) <= today;
+        });
+        setFollowUpCount(due.length);
+      });
+    };
+
+    recalc();
+    // Re-check whenever storage might have changed (poll every 30s)
+    const interval = setInterval(recalc, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 bg-[#0d1f3c] border-r border-[#1e3a5f] flex flex-col z-40">
       {/* Logo */}
@@ -63,7 +116,7 @@ export default function Sidebar() {
             </svg>
           </div>
           <div>
-            <p className="text-white font-bold text-sm leading-none">True North</p>
+            <p className="text-white font-bold text-sm leading-none">TrueNorth</p>
             <p className="text-[#7C3AED] text-[10px] font-semibold tracking-widest uppercase">Talent</p>
           </div>
         </div>
@@ -75,7 +128,11 @@ export default function Sidebar() {
         <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">Recruitment</p>
         <div className="space-y-0.5 mb-5">
           {RECRUITMENT_NAV.map(item => (
-            <NavItem key={item.href} {...item} />
+            <NavItem
+              key={item.href}
+              {...item}
+              badge={item.badgeKey === 'followUps' ? followUpCount : undefined}
+            />
           ))}
         </div>
 
@@ -89,8 +146,14 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-4 py-4 border-t border-[#1e3a5f]">
-        <p className="text-[#94a3b8] text-[10px] tracking-widest uppercase">Internal Tool</p>
-        <p className="text-[#94a3b8] text-[10px] mt-0.5">v2.0 — Phase 2</p>
+        <p className="text-[#94a3b8] text-[10px] tracking-widest uppercase">Internal Tool · v2.0</p>
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="mt-2.5 flex items-center gap-2 text-[#4a6fa5] hover:text-[#ef4444] text-xs transition-colors w-full"
+        >
+          <LogOut size={12} />
+          Sign out
+        </button>
       </div>
     </aside>
   );

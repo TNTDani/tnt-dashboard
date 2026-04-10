@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const { cv, vacancy }: { cv: ProcessedCV; vacancy: Vacancy } = await req.json();
 
-    const prompt = `You are a senior recruiter at True North Talent. Score this candidate against the vacancy below.
+    const prompt = `You are a senior recruiter at TrueNorth Talent. Score this candidate against the vacancy below.
 
 VACANCY:
 Title: ${vacancy.title}
@@ -27,17 +27,38 @@ Education: ${cv.education.map(e => `${e.degree}, ${e.institution}`).join("; ")}
 
 Respond ONLY with valid JSON (no markdown):
 {
-  "score": <integer 1-10>,
+  "score": <number 1-10, one decimal place allowed e.g. 7.5>,
+  "scoreReason": "<one concise sentence explaining the score, e.g. 'Strong match — minor gap in years of experience only'>",
   "summary": "<2-3 sentence recruiter summary of candidate fit>",
   "strengths": ["<strength>", "<strength>", "<strength>"],
   "gaps": ["<gap or concern>"],
   "flag": "<green|amber|red>"
 }
 
-Scoring guide:
-- 8-10 → green (strong match)
-- 5-7  → amber (partial match, worth a conversation)
-- 1-4  → red (poor match)`;
+SCORING RULES — follow these precisely:
+
+1. Start at 10 and subtract points for gaps:
+   - Missing a must-have technical skill or required qualification: −2 to −3 per gap
+   - Experience slightly under requirement (e.g. 2 yrs vs 3 yrs required): −0.5
+   - Missing a nice-to-have: −0.5 or less
+   - Completely wrong domain or level: −3 to −4
+
+2. Transferable skills and adjacent experience count positively — do not penalise for skills the candidate has that are equivalent or closely related to the requirement.
+
+3. Calibration benchmarks:
+   - Candidate meets ~90%+ of requirements → 8–9
+   - Candidate meets ~75% of requirements → 7–7.5
+   - Candidate meets ~60% of requirements → 5.5–6.5
+   - Candidate meets ~40% of requirements → 4–5
+   - Poor fit, wrong domain or level → below 4
+
+4. Flag assignment:
+   - 9–10 → green  (Strong Match)
+   - 7–8.9 → green (Good Match — still green, worth a strong push)
+   - 5–6.9 → amber (Potential Match)
+   - below 5 → red (Weak Match)
+
+5. Never score below 5 unless there are multiple must-have gaps or a clear level/domain mismatch. Minor experience shortfalls alone should not drop a score below 6.`;
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-20250514",

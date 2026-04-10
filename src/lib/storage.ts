@@ -1,13 +1,14 @@
-import { Candidate, Vacancy, ScreeningResult, CandidateProfile, Client } from './types';
+import { WatchlistItem, VacancyMonitorCache } from './types';
+
+// localStorage-only storage: device-specific / ephemeral data that doesn't
+// need to sync across sessions or devices. All entity data (candidates,
+// clients, vacancies, etc.) has moved to Supabase via src/lib/db.ts.
 
 const KEYS = {
-  candidates: 'tnt_candidates',
-  vacancies: 'tnt_vacancies',
-  screenings: 'tnt_screenings',
-  candidateProfiles: 'tnt_candidate_profiles',
-  clients: 'tnt_clients',
   gmailToken: 'tnt_gmail_token',
   lastViewedCandidate: 'tnt_last_viewed_candidate',
+  vacancyWatchlist: 'tnt_vacancy_watchlist',
+  vacancyMonitorCache: 'tnt_vacancy_monitor_cache',
 };
 
 function get<T>(key: string): T[] {
@@ -44,21 +45,6 @@ function removeKey(key: string): void {
 }
 
 export const storage = {
-  getCandidates: (): Candidate[] => get<Candidate>(KEYS.candidates),
-  saveCandidates: (data: Candidate[]) => set(KEYS.candidates, data),
-
-  getVacancies: (): Vacancy[] => get<Vacancy>(KEYS.vacancies),
-  saveVacancies: (data: Vacancy[]) => set(KEYS.vacancies, data),
-
-  getScreenings: (): ScreeningResult[] => get<ScreeningResult>(KEYS.screenings),
-  saveScreenings: (data: ScreeningResult[]) => set(KEYS.screenings, data),
-
-  getCandidateProfiles: (): CandidateProfile[] => get<CandidateProfile>(KEYS.candidateProfiles),
-  saveCandidateProfiles: (data: CandidateProfile[]) => set(KEYS.candidateProfiles, data),
-
-  getClients: (): Client[] => get<Client>(KEYS.clients),
-  saveClients: (data: Client[]) => set(KEYS.clients, data),
-
   getGmailToken: (): string | null => getString(KEYS.gmailToken),
   saveGmailToken: (token: string) => setString(KEYS.gmailToken, token),
   clearGmailToken: () => removeKey(KEYS.gmailToken),
@@ -66,4 +52,23 @@ export const storage = {
   getLastViewedCandidate: (): string | null => getString(KEYS.lastViewedCandidate),
   setLastViewedCandidate: (id: string) => setString(KEYS.lastViewedCandidate, id),
   clearLastViewedCandidate: () => removeKey(KEYS.lastViewedCandidate),
+
+  getVacancyWatchlist: (): WatchlistItem[] => get<WatchlistItem>(KEYS.vacancyWatchlist),
+  saveVacancyWatchlist: (data: WatchlistItem[]) => set(KEYS.vacancyWatchlist, data),
+
+  getVacancyMonitorCache: (): VacancyMonitorCache | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(KEYS.vacancyMonitorCache);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  },
+  saveVacancyMonitorCache: (data: VacancyMonitorCache) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(KEYS.vacancyMonitorCache, JSON.stringify(data));
+  },
+  clearVacancyMonitorCache: () => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(KEYS.vacancyMonitorCache);
+  },
 };

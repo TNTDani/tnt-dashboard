@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing cv or vacancy' }, { status: 400 });
     }
 
-    const prompt = `You are a senior recruitment consultant at True North Talent preparing an interview guide.
+    const prompt = `You are a senior recruitment consultant at TrueNorth Talent preparing an interview guide.
 
 CANDIDATE PROFILE:
 - Name: ${cv.firstName}

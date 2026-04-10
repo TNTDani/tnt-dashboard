@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         spacing: { before: 120, after: 200 },
         children: [
           new TextRun({
-            text: "Presented exclusively by True North Talent | Confidential",
+            text: "Presented exclusively by TrueNorth Talent | Confidential",
             size: 17,
             color: PURPLE,
             font: "Calibri",

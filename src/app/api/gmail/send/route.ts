@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { buildHtmlEmail } from '@/lib/buildEmail';
 
 // RFC 2047 B-encoding for non-ASCII characters in email headers
 function encodeHeader(value: string): string {
@@ -24,15 +25,17 @@ export async function POST(req: NextRequest) {
     oauth2Client.setCredentials(tokens);
     const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
 
+    const html = buildHtmlEmail(body);
+
     const raw = [
-      `From: dani@truenorthtalent.nl`,
+      `From: Dani Leeflang <dani@truenorthtalent.nl>`,
       `To: ${to}`,
       `Subject: ${encodeHeader(subject)}`,
       'MIME-Version: 1.0',
-      'Content-Type: text/plain; charset=UTF-8',
+      'Content-Type: text/html; charset=UTF-8',
       'Content-Transfer-Encoding: base64',
       '',
-      base64Body(body),
+      base64Body(html),
     ].join('\r\n');
 
     const encoded = Buffer.from(raw).toString('base64url');

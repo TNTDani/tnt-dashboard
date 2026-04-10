@@ -1,0 +1,473 @@
+import { supabase } from './supabase';
+import {
+  Candidate, CandidateProfile, Client, Vacancy, Placement,
+  FollowUp, ScreeningResult, SourcingStrategy, WeeklyReport,
+} from './types';
+
+// ---------------------------------------------------------------------------
+// Generic helper: delete all rows then insert new set
+// ---------------------------------------------------------------------------
+async function replaceAll(table: string, rows: Record<string, unknown>[]): Promise<void> {
+  const { error: delError } = await supabase.from(table).delete().not('id', 'is', null);
+  if (delError) throw delError;
+  if (rows.length === 0) return;
+  const { error: insError } = await supabase.from(table).insert(rows);
+  if (insError) throw insError;
+}
+
+// ---------------------------------------------------------------------------
+// Candidates
+// ---------------------------------------------------------------------------
+function candidateToRow(c: Candidate) {
+  return {
+    id: c.id,
+    first_name: c.firstName,
+    job_role: c.currentRole,
+    current_company: c.currentCompany,
+    skills: c.skills,
+    status: c.status,
+    vacancy_id: c.vacancyId ?? null,
+    created_at: c.createdAt,
+    processed_cv: c.processedCV ?? null,
+    notes: c.notes ?? null,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToCandidate(r: any): Candidate {
+  return {
+    id: r.id,
+    firstName: r.first_name,
+    currentRole: r.job_role,
+    currentCompany: r.current_company,
+    skills: r.skills ?? [],
+    status: r.status,
+    vacancyId: r.vacancy_id ?? undefined,
+    createdAt: r.created_at,
+    processedCV: r.processed_cv ?? undefined,
+    notes: r.notes ?? undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// CandidateProfiles
+// ---------------------------------------------------------------------------
+function profileToRow(p: CandidateProfile) {
+  return {
+    id: p.id,
+    first_name: p.firstName,
+    last_name: p.lastName,
+    email: p.email,
+    phone: p.phone,
+    location: p.location,
+    postal_code: p.postalCode,
+    linkedin: p.linkedin ?? null,
+    job_title: p.jobTitle,
+    branch: p.branch,
+    salary_expectation: p.salaryExpectation ?? null,
+    status: p.status,
+    notes: p.notes,
+    timeline: p.timeline,
+    cv_file_name: p.cvFileName ?? null,
+    cv_data: p.cvData ?? null,
+    motivation_file_name: p.motivationFileName ?? null,
+    motivation_data: p.motivationData ?? null,
+    created_at: p.createdAt,
+    updated_at: p.updatedAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToProfile(r: any): CandidateProfile {
+  return {
+    id: r.id,
+    firstName: r.first_name,
+    lastName: r.last_name,
+    email: r.email,
+    phone: r.phone,
+    location: r.location,
+    postalCode: r.postal_code,
+    linkedin: r.linkedin ?? undefined,
+    jobTitle: r.job_title,
+    branch: r.branch,
+    salaryExpectation: r.salary_expectation ?? undefined,
+    status: r.status,
+    notes: r.notes,
+    timeline: r.timeline ?? [],
+    cvFileName: r.cv_file_name ?? undefined,
+    cvData: r.cv_data ?? undefined,
+    motivationFileName: r.motivation_file_name ?? undefined,
+    motivationData: r.motivation_data ?? undefined,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Clients
+// ---------------------------------------------------------------------------
+function clientToRow(c: Client) {
+  return {
+    id: c.id,
+    company_name: c.companyName,
+    website: c.website ?? null,
+    sector: c.sector,
+    size: c.size,
+    type: c.type,
+    contact_name: c.contactName,
+    contact_email: c.contactEmail,
+    contact_phone: c.contactPhone,
+    contact_role: c.contactRole,
+    location: c.location,
+    linkedin: c.linkedin ?? null,
+    notes: c.notes,
+    last_vacancy_scan: c.lastVacancyScan ?? null,
+    fee_agreement: c.feeAgreement,
+    guarantee_period: c.guaranteePeriod,
+    timeline: c.timeline,
+    created_at: c.createdAt,
+    updated_at: c.updatedAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToClient(r: any): Client {
+  return {
+    id: r.id,
+    companyName: r.company_name,
+    website: r.website ?? undefined,
+    sector: r.sector,
+    size: r.size,
+    type: r.type,
+    contactName: r.contact_name,
+    contactEmail: r.contact_email,
+    contactPhone: r.contact_phone,
+    contactRole: r.contact_role,
+    location: r.location,
+    linkedin: r.linkedin ?? undefined,
+    notes: r.notes,
+    lastVacancyScan: r.last_vacancy_scan ?? undefined,
+    feeAgreement: r.fee_agreement,
+    guaranteePeriod: r.guarantee_period,
+    timeline: r.timeline ?? [],
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Vacancies
+// ---------------------------------------------------------------------------
+function vacancyToRow(v: Vacancy) {
+  return {
+    id: v.id,
+    title: v.title,
+    company: v.company,
+    salary_min: v.salaryMin,
+    salary_max: v.salaryMax,
+    currency: v.currency,
+    requirements: v.requirements,
+    seniority_level: v.seniorityLevel,
+    description: v.description,
+    status: v.status,
+    created_at: v.createdAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToVacancy(r: any): Vacancy {
+  return {
+    id: r.id,
+    title: r.title,
+    company: r.company,
+    salaryMin: r.salary_min,
+    salaryMax: r.salary_max,
+    currency: r.currency,
+    requirements: r.requirements ?? [],
+    seniorityLevel: r.seniority_level,
+    description: r.description,
+    status: r.status,
+    createdAt: r.created_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Placements
+// ---------------------------------------------------------------------------
+function placementToRow(p: Placement) {
+  return {
+    id: p.id,
+    candidate_id: p.candidateId,
+    profile_id: p.profileId ?? null,
+    candidate_name: p.candidateName,
+    job_title: p.jobTitle,
+    vacancy_id: p.vacancyId ?? null,
+    vacancy_title: p.vacancyTitle,
+    company: p.company,
+    placement_date: p.placementDate,
+    gross_annual_salary: p.grossAnnualSalary,
+    fee_percentage: p.feePercentage,
+    fee_amount: p.feeAmount,
+    payment_status: p.paymentStatus,
+    notes: p.notes,
+    created_at: p.createdAt,
+    updated_at: p.updatedAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToPlacement(r: any): Placement {
+  return {
+    id: r.id,
+    candidateId: r.candidate_id,
+    profileId: r.profile_id ?? undefined,
+    candidateName: r.candidate_name,
+    jobTitle: r.job_title,
+    vacancyId: r.vacancy_id ?? undefined,
+    vacancyTitle: r.vacancy_title,
+    company: r.company,
+    placementDate: r.placement_date,
+    grossAnnualSalary: r.gross_annual_salary,
+    feePercentage: r.fee_percentage,
+    feeAmount: r.fee_amount,
+    paymentStatus: r.payment_status,
+    notes: r.notes,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// FollowUps
+// ---------------------------------------------------------------------------
+function followUpToRow(f: FollowUp) {
+  return {
+    id: f.id,
+    contact_type: f.contactType,
+    contact_id: f.contactId,
+    contact_name: f.contactName,
+    contact_email: f.contactEmail,
+    company: f.company,
+    original_email_subject: f.originalEmailSubject,
+    last_contact_date: f.lastContactDate,
+    due_date: f.dueDate,
+    status: f.status,
+    snoozed_until: f.snoozedUntil ?? null,
+    created_at: f.createdAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToFollowUp(r: any): FollowUp {
+  return {
+    id: r.id,
+    contactType: r.contact_type,
+    contactId: r.contact_id,
+    contactName: r.contact_name,
+    contactEmail: r.contact_email,
+    company: r.company,
+    originalEmailSubject: r.original_email_subject,
+    lastContactDate: r.last_contact_date,
+    dueDate: r.due_date,
+    status: r.status,
+    snoozedUntil: r.snoozed_until ?? undefined,
+    createdAt: r.created_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// ScreeningResults
+// ---------------------------------------------------------------------------
+function screeningToRow(s: ScreeningResult) {
+  return {
+    id: s.id,
+    candidate_id: s.candidateId,
+    vacancy_id: s.vacancyId,
+    score: s.score,
+    score_reason: s.scoreReason ?? null,
+    summary: s.summary,
+    strengths: s.strengths,
+    gaps: s.gaps,
+    flag: s.flag,
+    created_at: s.createdAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToScreening(r: any): ScreeningResult {
+  return {
+    id: r.id,
+    candidateId: r.candidate_id,
+    vacancyId: r.vacancy_id,
+    score: r.score,
+    scoreReason: r.score_reason ?? undefined,
+    summary: r.summary,
+    strengths: r.strengths ?? [],
+    gaps: r.gaps ?? [],
+    flag: r.flag,
+    createdAt: r.created_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// SourcingStrategies
+// ---------------------------------------------------------------------------
+function sourcingToRow(s: SourcingStrategy) {
+  return {
+    id: s.id,
+    job_title: s.jobTitle,
+    skills: s.skills,
+    location: s.location,
+    seniority_level: s.seniorityLevel,
+    salary_range: s.salaryRange,
+    vacancy_link: s.vacancyLink ?? null,
+    vacancy_id: s.vacancyId ?? null,
+    profiles: s.profiles,
+    boolean_search: s.booleanSearch,
+    xray_search: s.xraySearch,
+    created_at: s.createdAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToSourcing(r: any): SourcingStrategy {
+  return {
+    id: r.id,
+    jobTitle: r.job_title,
+    skills: r.skills ?? [],
+    location: r.location,
+    seniorityLevel: r.seniority_level,
+    salaryRange: r.salary_range,
+    vacancyLink: r.vacancy_link ?? undefined,
+    vacancyId: r.vacancy_id ?? undefined,
+    profiles: r.profiles ?? [],
+    booleanSearch: r.boolean_search,
+    xraySearch: r.xray_search,
+    createdAt: r.created_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// WeeklyReports
+// ---------------------------------------------------------------------------
+function reportToRow(r: WeeklyReport) {
+  return {
+    id: r.id,
+    week_number: r.weekNumber,
+    year: r.year,
+    start_date: r.startDate,
+    end_date: r.endDate,
+    metrics: r.metrics,
+    notes: r.notes,
+    generated_at: r.generatedAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToReport(r: any): WeeklyReport {
+  return {
+    id: r.id,
+    weekNumber: r.week_number,
+    year: r.year,
+    startDate: r.start_date,
+    endDate: r.end_date,
+    metrics: r.metrics,
+    notes: r.notes,
+    generatedAt: r.generated_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+export const db = {
+  // Candidates
+  getCandidates: async (): Promise<Candidate[]> => {
+    const { data, error } = await supabase.from('candidates').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToCandidate);
+  },
+  saveCandidates: async (data: Candidate[]): Promise<void> => {
+    await replaceAll('candidates', data.map(candidateToRow));
+  },
+
+  // CandidateProfiles
+  getCandidateProfiles: async (): Promise<CandidateProfile[]> => {
+    const { data, error } = await supabase.from('candidate_profiles').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToProfile);
+  },
+  saveCandidateProfiles: async (data: CandidateProfile[]): Promise<void> => {
+    await replaceAll('candidate_profiles', data.map(profileToRow));
+  },
+
+  // Clients
+  getClients: async (): Promise<Client[]> => {
+    const { data, error } = await supabase.from('clients').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToClient);
+  },
+  saveClients: async (data: Client[]): Promise<void> => {
+    await replaceAll('clients', data.map(clientToRow));
+  },
+
+  // Vacancies
+  getVacancies: async (): Promise<Vacancy[]> => {
+    const { data, error } = await supabase.from('vacancies').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToVacancy);
+  },
+  saveVacancies: async (data: Vacancy[]): Promise<void> => {
+    await replaceAll('vacancies', data.map(vacancyToRow));
+  },
+
+  // Placements
+  getPlacements: async (): Promise<Placement[]> => {
+    const { data, error } = await supabase.from('placements').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToPlacement);
+  },
+  savePlacements: async (data: Placement[]): Promise<void> => {
+    await replaceAll('placements', data.map(placementToRow));
+  },
+
+  // FollowUps
+  getFollowUps: async (): Promise<FollowUp[]> => {
+    const { data, error } = await supabase.from('follow_ups').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToFollowUp);
+  },
+  saveFollowUps: async (data: FollowUp[]): Promise<void> => {
+    await replaceAll('follow_ups', data.map(followUpToRow));
+  },
+
+  // ScreeningResults
+  getScreenings: async (): Promise<ScreeningResult[]> => {
+    const { data, error } = await supabase.from('screening_results').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToScreening);
+  },
+  saveScreenings: async (data: ScreeningResult[]): Promise<void> => {
+    await replaceAll('screening_results', data.map(screeningToRow));
+  },
+
+  // SourcingStrategies
+  getSourcingStrategies: async (): Promise<SourcingStrategy[]> => {
+    const { data, error } = await supabase.from('sourcing_strategies').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToSourcing);
+  },
+  saveSourcingStrategies: async (data: SourcingStrategy[]): Promise<void> => {
+    await replaceAll('sourcing_strategies', data.map(sourcingToRow));
+  },
+
+  // WeeklyReports
+  getWeeklyReports: async (): Promise<WeeklyReport[]> => {
+    const { data, error } = await supabase.from('weekly_reports').select('*').order('generated_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToReport);
+  },
+  saveWeeklyReports: async (data: WeeklyReport[]): Promise<void> => {
+    await replaceAll('weekly_reports', data.map(reportToRow));
+  },
+};

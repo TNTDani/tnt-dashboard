@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X, GitMerge } from 'lucide-react';
 import { CandidateProfile, Vacancy, PipelineStatus, Candidate } from '@/lib/types';
 import { storage } from '@/lib/storage';
+import { db } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 
 const STAGES: { value: PipelineStatus; label: string }[] = [
@@ -28,15 +29,6 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
   const openVacancies = vacancies.filter(v => v.status === 'open');
 
   function confirm() {
-    const existing = storage.getCandidates();
-
-    // Avoid adding the same profile twice (match by profileId or firstName)
-    const alreadyIn = existing.some(c => (c as any).profileId === profile.id);
-    if (alreadyIn) {
-      onAdded();
-      return;
-    }
-
     const candidate: Candidate & { profileId: string } = {
       id: uuidv4(),
       profileId: profile.id,
@@ -49,10 +41,15 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
       createdAt: new Date().toISOString(),
     };
 
-    storage.saveCandidates([...existing, candidate]);
-    storage.clearLastViewedCandidate();
-    onAdded();
-    onClose();
+    db.getCandidates().then(existing => {
+      const alreadyIn = existing.some(c => (c as any).profileId === profile.id);
+      if (!alreadyIn) {
+        db.saveCandidates([...existing, candidate]);
+      }
+      storage.clearLastViewedCandidate();
+      onAdded();
+      onClose();
+    });
   }
 
   return (

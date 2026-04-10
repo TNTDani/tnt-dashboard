@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const EXTRACT_PROMPT = `You are an expert CV analyst for True North Talent, a specialist tech recruitment firm.
+const EXTRACT_PROMPT = `You are an expert CV analyst for TrueNorth Talent, a specialist tech recruitment firm.
 
 Extract ALL information from this CV and return it as valid JSON.
 
