@@ -13,8 +13,8 @@ import {
 } from 'lucide-react';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const START_HOUR = 7;
-const END_HOUR = 21;
+const START_HOUR = 0;
+const END_HOUR = 24;
 const HOUR_HEIGHT = 64; // px per hour
 const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => i + START_HOUR);
 const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -115,7 +115,7 @@ function WeekView({
   useEffect(() => {
     if (scrollRef.current) {
       const currentHour = new Date().getHours();
-      const scrollTo = Math.max(0, (currentHour - START_HOUR - 1) * HOUR_HEIGHT);
+      const scrollTo = Math.max(0, (currentHour - 1) * HOUR_HEIGHT);
       scrollRef.current.scrollTop = scrollTo;
     }
   }, []);
@@ -596,7 +596,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Calendar body */}
-      <div className="flex-1 overflow-hidden bg-[#081525]">
+      <div className="flex flex-col flex-1 overflow-hidden bg-[#081525]">
         {view === 'week' ? (
           <WeekView
             weekDays={weekDays}

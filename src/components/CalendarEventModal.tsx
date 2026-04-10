@@ -91,8 +91,8 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
     const handler = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
     };
-    if (isOpen) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    if (isOpen) document.addEventListener('mousedown', handler, true);
+    return () => document.removeEventListener('mousedown', handler, true);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;

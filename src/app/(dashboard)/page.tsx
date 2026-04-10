@@ -285,8 +285,8 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-6 mb-6">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Recent Candidates */}
         <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
@@ -344,7 +344,7 @@ export default function Dashboard() {
         </div>
         </div>
         {/* Calendar widget */}
-        <div className="col-span-1">
+        <div className="lg:col-span-1">
           <CalendarWidget />
         </div>
       </div>
