@@ -2,11 +2,56 @@ import { supabase } from './supabase';
 import {
   Candidate, CandidateProfile, Client, Vacancy, Placement,
   FollowUp, ScreeningResult, SourcingStrategy, WeeklyReport,
+  CandidateVacancyMatch, CalendarEvent,
 } from './types';
 
 // ---------------------------------------------------------------------------
-// Generic helper: delete all rows then insert new set
+// SQL MIGRATION — run once in your Supabase SQL editor
 // ---------------------------------------------------------------------------
+// -- Calendar events table
+// CREATE TABLE IF NOT EXISTS calendar_events (
+//   id text PRIMARY KEY,
+//   title text NOT NULL,
+//   type text NOT NULL DEFAULT 'other',
+//   start_time timestamptz NOT NULL,
+//   end_time timestamptz NOT NULL,
+//   candidate_id text,
+//   candidate_name text,
+//   vacancy_id text,
+//   vacancy_title text,
+//   client_id text,
+//   client_name text,
+//   location text,
+//   notes text,
+//   reminder int,
+//   google_calendar_event_id text,
+//   created_at timestamptz NOT NULL DEFAULT now(),
+//   updated_at timestamptz NOT NULL DEFAULT now()
+// );
+// ALTER TABLE vacancies ADD COLUMN IF NOT EXISTS stage text DEFAULT 'intake';
+// ALTER TABLE vacancies ADD COLUMN IF NOT EXISTS stage_log jsonb DEFAULT '[]'::jsonb;
+// ALTER TABLE vacancies ADD COLUMN IF NOT EXISTS client_feedback jsonb DEFAULT '[]'::jsonb;
+//
+// ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS timed_notes jsonb DEFAULT '[]'::jsonb;
+// ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS documents jsonb DEFAULT '[]'::jsonb;
+//
+// CREATE TABLE IF NOT EXISTS candidate_vacancy_matches (
+//   id text PRIMARY KEY,
+//   candidate_id text NOT NULL,
+//   vacancy_id text NOT NULL,
+//   match_score int,
+//   status text NOT NULL DEFAULT 'active',
+//   notes text NOT NULL DEFAULT '',
+//   interview_date text,
+//   interview_time text,
+//   interview_type text,
+//   interview_outcome text,
+//   interview_notes text,
+//   created_at timestamptz NOT NULL DEFAULT now(),
+//   updated_at timestamptz NOT NULL DEFAULT now()
+// );
+// ---------------------------------------------------------------------------
+
 async function replaceAll(table: string, rows: Record<string, unknown>[]): Promise<void> {
   const { error: delError } = await supabase.from(table).delete().not('id', 'is', null);
   if (delError) throw delError;
@@ -67,6 +112,8 @@ function profileToRow(p: CandidateProfile) {
     salary_expectation: p.salaryExpectation ?? null,
     status: p.status,
     notes: p.notes,
+    timed_notes: p.timedNotes ?? [],
+    documents: p.documents ?? [],
     timeline: p.timeline,
     cv_file_name: p.cvFileName ?? null,
     cv_data: p.cvData ?? null,
@@ -93,6 +140,8 @@ function rowToProfile(r: any): CandidateProfile {
     salaryExpectation: r.salary_expectation ?? undefined,
     status: r.status,
     notes: r.notes,
+    timedNotes: r.timed_notes ?? [],
+    documents: r.documents ?? [],
     timeline: r.timeline ?? [],
     cvFileName: r.cv_file_name ?? undefined,
     cvData: r.cv_data ?? undefined,
@@ -170,6 +219,9 @@ function vacancyToRow(v: Vacancy) {
     seniority_level: v.seniorityLevel,
     description: v.description,
     status: v.status,
+    stage: v.stage ?? 'intake',
+    stage_log: v.stageLog ?? [],
+    client_feedback: v.clientFeedback ?? [],
     created_at: v.createdAt,
   };
 }
@@ -187,6 +239,9 @@ function rowToVacancy(r: any): Vacancy {
     seniorityLevel: r.seniority_level,
     description: r.description,
     status: r.status,
+    stage: r.stage ?? 'intake',
+    stageLog: r.stage_log ?? [],
+    clientFeedback: r.client_feedback ?? [],
     createdAt: r.created_at,
   };
 }
@@ -378,6 +433,94 @@ function rowToReport(r: any): WeeklyReport {
 }
 
 // ---------------------------------------------------------------------------
+// CandidateVacancyMatches
+// ---------------------------------------------------------------------------
+function matchToRow(m: CandidateVacancyMatch) {
+  return {
+    id: m.id,
+    candidate_id: m.candidateId,
+    vacancy_id: m.vacancyId,
+    match_score: m.matchScore ?? null,
+    status: m.status,
+    notes: m.notes,
+    interview_date: m.interviewDate ?? null,
+    interview_time: m.interviewTime ?? null,
+    interview_type: m.interviewType ?? null,
+    interview_outcome: m.interviewOutcome ?? null,
+    interview_notes: m.interviewNotes ?? null,
+    created_at: m.createdAt,
+    updated_at: m.updatedAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToMatch(r: any): CandidateVacancyMatch {
+  return {
+    id: r.id,
+    candidateId: r.candidate_id,
+    vacancyId: r.vacancy_id,
+    matchScore: r.match_score ?? undefined,
+    status: r.status,
+    notes: r.notes ?? '',
+    interviewDate: r.interview_date ?? undefined,
+    interviewTime: r.interview_time ?? undefined,
+    interviewType: r.interview_type ?? undefined,
+    interviewOutcome: r.interview_outcome ?? undefined,
+    interviewNotes: r.interview_notes ?? undefined,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// CalendarEvents
+// ---------------------------------------------------------------------------
+function calendarEventToRow(e: CalendarEvent) {
+  return {
+    id: e.id,
+    title: e.title,
+    type: e.type,
+    start_time: e.startTime,
+    end_time: e.endTime,
+    candidate_id: e.candidateId ?? null,
+    candidate_name: e.candidateName ?? null,
+    vacancy_id: e.vacancyId ?? null,
+    vacancy_title: e.vacancyTitle ?? null,
+    client_id: e.clientId ?? null,
+    client_name: e.clientName ?? null,
+    location: e.location ?? null,
+    notes: e.notes ?? null,
+    reminder: e.reminder ?? null,
+    google_calendar_event_id: e.googleCalendarEventId ?? null,
+    created_at: e.createdAt,
+    updated_at: e.updatedAt,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToCalendarEvent(r: any): CalendarEvent {
+  return {
+    id: r.id,
+    title: r.title,
+    type: r.type,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    candidateId: r.candidate_id ?? undefined,
+    candidateName: r.candidate_name ?? undefined,
+    vacancyId: r.vacancy_id ?? undefined,
+    vacancyTitle: r.vacancy_title ?? undefined,
+    clientId: r.client_id ?? undefined,
+    clientName: r.client_name ?? undefined,
+    location: r.location ?? undefined,
+    notes: r.notes ?? undefined,
+    reminder: r.reminder ?? undefined,
+    googleCalendarEventId: r.google_calendar_event_id ?? undefined,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 export const db = {
@@ -469,5 +612,52 @@ export const db = {
   },
   saveWeeklyReports: async (data: WeeklyReport[]): Promise<void> => {
     await replaceAll('weekly_reports', data.map(reportToRow));
+  },
+
+  // CandidateVacancyMatches (individual upsert/delete — no replaceAll)
+  getMatches: async (): Promise<CandidateVacancyMatch[]> => {
+    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToMatch);
+  },
+  getMatchesByCandidate: async (candidateId: string): Promise<CandidateVacancyMatch[]> => {
+    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').eq('candidate_id', candidateId).order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToMatch);
+  },
+  getMatchesByVacancy: async (vacancyId: string): Promise<CandidateVacancyMatch[]> => {
+    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').eq('vacancy_id', vacancyId).order('created_at');
+    if (error) throw error;
+    return (data ?? []).map(rowToMatch);
+  },
+  saveMatch: async (match: CandidateVacancyMatch): Promise<void> => {
+    const { error } = await supabase.from('candidate_vacancy_matches').upsert(matchToRow(match));
+    if (error) throw error;
+  },
+  deleteMatch: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('candidate_vacancy_matches').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  // CalendarEvents (individual upsert/delete — no replaceAll)
+  getCalendarEvents: async (): Promise<CalendarEvent[]> => {
+    const { data, error } = await supabase.from('calendar_events').select('*').order('start_time');
+    if (error) throw error;
+    return (data ?? []).map(rowToCalendarEvent);
+  },
+  getCalendarEventsByRange: async (start: string, end: string): Promise<CalendarEvent[]> => {
+    const { data, error } = await supabase
+      .from('calendar_events').select('*')
+      .gte('start_time', start).lte('start_time', end).order('start_time');
+    if (error) throw error;
+    return (data ?? []).map(rowToCalendarEvent);
+  },
+  saveCalendarEvent: async (event: CalendarEvent): Promise<void> => {
+    const { error } = await supabase.from('calendar_events').upsert(calendarEventToRow(event));
+    if (error) throw error;
+  },
+  deleteCalendarEvent: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('calendar_events').delete().eq('id', id);
+    if (error) throw error;
   },
 };

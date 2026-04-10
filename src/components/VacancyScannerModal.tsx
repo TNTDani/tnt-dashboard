@@ -113,6 +113,9 @@ export default function VacancyScannerModal({
           sv.url ? `Source: ${sv.url}` : '',
         ].filter(Boolean).join('\n'),
         status: 'open' as const,
+        stage: 'intake' as const,
+        stageLog: [],
+        clientFeedback: [],
         createdAt: now,
       };
     });

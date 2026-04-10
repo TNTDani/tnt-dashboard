@@ -6,6 +6,7 @@ import { Candidate, Vacancy, FollowUp } from "@/lib/types";
 import { Users, Briefcase, TrendingUp, CheckCircle, FileText, Zap, Clock, AlertCircle, Bell, Send, Check, Moon } from "lucide-react";
 import Link from "next/link";
 import EmailComposer from "@/components/EmailComposer";
+import CalendarWidget from "@/components/CalendarWidget";
 import { TimelineEntry } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 
@@ -284,8 +285,9 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-6">
-        {/* Recent Candidates */}
+      <div className="grid grid-cols-3 gap-6 mb-6">
+        <div className="col-span-2">
+          {/* Recent Candidates */}
         <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white font-semibold">Recent Candidates</h2>
@@ -339,6 +341,11 @@ export default function Dashboard() {
               </Link>
             ))}
           </div>
+        </div>
+        </div>
+        {/* Calendar widget */}
+        <div className="col-span-1">
+          <CalendarWidget />
         </div>
       </div>
 

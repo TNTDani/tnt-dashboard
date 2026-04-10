@@ -299,6 +299,8 @@ export default function Screening() {
       branch: addForm.branch,
       status: "active",
       notes: "",
+      timedNotes: [],
+      documents: [],
       timeline: [{
         id: uuidv4(),
         type: "created",

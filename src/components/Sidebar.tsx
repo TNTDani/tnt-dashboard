@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/db";
+import { storage } from "@/lib/storage";
+import { RecentItem } from "@/lib/types";
 import { signOut } from "next-auth/react";
 import {
   DndContext,
@@ -40,10 +42,13 @@ import {
   LogOut,
   Radar,
   GripVertical,
+  Clock,
+  CalendarDays,
 } from "lucide-react";
 
 const RECRUITMENT_NAV = [
   { href: "/", icon: LayoutDashboard, label: "Dashboard", exact: true },
+  { href: "/calendar", icon: CalendarDays, label: "Calendar", exact: true },
   { href: "/candidates", icon: UserCircle, label: "Candidates", exact: false },
   { href: "/clients", icon: Building2, label: "Clients", exact: false },
   { href: "/email", icon: Mail, label: "Email", exact: false, badgeKey: "followUps" as const },
@@ -166,12 +171,19 @@ function SortableNavItem({
   );
 }
 
+const RECENT_ICON: Record<RecentItem["type"], React.ElementType> = {
+  candidate: UserCircle,
+  vacancy: Briefcase,
+  client: Building2,
+};
+
 export default function Sidebar() {
   const [followUpCount, setFollowUpCount] = useState(0);
   const [recruitmentItems, setRecruitmentItems] = useState<NavItem[]>(RECRUITMENT_NAV);
   const [toolsItems, setToolsItems] = useState<NavItem[]>(TOOLS_NAV);
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
 
-  // Load saved order from localStorage
+  // Load saved order and recent items from localStorage
   useEffect(() => {
     try {
       const savedRec = localStorage.getItem(LS_KEY_RECRUITMENT);
@@ -181,6 +193,7 @@ export default function Sidebar() {
       const savedTools = localStorage.getItem(LS_KEY_TOOLS);
       if (savedTools) setToolsItems(reorder(TOOLS_NAV, JSON.parse(savedTools)));
     } catch { /* ignore */ }
+    setRecentItems(storage.getRecentItems().slice(0, 5));
   }, []);
 
   useEffect(() => {
@@ -269,6 +282,29 @@ export default function Sidebar() {
             </SortableContext>
           </DndContext>
         </div>
+
+        {/* Recent items */}
+        {recentItems.length > 0 && (
+          <>
+            <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-1">Recent</p>
+            <div className="space-y-0.5 mb-5">
+              {recentItems.map(item => {
+                const Icon = RECENT_ICON[item.type];
+                return (
+                  <Link
+                    key={`${item.type}-${item.id}`}
+                    href={item.href}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#4a6fa5] hover:text-white hover:bg-[#1e3a5f] transition-all group"
+                  >
+                    <Icon size={12} className="flex-shrink-0" />
+                    <span className="truncate flex-1">{item.name}</span>
+                    <Clock size={10} className="opacity-0 group-hover:opacity-50 flex-shrink-0" />
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Tools section */}
         <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">Tools</p>

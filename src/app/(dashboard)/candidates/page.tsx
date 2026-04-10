@@ -148,6 +148,8 @@ export default function CandidatesPage() {
       salaryExpectation: form.salaryExpectation ? parseInt(form.salaryExpectation) : undefined,
       status: form.status,
       notes: '',
+      timedNotes: [],
+      documents: [],
       timeline,
       createdAt: now,
       updatedAt: now,

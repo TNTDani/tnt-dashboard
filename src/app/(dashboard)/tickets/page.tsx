@@ -168,6 +168,9 @@ dani@truenorthtalent.nl
           ticket.city ? `City: ${ticket.city}` : '',
         ].filter(Boolean).join('\n\n'),
         status: 'open',
+        stage: 'intake' as const,
+        stageLog: [],
+        clientFeedback: [],
         createdAt: now,
       };
 
