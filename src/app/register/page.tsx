@@ -34,7 +34,7 @@ export default function RegisterPage() {
         return;
       }
       setSuccess(true);
-      setTimeout(() => router.push("/login"), 1500);
+      setTimeout(() => router.push("/dashboard"), 1500);
     } catch {
       setError("Network error — please try again.");
     } finally {
@@ -86,7 +86,7 @@ export default function RegisterPage() {
               className="text-center py-6"
             >
               <p className="text-[#10B981] font-semibold text-lg">Account created!</p>
-              <p className="text-[#4B5563] text-sm mt-1">Redirecting to login…</p>
+              <p className="text-[#4B5563] text-sm mt-1">Redirecting to dashboard…</p>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
