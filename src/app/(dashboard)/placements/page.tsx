@@ -139,7 +139,7 @@ export default function PlacementsPage() {
       </div>
 
       {/* ── Totals bar ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#94a3b8] text-xs">Total Placements</span>
@@ -261,7 +261,7 @@ export default function PlacementsPage() {
 
       {/* ── Edit modal ──────────────────────────────────────────────────────── */}
       {editing && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-4">
           <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-md shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">

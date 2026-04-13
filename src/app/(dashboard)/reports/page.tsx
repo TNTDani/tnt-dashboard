@@ -626,7 +626,7 @@ export default function ReportsPage() {
           {reports.length > 0 && (
             <>
               {/* All-time summary KPIs */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { label: "Total Emails",    value: totals.emails,     color: "text-[#2D4A2D]" },
                   { label: "Sourced",          value: totals.sourced,    color: "text-[#3b82f6]" },
@@ -641,7 +641,7 @@ export default function ReportsPage() {
               </div>
 
               {/* Charts */}
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ChartCard title="Emails Sent per Week">
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={weeklyData} style={CHART_STYLE}>

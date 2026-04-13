@@ -485,7 +485,7 @@ export default function ShortlistPage() {
 
       {/* ── Quick CV upload modal (from badge) ─────────────────────────────── */}
       {uploadTarget && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-4">
           <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
               <div className="flex items-center gap-2.5">
@@ -748,7 +748,7 @@ export default function ShortlistPage() {
 
       {/* ── Send to Client modal ──────────────────────────────────────────────── */}
       {sendModal && (
-        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-4">
           <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
               <div className="flex items-center gap-2">

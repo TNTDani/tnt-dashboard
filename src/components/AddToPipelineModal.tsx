@@ -53,8 +53,8 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-sm shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl w-full max-w-sm shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
           <div className="flex items-center gap-2.5">

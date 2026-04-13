@@ -81,7 +81,7 @@ function VacancyFormFields({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Label>Job Title *</Label>
           <input className={InputCls()} placeholder="e.g. Senior Backend Engineer"
@@ -115,12 +115,12 @@ function VacancyFormFields({
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div><Label>Min Salary</Label><input className={InputCls()} placeholder="70000" type="number" value={form.salaryMin} onChange={e => setForm(f => ({ ...f, salaryMin: e.target.value }))} /></div>
         <div><Label>Max Salary</Label><input className={InputCls()} placeholder="95000" type="number" value={form.salaryMax} onChange={e => setForm(f => ({ ...f, salaryMax: e.target.value }))} /></div>
         <div><Label>Currency</Label><select className={InputCls()} value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>{["EUR","GBP","USD"].map(c => <option key={c}>{c}</option>)}</select></div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div><Label>Seniority Level</Label><select className={InputCls()} value={form.seniorityLevel} onChange={e => setForm(f => ({ ...f, seniorityLevel: e.target.value }))}>{SENIORITY_LEVELS.map(l => <option key={l}>{l}</option>)}</select></div>
         <div><Label>Status</Label><select className={InputCls()} value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as Vacancy["status"] }))}>{STATUS_OPTS.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></div>
       </div>
@@ -514,8 +514,8 @@ export default function Vacancies() {
 
       {/* ── ADD MODAL ───────────────────────────────────────────────────────── */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl p-6 w-full max-w-lg max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[#2D4A2D] font-semibold">New Vacancy</h2>
               <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><X size={18} /></button>
@@ -531,8 +531,8 @@ export default function Vacancies() {
 
       {/* ── EDIT MODAL ──────────────────────────────────────────────────────── */}
       {editingVacancy && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl p-6 w-full max-w-lg max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <div><h2 className="text-[#2D4A2D] font-semibold">Edit Vacancy</h2><p className="text-[#6B7280] text-xs mt-0.5">{editingVacancy.title}</p></div>
               <button onClick={() => setEditingVacancy(null)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><X size={18} /></button>

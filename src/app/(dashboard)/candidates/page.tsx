@@ -238,7 +238,7 @@ export default function CandidatesPage() {
             <p className="text-[#2D4A2D] font-medium text-sm">Filter Candidates</p>
             <button onClick={clearFilters} className="text-[#6B7280] text-xs hover:text-[#6B7280] transition-colors">Clear all</button>
           </div>
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-3">
             <div>
               <label className="block text-[#6B7280] text-xs font-medium mb-1">Branch</label>
               <select
@@ -346,7 +346,7 @@ export default function CandidatesPage() {
         /* Clean table-row list */
         <div className="rounded-xl overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid rgba(45,74,45,0.12)' }}>
           {/* Table header */}
-          <div className="grid grid-cols-[1fr_1fr_120px_100px_32px] gap-4 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]"
+          <div className="hidden md:grid md:grid-cols-[1fr_1fr_120px_100px_32px] gap-4 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]"
             style={{ borderBottom: '1px solid rgba(45,74,45,0.1)' }}
           >
             <span>Candidate</span>
@@ -366,7 +366,7 @@ export default function CandidatesPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04, duration: 0.25 }}
                   onClick={() => router.push(`/candidates/${c.id}`)}
-                  className="grid grid-cols-[1fr_1fr_120px_100px_32px] gap-4 items-center px-5 py-3.5 cursor-pointer group transition-colors"
+                  className="grid grid-cols-[1fr_auto_20px] md:grid-cols-[1fr_1fr_120px_100px_32px] gap-4 items-center px-5 py-3.5 cursor-pointer group transition-colors"
                   style={{ borderBottom: i < filtered.length - 1 ? '1px solid rgba(45,74,45,0.06)' : undefined }}
                   onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(45,74,45,0.04)'}
                   onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = ''}
@@ -387,7 +387,7 @@ export default function CandidatesPage() {
                     </div>
                   </div>
                   {/* Location · Branch */}
-                  <div className="min-w-0">
+                  <div className="hidden md:block min-w-0">
                     {c.location && (
                       <div className="flex items-center gap-1.5 text-[#6B7280] text-xs truncate">
                         <MapPin size={10} className="flex-shrink-0 text-[#6B7280]" />
@@ -405,7 +405,7 @@ export default function CandidatesPage() {
                     )}
                   </div>
                   {/* Salary */}
-                  <div className="text-sm text-[#6B7280]">
+                  <div className="hidden md:block text-sm text-[#6B7280]">
                     {c.salaryExpectation ? `€${c.salaryExpectation.toLocaleString()}` : <span className="text-[#6B7280]">—</span>}
                   </div>
                   {/* Status */}
@@ -434,15 +434,15 @@ export default function CandidatesPage() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
           style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
         >
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.97 }}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
             transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl shadow-black/60"
+            className="w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl shadow-2xl shadow-black/60"
             style={{ background: '#FFFFFF', border: '1px solid rgba(45,74,45,0.2)' }}
           >
           <div className="p-6">
@@ -454,7 +454,7 @@ export default function CandidatesPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#6B7280] text-xs font-medium mb-1">First Name *</label>
                   <input
@@ -475,7 +475,7 @@ export default function CandidatesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#6B7280] text-xs font-medium mb-1">Email *</label>
                   <input
@@ -497,7 +497,7 @@ export default function CandidatesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#6B7280] text-xs font-medium mb-1">Location</label>
                   <input
@@ -528,7 +528,7 @@ export default function CandidatesPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#6B7280] text-xs font-medium mb-1">Job Title</label>
                   <input
@@ -551,7 +551,7 @@ export default function CandidatesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#6B7280] text-xs font-medium mb-1">Salary Expectation (€)</label>
                   <input

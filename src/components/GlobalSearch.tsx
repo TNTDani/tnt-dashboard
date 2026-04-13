@@ -48,9 +48,14 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-export default function GlobalSearch() {
+interface GlobalSearchProps {
+  autoFocus?: boolean;
+  onClose?: () => void;
+}
+
+export default function GlobalSearch({ autoFocus = false, onClose }: GlobalSearchProps = {}) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoFocus);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Result[]>([]);
   const [highlighted, setHighlighted] = useState(0);
@@ -79,7 +84,7 @@ export default function GlobalSearch() {
         setOpen((o) => !o);
         if (!open) loadData();
       }
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") { setOpen(false); onClose?.(); }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -144,8 +149,9 @@ export default function GlobalSearch() {
     (href: string) => {
       router.push(href);
       setOpen(false);
+      onClose?.();
     },
-    [router]
+    [router, onClose]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -159,6 +165,43 @@ export default function GlobalSearch() {
     }
     if (e.key === "Enter" && results[highlighted]) navigate(results[highlighted].href);
   };
+
+  // When used inline on mobile (autoFocus), render a bare input instead of a trigger button
+  if (autoFocus) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg px-3 py-2 w-full" style={{ background: "#FFFFFF", border: "1px solid rgba(45,74,45,0.2)" }}>
+        <Search size={14} className="text-[#3D6B3D] flex-shrink-0" />
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); loadData(); }}
+          onKeyDown={handleKeyDown}
+          placeholder="Search candidates, vacancies, clients..."
+          className="flex-1 bg-transparent text-[#2D4A2D] placeholder-[#6B7280] text-sm focus:outline-none"
+          autoFocus
+        />
+        {results.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-50" style={{ background: "#FFFFFF", border: "1px solid rgba(45,74,45,0.15)", boxShadow: "0 4px 16px rgba(0,0,0,0.1)" }}>
+            {results.map((r, i) => {
+              const Icon = ICON[r.type];
+              return (
+                <button key={`${r.type}-${r.id}`} onClick={() => navigate(r.href)} className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors" style={{ background: i === highlighted ? "rgba(45,74,45,0.06)" : undefined }}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${TYPE_BG[r.type]} ${TYPE_COLOR[r.type]}`}>
+                    {r.type === "candidate" ? getInitials(r.name) : <Icon size={12} />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[#2D4A2D] text-sm font-medium truncate">{r.name}</p>
+                    <p className="text-[#6B7280] text-xs truncate">{r.sub}</p>
+                  </div>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${TYPE_BG[r.type]} ${TYPE_COLOR[r.type]}`}>{TYPE_LABEL[r.type]}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <>

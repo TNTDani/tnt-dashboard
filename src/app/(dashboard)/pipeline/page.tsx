@@ -225,8 +225,8 @@ function Pipeline() {
 
       {/* Add manual candidate modal */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[#2D4A2D] font-semibold">Add Candidate</h2>
               <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><X size={18} /></button>
@@ -272,8 +272,8 @@ function Pipeline() {
 
       {/* Placement confirmation modal */}
       {placementTarget && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl w-full max-w-md shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
               <div className="flex items-center gap-2.5">

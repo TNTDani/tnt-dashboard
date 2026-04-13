@@ -1093,8 +1093,8 @@ export default function CandidateDetailPage() {
 
       {/* Edit Modal */}
       {showEdit && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[#2D4A2D] font-semibold">Edit Candidate</h2>
               <button onClick={() => setShowEdit(false)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">

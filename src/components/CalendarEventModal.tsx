@@ -134,7 +134,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4"
       style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
     >
       <motion.div
@@ -143,7 +143,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 16, scale: 0.97 }}
         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-        className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl shadow-black/60"
+        className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl shadow-2xl shadow-black/60"
         style={{ background: '#FFFFFF', border: '1px solid rgba(45,74,45,0.2)' }}
       >
         {/* Header */}

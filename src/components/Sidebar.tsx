@@ -10,43 +10,18 @@ import { RecentItem } from "@/lib/types";
 import { useSidebar } from "@/lib/sidebar-context";
 import { signOut, useSession } from "next-auth/react";
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
+  DndContext, closestCenter, KeyboardSensor, PointerSensor,
+  useSensor, useSensors, DragEndEvent,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
+  arrayMove, SortableContext, sortableKeyboardCoordinates,
+  useSortable, verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  Briefcase,
-  Zap,
-  UserCircle,
-  Building2,
-  Calculator,
-  Mail,
-  ListChecks,
-  Trophy,
-  Inbox,
-  Search,
-  BarChart2,
-  LogOut,
-  Radar,
-  GripVertical,
-  Clock,
-  CalendarDays,
-  ChevronLeft,
+  LayoutDashboard, FileText, Users, Briefcase, Zap, UserCircle,
+  Building2, Calculator, Mail, ListChecks, Trophy, Inbox, Search,
+  BarChart2, LogOut, Radar, GripVertical, Clock, CalendarDays, ChevronLeft,
 } from "lucide-react";
 
 const RECRUITMENT_NAV = [
@@ -73,7 +48,6 @@ const TOOLS_NAV = [
 
 const LS_KEY_RECRUITMENT = "tnt_sidebar_recruitment_order";
 const LS_KEY_TOOLS = "tnt_sidebar_tools_order";
-
 type NavItem = (typeof RECRUITMENT_NAV)[number];
 
 function reorder<T extends { href: string }>(items: T[], savedOrder: string[]): T[] {
@@ -92,7 +66,7 @@ function getInitials(name: string) {
   return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }
 
-function OrchardIcon({ size = 28, color = "white" }: { size?: number; color?: string }) {
+export function OrchardIcon({ size = 28, color = "white" }: { size?: number; color?: string }) {
   const w = Math.round((size / 36) * 48);
   return (
     <svg width={w} height={size} viewBox="0 0 48 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -120,15 +94,17 @@ interface NavLinkProps {
   exact: boolean;
   badge?: number;
   collapsed: boolean;
+  onNavigate?: () => void;
 }
 
-function NavLink({ href, icon: Icon, label, exact, badge, collapsed }: NavLinkProps) {
+function NavLink({ href, icon: Icon, label, exact, badge, collapsed, onNavigate }: NavLinkProps) {
   const path = usePathname();
   const active = exact ? path === href : path === href || path.startsWith(href + "/");
 
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       className={`relative group flex items-center transition-colors duration-150 rounded-lg
         ${collapsed ? "justify-center h-10 w-10 mx-auto" : "gap-3 px-3 py-2.5 w-full"}
       `}
@@ -136,12 +112,8 @@ function NavLink({ href, icon: Icon, label, exact, badge, collapsed }: NavLinkPr
         color: active ? "#FFFFFF" : "rgba(255,255,255,0.65)",
         background: active ? "rgba(255,255,255,0.15)" : undefined,
       }}
-      onMouseEnter={(e) => {
-        if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.08)";
-      }}
-      onMouseLeave={(e) => {
-        if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "";
-      }}
+      onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.08)"; }}
+      onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLAnchorElement).style.background = ""; }}
     >
       {active && !collapsed && (
         <motion.div
@@ -150,9 +122,7 @@ function NavLink({ href, icon: Icon, label, exact, badge, collapsed }: NavLinkPr
           transition={{ type: "spring", stiffness: 500, damping: 40 }}
         />
       )}
-
       <Icon size={15} className="relative z-10 flex-shrink-0" />
-
       <AnimatePresence initial={false}>
         {!collapsed && (
           <motion.span
@@ -167,7 +137,6 @@ function NavLink({ href, icon: Icon, label, exact, badge, collapsed }: NavLinkPr
           </motion.span>
         )}
       </AnimatePresence>
-
       <AnimatePresence initial={false}>
         {!collapsed && badge !== undefined && badge > 0 && (
           <motion.span
@@ -181,35 +150,25 @@ function NavLink({ href, icon: Icon, label, exact, badge, collapsed }: NavLinkPr
           </motion.span>
         )}
       </AnimatePresence>
-
       {collapsed && badge !== undefined && badge > 0 && (
         <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
       )}
-
       {collapsed && (
         <span
           className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#2D4A2D] whitespace-nowrap bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-[200]"
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.12)", border: "1px solid rgba(45,74,45,0.12)" }}
         >
           {label}
-          {badge !== undefined && badge > 0 && (
-            <span className="ml-1.5 text-[#EF4444] font-bold">{badge}</span>
-          )}
+          {badge !== undefined && badge > 0 && <span className="ml-1.5 text-[#EF4444] font-bold">{badge}</span>}
         </span>
       )}
     </Link>
   );
 }
 
-function SortableNavItem({ item, badge, collapsed }: { item: NavItem; badge?: number; collapsed: boolean }) {
+function SortableNavItem({ item, badge, collapsed, onNavigate }: { item: NavItem; badge?: number; collapsed: boolean; onNavigate?: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.href });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-    position: "relative" as const,
-    zIndex: isDragging ? 10 : undefined,
-  };
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, position: "relative" as const, zIndex: isDragging ? 10 : undefined };
   return (
     <div ref={setNodeRef} style={style} className="group flex items-center gap-1">
       <AnimatePresence initial={false}>
@@ -224,14 +183,13 @@ function SortableNavItem({ item, badge, collapsed }: { item: NavItem; badge?: nu
             {...attributes}
             {...listeners}
             tabIndex={-1}
-            aria-label="Drag to reorder"
           >
             <GripVertical size={12} />
           </motion.button>
         )}
       </AnimatePresence>
       <div className="flex-1 min-w-0">
-        <NavLink href={item.href} icon={item.icon} label={item.label} exact={item.exact} badge={badge} collapsed={collapsed} />
+        <NavLink href={item.href} icon={item.icon} label={item.label} exact={item.exact} badge={badge} collapsed={collapsed} onNavigate={onNavigate} />
       </div>
     </div>
   );
@@ -241,48 +199,36 @@ function SectionLabel({ label, collapsed }: { label: string; collapsed: boolean 
   return (
     <AnimatePresence initial={false}>
       {!collapsed ? (
-        <motion.p
-          key="label"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="text-[10px] font-semibold uppercase tracking-[0.1em] px-3 mb-1.5"
-          style={{ color: "rgba(255,255,255,0.4)" }}
-        >
+        <motion.p key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="text-[10px] font-semibold uppercase tracking-[0.1em] px-3 mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
           {label}
         </motion.p>
       ) : (
-        <motion.div
-          key="divider"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="mx-3 mb-1.5 h-px"
-          style={{ background: "rgba(255,255,255,0.12)" }}
-        />
+        <motion.div key="divider" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mx-3 mb-1.5 h-px" style={{ background: "rgba(255,255,255,0.12)" }} />
       )}
     </AnimatePresence>
   );
 }
 
 const RECENT_ICON: Record<RecentItem["type"], React.ElementType> = {
-  candidate: UserCircle,
-  vacancy: Briefcase,
-  client: Building2,
+  candidate: UserCircle, vacancy: Briefcase, client: Building2,
 };
 
-export default function Sidebar() {
-  const { collapsed, toggle } = useSidebar();
+// ── SidebarContent — used for both desktop and mobile overlay ─────────────────
+
+function SidebarContent({
+  collapsed,
+  toggle,
+  onNavigate,
+}: {
+  collapsed: boolean;
+  toggle: () => void;
+  onNavigate?: () => void;
+}) {
   const { data: session } = useSession();
   const [followUpCount, setFollowUpCount] = useState(0);
   const [recruitmentItems, setRecruitmentItems] = useState<NavItem[]>(RECRUITMENT_NAV);
   const [toolsItems, setToolsItems] = useState<NavItem[]>(TOOLS_NAV);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
-
-  const EXPANDED_W = 240;
-  const COLLAPSED_W = 64;
-  const transition = { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const };
 
   useEffect(() => {
     try {
@@ -340,37 +286,20 @@ export default function Sidebar() {
   };
 
   const userName = session?.user?.name || session?.user?.email || "User";
+  const transition = { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const };
 
   return (
-    <motion.aside
-      animate={{ width: collapsed ? COLLAPSED_W : EXPANDED_W }}
-      transition={transition}
-      className="fixed left-0 top-0 h-screen flex flex-col z-40 overflow-hidden"
-      style={{ background: "#2D4A2D", borderRight: "1px solid rgba(0,0,0,0.08)" }}
-    >
+    <div className="flex flex-col h-full" style={{ background: "#2D4A2D" }}>
       {/* Logo */}
-      <div
-        className="flex items-center h-14 px-4 flex-shrink-0"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
-      >
+      <div className="flex items-center h-14 px-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex-shrink-0">
             <OrchardIcon size={28} color="white" />
           </div>
           <AnimatePresence initial={false}>
             {!collapsed && (
-              <motion.div
-                key="wordmark"
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={{ duration: 0.15 }}
-                className="min-w-0"
-              >
-                <p
-                  className="text-white text-lg leading-none tracking-tight"
-                  style={{ fontFamily: "var(--font-nunito), Nunito, sans-serif", fontWeight: 700 }}
-                >
+              <motion.div key="wordmark" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.15 }} className="min-w-0">
+                <p className="text-white text-lg leading-none tracking-tight" style={{ fontFamily: "var(--font-nunito), Nunito, sans-serif", fontWeight: 700 }}>
                   Orchard
                 </p>
               </motion.div>
@@ -386,12 +315,7 @@ export default function Sidebar() {
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleRecruitmentDragEnd}>
             <SortableContext items={recruitmentItems.map((i) => i.href)} strategy={verticalListSortingStrategy}>
               {recruitmentItems.map((item) => (
-                <SortableNavItem
-                  key={item.href}
-                  item={item}
-                  badge={item.badgeKey === "followUps" ? followUpCount : undefined}
-                  collapsed={collapsed}
-                />
+                <SortableNavItem key={item.href} item={item} badge={item.badgeKey === "followUps" ? followUpCount : undefined} collapsed={collapsed} onNavigate={onNavigate} />
               ))}
             </SortableContext>
           </DndContext>
@@ -399,34 +323,15 @@ export default function Sidebar() {
 
         <AnimatePresence initial={false}>
           {!collapsed && recentItems.length > 0 && (
-            <motion.div
-              key="recent"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="px-3 mb-5"
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] px-3 mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                Recent
-              </p>
+            <motion.div key="recent" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="px-3 mb-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] px-3 mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>Recent</p>
               <div className="space-y-0.5">
                 {recentItems.map((item) => {
                   const Icon = RECENT_ICON[item.type];
                   return (
-                    <Link
-                      key={`${item.type}-${item.id}`}
-                      href={item.href}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all group"
-                      style={{ color: "rgba(255,255,255,0.5)" }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.08)";
-                        (e.currentTarget as HTMLAnchorElement).style.color = "white";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.background = "";
-                        (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.5)";
-                      }}
+                    <Link key={`${item.type}-${item.id}`} href={item.href} onClick={onNavigate} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all group" style={{ color: "rgba(255,255,255,0.5)" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,0.08)"; (e.currentTarget as HTMLAnchorElement).style.color = "white"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = ""; (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.5)"; }}
                     >
                       <Icon size={12} className="flex-shrink-0" />
                       <span className="truncate flex-1">{item.name}</span>
@@ -444,7 +349,7 @@ export default function Sidebar() {
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleToolsDragEnd}>
             <SortableContext items={toolsItems.map((i) => i.href)} strategy={verticalListSortingStrategy}>
               {toolsItems.map((item) => (
-                <SortableNavItem key={item.href} item={item} collapsed={collapsed} />
+                <SortableNavItem key={item.href} item={item} collapsed={collapsed} onNavigate={onNavigate} />
               ))}
             </SortableContext>
           </DndContext>
@@ -455,43 +360,26 @@ export default function Sidebar() {
       <div className="flex-shrink-0 p-3 space-y-1" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
         <AnimatePresence initial={false}>
           {!collapsed && (
-            <motion.div
-              key="user"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex items-center gap-2.5 px-3 py-2 mb-1"
-            >
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-white"
-                style={{ background: "rgba(255,255,255,0.2)" }}
-              >
+            <motion.div key="user" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center gap-2.5 px-3 py-2 mb-1">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold text-white" style={{ background: "rgba(255,255,255,0.2)" }}>
                 {getInitials(userName)}
               </div>
-              <span className="text-xs font-medium truncate" style={{ color: "rgba(255,255,255,0.8)" }}>
-                {userName}
-              </span>
+              <span className="text-xs font-medium truncate" style={{ color: "rgba(255,255,255,0.8)" }}>{userName}</span>
             </motion.div>
           )}
         </AnimatePresence>
 
+        {/* Collapse toggle — desktop only */}
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={toggle}
-          className={`w-full flex items-center rounded-lg py-2.5 text-xs transition-colors ${collapsed ? "justify-center px-0" : "gap-3 px-3"}`}
+          className={`hidden md:flex w-full items-center rounded-lg py-2.5 text-xs transition-colors ${collapsed ? "justify-center px-0" : "gap-3 px-3"}`}
           style={{ color: "rgba(255,255,255,0.5)" }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.08)";
-            (e.currentTarget as HTMLButtonElement).style.color = "white";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "";
-            (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.5)";
-          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.08)"; (e.currentTarget as HTMLButtonElement).style.color = "white"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = ""; (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.5)"; }}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }} className="flex-shrink-0">
+          <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={transition} className="flex-shrink-0">
             <ChevronLeft size={15} />
           </motion.div>
           <AnimatePresence initial={false}>
@@ -503,6 +391,7 @@ export default function Sidebar() {
           </AnimatePresence>
         </motion.button>
 
+        {/* Sign out */}
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => signOut({ callbackUrl: "/login" })}
@@ -515,16 +404,11 @@ export default function Sidebar() {
           <LogOut size={14} className="flex-shrink-0" />
           <AnimatePresence initial={false}>
             {!collapsed && (
-              <motion.span key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                Sign out
-              </motion.span>
+              <motion.span key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>Sign out</motion.span>
             )}
           </AnimatePresence>
           {collapsed && (
-            <span
-              className="pointer-events-none absolute left-full ml-3 px-2.5 py-1.5 rounded-lg text-xs text-[#EF4444] whitespace-nowrap bg-white opacity-0 group-hover:opacity-100 transition-opacity z-[200]"
-              style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.12)", border: "1px solid rgba(239,68,68,0.15)" }}
-            >
+            <span className="pointer-events-none absolute left-full ml-3 px-2.5 py-1.5 rounded-lg text-xs text-[#EF4444] whitespace-nowrap bg-white opacity-0 group-hover:opacity-100 transition-opacity z-[200]" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.12)", border: "1px solid rgba(239,68,68,0.15)" }}>
               Sign out
             </span>
           )}
@@ -538,6 +422,61 @@ export default function Sidebar() {
           )}
         </AnimatePresence>
       </div>
-    </motion.aside>
+    </div>
+  );
+}
+
+// ── Main export ────────────────────────────────────────────────────────────────
+
+export default function Sidebar() {
+  const { collapsed, toggle, mobileOpen, setMobileOpen } = useSidebar();
+
+  const EXPANDED_W = 240;
+  const COLLAPSED_W = 64;
+  const transition = { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const };
+
+  return (
+    <>
+      {/* ── Desktop sidebar ── */}
+      <motion.aside
+        animate={{ width: collapsed ? COLLAPSED_W : EXPANDED_W }}
+        transition={transition}
+        className="hidden md:flex fixed left-0 top-0 h-screen flex-col z-40 overflow-hidden"
+        style={{ borderRight: "1px solid rgba(0,0,0,0.08)" }}
+      >
+        <SidebarContent collapsed={collapsed} toggle={toggle} />
+      </motion.aside>
+
+      {/* ── Mobile: backdrop + slide-in overlay ── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden fixed inset-0 z-40 bg-black/50"
+              onClick={() => setMobileOpen(false)}
+            />
+
+            {/* Slide-in panel */}
+            <motion.aside
+              key="mobile-sidebar"
+              initial={{ x: -EXPANDED_W }}
+              animate={{ x: 0 }}
+              exit={{ x: -EXPANDED_W }}
+              transition={{ type: "spring", stiffness: 300, damping: 35 }}
+              className="md:hidden fixed left-0 top-0 h-screen z-50 overflow-hidden"
+              style={{ width: EXPANDED_W, borderRight: "1px solid rgba(0,0,0,0.08)" }}
+            >
+              <SidebarContent collapsed={false} toggle={toggle} onNavigate={() => setMobileOpen(false)} />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

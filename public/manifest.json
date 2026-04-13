@@ -1,0 +1,48 @@
+{
+  "name": "Orchard",
+  "short_name": "Orchard",
+  "description": "Cultivate your pipeline",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EDEDEB",
+  "theme_color": "#2D4A2D",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pipeline",
+      "url": "/pipeline",
+      "description": "View candidate pipeline"
+    },
+    {
+      "name": "Candidates",
+      "url": "/candidates",
+      "description": "Browse candidates"
+    },
+    {
+      "name": "Vacancies",
+      "url": "/vacancies",
+      "description": "Open vacancies"
+    }
+  ]
+}

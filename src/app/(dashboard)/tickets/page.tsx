@@ -474,8 +474,8 @@ Orchard`;
 
       {/* Decline modal */}
       {declineId && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-sm">
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl p-6 w-full max-w-sm">
             <h3 className="text-[#2D4A2D] font-semibold mb-2">Decline request</h3>
             <p className="text-[#94a3b8] text-sm mb-4">
               This will mark the ticket as declined.

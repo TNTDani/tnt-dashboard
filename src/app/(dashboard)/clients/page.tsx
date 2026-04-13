@@ -188,7 +188,7 @@ export default function ClientsPage() {
             <p className="text-[#2D4A2D] font-semibold text-sm">Filter Clients</p>
             <button onClick={clearFilters} className="text-[#94a3b8] text-xs hover:text-[#2D4A2D] transition-colors">Clear all</button>
           </div>
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-4">
             <div>
               <label className="block text-[#94a3b8] text-xs font-medium mb-1">Type</label>
               <select
@@ -314,8 +314,8 @@ export default function ClientsPage() {
 
       {/* Add Client Modal */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl p-6 w-full max-w-2xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[#2D4A2D] font-semibold">Add New Client</h2>
               <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
@@ -326,7 +326,7 @@ export default function ClientsPage() {
             <div className="space-y-4">
               {/* Company info */}
               <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider">Company</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Company Name *</label>
                   <input
@@ -347,7 +347,7 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Sector</label>
                   <select
@@ -394,7 +394,7 @@ export default function ClientsPage() {
 
               {/* Contact */}
               <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider pt-1">Primary Contact</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Contact Name *</label>
                   <input
@@ -414,7 +414,7 @@ export default function ClientsPage() {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Email</label>
                   <input
@@ -438,7 +438,7 @@ export default function ClientsPage() {
 
               {/* Fee Agreement */}
               <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider pt-1">Fee Agreement</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Fee Type</label>
                   <select
@@ -477,7 +477,7 @@ export default function ClientsPage() {
               )}
 
               {form.feeType === 'retainer' && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">Upfront Retainer (€)</label>
                     <input
