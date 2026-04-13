@@ -6,54 +6,25 @@ import {
 } from './types';
 
 // ---------------------------------------------------------------------------
-// SQL MIGRATION — run once in your Supabase SQL editor
+// Agency scope — call initDb(agencyId) once after the user session loads.
 // ---------------------------------------------------------------------------
-// -- Calendar events table
-// CREATE TABLE IF NOT EXISTS calendar_events (
-//   id text PRIMARY KEY,
-//   title text NOT NULL,
-//   type text NOT NULL DEFAULT 'other',
-//   start_time timestamptz NOT NULL,
-//   end_time timestamptz NOT NULL,
-//   candidate_id text,
-//   candidate_name text,
-//   vacancy_id text,
-//   vacancy_title text,
-//   client_id text,
-//   client_name text,
-//   location text,
-//   notes text,
-//   reminder int,
-//   google_calendar_event_id text,
-//   created_at timestamptz NOT NULL DEFAULT now(),
-//   updated_at timestamptz NOT NULL DEFAULT now()
-// );
-// ALTER TABLE vacancies ADD COLUMN IF NOT EXISTS stage text DEFAULT 'intake';
-// ALTER TABLE vacancies ADD COLUMN IF NOT EXISTS stage_log jsonb DEFAULT '[]'::jsonb;
-// ALTER TABLE vacancies ADD COLUMN IF NOT EXISTS client_feedback jsonb DEFAULT '[]'::jsonb;
-//
-// ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS timed_notes jsonb DEFAULT '[]'::jsonb;
-// ALTER TABLE candidate_profiles ADD COLUMN IF NOT EXISTS documents jsonb DEFAULT '[]'::jsonb;
-//
-// CREATE TABLE IF NOT EXISTS candidate_vacancy_matches (
-//   id text PRIMARY KEY,
-//   candidate_id text NOT NULL,
-//   vacancy_id text NOT NULL,
-//   match_score int,
-//   status text NOT NULL DEFAULT 'active',
-//   notes text NOT NULL DEFAULT '',
-//   interview_date text,
-//   interview_time text,
-//   interview_type text,
-//   interview_outcome text,
-//   interview_notes text,
-//   created_at timestamptz NOT NULL DEFAULT now(),
-//   updated_at timestamptz NOT NULL DEFAULT now()
-// );
-// ---------------------------------------------------------------------------
+let _agencyId: string | null = null;
 
+export function initDb(agencyId: string) {
+  _agencyId = agencyId;
+}
+
+function requireAgencyId(): string {
+  if (!_agencyId) throw new Error('initDb() has not been called — agencyId is not set');
+  return _agencyId;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 async function replaceAll(table: string, rows: Record<string, unknown>[]): Promise<void> {
-  const { error: delError } = await supabase.from(table).delete().not('id', 'is', null);
+  const agencyId = requireAgencyId();
+  const { error: delError } = await supabase.from(table).delete().eq('agency_id', agencyId);
   if (delError) throw delError;
   if (rows.length === 0) return;
   const { error: insError } = await supabase.from(table).insert(rows);
@@ -66,6 +37,7 @@ async function replaceAll(table: string, rows: Record<string, unknown>[]): Promi
 function candidateToRow(c: Candidate) {
   return {
     id: c.id,
+    agency_id: requireAgencyId(),
     first_name: c.firstName,
     job_role: c.currentRole,
     current_company: c.currentCompany,
@@ -100,6 +72,7 @@ function rowToCandidate(r: any): Candidate {
 function profileToRow(p: CandidateProfile) {
   return {
     id: p.id,
+    agency_id: requireAgencyId(),
     first_name: p.firstName,
     last_name: p.lastName,
     email: p.email,
@@ -158,6 +131,7 @@ function rowToProfile(r: any): CandidateProfile {
 function clientToRow(c: Client) {
   return {
     id: c.id,
+    agency_id: requireAgencyId(),
     company_name: c.companyName,
     website: c.website ?? null,
     sector: c.sector,
@@ -210,6 +184,7 @@ function rowToClient(r: any): Client {
 function vacancyToRow(v: Vacancy) {
   return {
     id: v.id,
+    agency_id: requireAgencyId(),
     title: v.title,
     company: v.company,
     salary_min: v.salaryMin,
@@ -252,6 +227,7 @@ function rowToVacancy(r: any): Vacancy {
 function placementToRow(p: Placement) {
   return {
     id: p.id,
+    agency_id: requireAgencyId(),
     candidate_id: p.candidateId,
     profile_id: p.profileId ?? null,
     candidate_name: p.candidateName,
@@ -298,6 +274,7 @@ function rowToPlacement(r: any): Placement {
 function followUpToRow(f: FollowUp) {
   return {
     id: f.id,
+    agency_id: requireAgencyId(),
     contact_type: f.contactType,
     contact_id: f.contactId,
     contact_name: f.contactName,
@@ -336,6 +313,7 @@ function rowToFollowUp(r: any): FollowUp {
 function screeningToRow(s: ScreeningResult) {
   return {
     id: s.id,
+    agency_id: requireAgencyId(),
     candidate_id: s.candidateId,
     vacancy_id: s.vacancyId,
     score: s.score,
@@ -370,6 +348,7 @@ function rowToScreening(r: any): ScreeningResult {
 function sourcingToRow(s: SourcingStrategy) {
   return {
     id: s.id,
+    agency_id: requireAgencyId(),
     job_title: s.jobTitle,
     skills: s.skills,
     location: s.location,
@@ -408,6 +387,7 @@ function rowToSourcing(r: any): SourcingStrategy {
 function reportToRow(r: WeeklyReport) {
   return {
     id: r.id,
+    agency_id: requireAgencyId(),
     week_number: r.weekNumber,
     year: r.year,
     start_date: r.startDate,
@@ -438,6 +418,7 @@ function rowToReport(r: any): WeeklyReport {
 function matchToRow(m: CandidateVacancyMatch) {
   return {
     id: m.id,
+    agency_id: requireAgencyId(),
     candidate_id: m.candidateId,
     vacancy_id: m.vacancyId,
     match_score: m.matchScore ?? null,
@@ -478,6 +459,7 @@ function rowToMatch(r: any): CandidateVacancyMatch {
 function calendarEventToRow(e: CalendarEvent) {
   return {
     id: e.id,
+    agency_id: requireAgencyId(),
     title: e.title,
     type: e.type,
     start_time: e.startTime,
@@ -526,7 +508,8 @@ function rowToCalendarEvent(r: any): CalendarEvent {
 export const db = {
   // Candidates
   getCandidates: async (): Promise<Candidate[]> => {
-    const { data, error } = await supabase.from('candidates').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('candidates').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToCandidate);
   },
@@ -536,7 +519,8 @@ export const db = {
 
   // CandidateProfiles
   getCandidateProfiles: async (): Promise<CandidateProfile[]> => {
-    const { data, error } = await supabase.from('candidate_profiles').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('candidate_profiles').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToProfile);
   },
@@ -546,7 +530,8 @@ export const db = {
 
   // Clients
   getClients: async (): Promise<Client[]> => {
-    const { data, error } = await supabase.from('clients').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('clients').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToClient);
   },
@@ -556,7 +541,8 @@ export const db = {
 
   // Vacancies
   getVacancies: async (): Promise<Vacancy[]> => {
-    const { data, error } = await supabase.from('vacancies').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('vacancies').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToVacancy);
   },
@@ -566,7 +552,8 @@ export const db = {
 
   // Placements
   getPlacements: async (): Promise<Placement[]> => {
-    const { data, error } = await supabase.from('placements').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('placements').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToPlacement);
   },
@@ -576,7 +563,8 @@ export const db = {
 
   // FollowUps
   getFollowUps: async (): Promise<FollowUp[]> => {
-    const { data, error } = await supabase.from('follow_ups').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('follow_ups').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToFollowUp);
   },
@@ -586,7 +574,8 @@ export const db = {
 
   // ScreeningResults
   getScreenings: async (): Promise<ScreeningResult[]> => {
-    const { data, error } = await supabase.from('screening_results').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('screening_results').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToScreening);
   },
@@ -596,7 +585,8 @@ export const db = {
 
   // SourcingStrategies
   getSourcingStrategies: async (): Promise<SourcingStrategy[]> => {
-    const { data, error } = await supabase.from('sourcing_strategies').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('sourcing_strategies').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToSourcing);
   },
@@ -606,7 +596,8 @@ export const db = {
 
   // WeeklyReports
   getWeeklyReports: async (): Promise<WeeklyReport[]> => {
-    const { data, error } = await supabase.from('weekly_reports').select('*').order('generated_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('weekly_reports').select('*').eq('agency_id', agencyId).order('generated_at');
     if (error) throw error;
     return (data ?? []).map(rowToReport);
   },
@@ -616,17 +607,20 @@ export const db = {
 
   // CandidateVacancyMatches (individual upsert/delete — no replaceAll)
   getMatches: async (): Promise<CandidateVacancyMatch[]> => {
-    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').eq('agency_id', agencyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToMatch);
   },
   getMatchesByCandidate: async (candidateId: string): Promise<CandidateVacancyMatch[]> => {
-    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').eq('candidate_id', candidateId).order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').eq('agency_id', agencyId).eq('candidate_id', candidateId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToMatch);
   },
   getMatchesByVacancy: async (vacancyId: string): Promise<CandidateVacancyMatch[]> => {
-    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').eq('vacancy_id', vacancyId).order('created_at');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('candidate_vacancy_matches').select('*').eq('agency_id', agencyId).eq('vacancy_id', vacancyId).order('created_at');
     if (error) throw error;
     return (data ?? []).map(rowToMatch);
   },
@@ -635,19 +629,23 @@ export const db = {
     if (error) throw error;
   },
   deleteMatch: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('candidate_vacancy_matches').delete().eq('id', id);
+    const agencyId = requireAgencyId();
+    const { error } = await supabase.from('candidate_vacancy_matches').delete().eq('id', id).eq('agency_id', agencyId);
     if (error) throw error;
   },
 
   // CalendarEvents (individual upsert/delete — no replaceAll)
   getCalendarEvents: async (): Promise<CalendarEvent[]> => {
-    const { data, error } = await supabase.from('calendar_events').select('*').order('start_time');
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase.from('calendar_events').select('*').eq('agency_id', agencyId).order('start_time');
     if (error) throw error;
     return (data ?? []).map(rowToCalendarEvent);
   },
   getCalendarEventsByRange: async (start: string, end: string): Promise<CalendarEvent[]> => {
+    const agencyId = requireAgencyId();
     const { data, error } = await supabase
       .from('calendar_events').select('*')
+      .eq('agency_id', agencyId)
       .gte('start_time', start).lte('start_time', end).order('start_time');
     if (error) throw error;
     return (data ?? []).map(rowToCalendarEvent);
@@ -657,7 +655,8 @@ export const db = {
     if (error) throw error;
   },
   deleteCalendarEvent: async (id: string): Promise<void> => {
-    const { error } = await supabase.from('calendar_events').delete().eq('id', id);
+    const agencyId = requireAgencyId();
+    const { error } = await supabase.from('calendar_events').delete().eq('id', id).eq('agency_id', agencyId);
     if (error) throw error;
   },
 };

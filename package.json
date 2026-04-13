@@ -15,6 +15,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@supabase/supabase-js": "^2.103.0",
     "@types/recharts": "^1.8.29",
+    "bcryptjs": "^3.0.3",
     "docx": "^9.6.1",
     "framer-motion": "^12.38.0",
     "googleapis": "^171.4.0",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

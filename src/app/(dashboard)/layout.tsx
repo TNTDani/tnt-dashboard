@@ -1,9 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import Sidebar from "@/components/Sidebar";
 import GlobalSearch from "@/components/GlobalSearch";
 import { SidebarProvider, useSidebar } from "@/lib/sidebar-context";
+import { initDb } from "@/lib/db";
 
 const EXPANDED_W = 240;
 const COLLAPSED_W = 64;
@@ -11,7 +14,14 @@ const SPRING = { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const };
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
+  const { data: session } = useSession();
   const w = collapsed ? COLLAPSED_W : EXPANDED_W;
+
+  useEffect(() => {
+    if (session?.user?.agencyId) {
+      initDb(session.user.agencyId);
+    }
+  }, [session?.user?.agencyId]);
 
   return (
     <>

@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { supabaseAdmin } from "@/lib/supabase";
 
 const handler = NextAuth({
   providers: [
@@ -11,16 +13,28 @@ const handler = NextAuth({
         remember: { label: "Remember", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials) return null;
-        if (
-          credentials.email    !== process.env.DASHBOARD_EMAIL ||
-          credentials.password !== process.env.DASHBOARD_PASSWORD
-        ) return null;
+        if (!credentials?.email || !credentials?.password) return null;
+
+        // Look up user in agency_users table
+        const { data: agencyUser, error } = await supabaseAdmin
+          .from("agency_users")
+          .select("id, agency_id, email, password_hash, name")
+          .eq("email", credentials.email)
+          .single();
+
+        if (error || !agencyUser) return null;
+
+        const passwordOk = await bcrypt.compare(
+          credentials.password,
+          agencyUser.password_hash,
+        );
+        if (!passwordOk) return null;
 
         return {
-          id: "1",
-          email:    credentials.email as string,
-          name:     "Dani",
+          id:       agencyUser.id,
+          email:    agencyUser.email,
+          name:     agencyUser.name,
+          agencyId: agencyUser.agency_id,
           remember: credentials.remember === "true",
         };
       },
@@ -31,18 +45,23 @@ const handler = NextAuth({
   },
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 days max
+    maxAge: 7 * 24 * 60 * 60,
   },
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        const remember = (user as { remember?: boolean }).remember ?? false;
-        token.remember = remember;
-        // Set exp based on remember choice: 24h or 7d
-        const maxAge = remember ? 7 * 24 * 60 * 60 : 24 * 60 * 60;
-        token.exp    = Math.floor(Date.now() / 1000) + maxAge;
+        token.agencyId = user.agencyId;
+        token.remember = (user as { remember?: boolean }).remember ?? false;
+        const maxAge = token.remember ? 7 * 24 * 60 * 60 : 24 * 60 * 60;
+        token.exp = Math.floor(Date.now() / 1000) + maxAge;
       }
       return token;
+    },
+    session({ session, token }) {
+      if (session.user) {
+        session.user.agencyId = token.agencyId as string;
+      }
+      return session;
     },
   },
   secret: process.env.AUTH_SECRET,
