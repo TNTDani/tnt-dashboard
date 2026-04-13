@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   CandidateProfile, TimelineEntry, FollowUp,
   TimestampedNote, CandidateDocument, CandidateVacancyMatch, Vacancy,
 } from '@/lib/types';
 import { storage } from '@/lib/storage';
-import { db } from '@/lib/db';
+import { db, initDb } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import VacancyStageBar from '@/components/VacancyStageBar';
 import {
@@ -54,7 +55,10 @@ export default function CandidateDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const { data: session } = useSession();
+  const agencyId = session?.user?.agencyId;
 
+  const [loading, setLoading] = useState(true);
   const [candidate, setCandidate] = useState<CandidateProfile | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
   const [showEdit, setShowEdit] = useState(false);
@@ -86,6 +90,9 @@ export default function CandidateDetailPage() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (!agencyId) return;
+    initDb(agencyId);
+    setLoading(true);
     Promise.all([
       db.getCandidateProfiles(),
       db.getVacancies(),
@@ -115,9 +122,9 @@ export default function CandidateDetailPage() {
       setPipelineAdded(alreadyIn);
       const isShortlisted = pipelineCandidates.some(c => (c as any).profileId === id && c.status === 'shortlisted');
       setShortlistedInPipeline(isShortlisted);
-    });
+    }).catch(() => {}).finally(() => setLoading(false));
     storage.setLastViewedCandidate(id);
-  }, [id]);
+  }, [id, agencyId]);
 
   useEffect(() => {
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
@@ -403,15 +410,21 @@ export default function CandidateDetailPage() {
     setTimeout(refreshFollowUp, 100);
   }, [addTimelineEntry, refreshFollowUp]);
 
-  if (!candidate) {
+  if (loading || !candidate) {
     return (
       <div className="p-8">
         <button onClick={() => router.push('/candidates')} className="flex items-center gap-2 text-[#94a3b8] hover:text-[#2D4A2D] text-sm mb-6 transition-colors">
           <ArrowLeft size={16} /> Back to Candidates
         </button>
         <div className="text-center py-20">
-          <UserCircle size={40} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
-          <p className="text-[#94a3b8]">Candidate not found</p>
+          {loading ? (
+            <div className="w-8 h-8 rounded-full border-2 border-[rgba(45,74,45,0.2)] border-t-[#2D4A2D] animate-spin mx-auto" />
+          ) : (
+            <>
+              <UserCircle size={40} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
+              <p className="text-[#94a3b8]">Candidate not found</p>
+            </>
+          )}
         </div>
       </div>
     );

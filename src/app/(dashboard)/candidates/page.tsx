@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { CandidateProfile, TimelineEntry } from '@/lib/types';
-import { db } from '@/lib/db';
+import { db, initDb } from '@/lib/db';
 import { geocodePostalCode, haversineDistance } from '@/lib/geocoding';
 import { v4 as uuidv4 } from 'uuid';
 import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2, ChevronRight } from 'lucide-react';
@@ -34,6 +35,7 @@ const EMPTY_FORM = {
 
 export default function CandidatesPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [candidates, setCandidates] = useState<CandidateProfile[]>([]);
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -53,9 +55,13 @@ export default function CandidatesPage() {
   const [geocodeCache, setGeocodeCache] = useState<Map<string, { lat: number; lng: number } | null>>(new Map());
   const [distanceFilter, setDistanceFilter] = useState<Map<string, number>>(new Map());
 
+  const agencyId = session?.user?.agencyId;
+
   useEffect(() => {
-    db.getCandidateProfiles().then(setCandidates);
-  }, []);
+    if (!agencyId) return;
+    initDb(agencyId);
+    db.getCandidateProfiles().then(setCandidates).catch(() => {});
+  }, [agencyId]);
 
   const applyDistanceFilter = useCallback(async () => {
     if (!filterPostalCode.trim()) {
