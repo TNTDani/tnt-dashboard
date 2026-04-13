@@ -996,6 +996,13 @@ export default function CandidateDetailPage() {
                 <CalendarDays size={14} /> Schedule Interview
               </button>
 
+              <button
+                onClick={() => { setActiveTab('Matches'); }}
+                className="w-full flex items-center gap-2 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
+              >
+                <Zap size={14} /> Screen against vacancy
+              </button>
+
               {pipelineAdded ? (
                 <div className="w-full flex items-center gap-2 bg-[#4CAF50]/10 border border-[#4CAF50]/30 text-[#4CAF50] px-4 py-2 rounded-lg text-sm">
                   <Check size={14} /> In Pipeline

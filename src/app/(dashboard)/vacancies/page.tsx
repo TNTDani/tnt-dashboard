@@ -165,9 +165,10 @@ function VacancyCard({ vacancy, candidateCount, matchCount, onView, onEdit, onDe
         <span className="text-[#9CA3AF] text-xs flex items-center gap-1 ml-auto"><CalendarDays size={11} /> {date}</span>
       </div>
       <div className="flex items-center gap-2 pt-1 border-t border-[rgba(45,74,45,0.15)]">
-        <button onClick={onView} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] hover:border-[#2a4a7f] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Eye size={11} /> View</button>
-        <button onClick={onEdit} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] hover:border-[#2a4a7f] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Pencil size={11} /> Edit</button>
+        <button onClick={onView} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] hover:border-[rgba(45,74,45,0.3)] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Eye size={11} /> View</button>
+        <button onClick={onEdit} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] hover:border-[rgba(45,74,45,0.3)] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Pencil size={11} /> Edit</button>
         <button onClick={onMatch} className="flex items-center gap-1.5 bg-[#2D4A2D]/15 hover:bg-[#2D4A2D]/30 text-[#2D4A2D] border border-[#2D4A2D]/30 hover:border-[#2D4A2D]/60 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Sparkles size={11} /> AI Match</button>
+        <a href={`/sourcing?vacancyId=${vacancy.id}`} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] hover:border-[rgba(45,74,45,0.3)] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Search size={11} /> Source</a>
         <button onClick={onDelete} className="ml-auto text-[rgba(45,74,45,0.15)] hover:text-red-400 transition-colors p-1.5"><Trash2 size={13} /></button>
       </div>
     </div>

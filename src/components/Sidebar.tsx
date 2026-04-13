@@ -19,7 +19,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  LayoutDashboard, FileText, Users, Briefcase, Zap, UserCircle,
+  LayoutDashboard, FileText, Users, Briefcase, UserCircle,
   Building2, Calculator, Mail, ListChecks, Trophy, Inbox, Search,
   BarChart2, LogOut, Radar, GripVertical, Clock, CalendarDays, ChevronLeft,
 } from "lucide-react";
@@ -39,7 +39,6 @@ const RECRUITMENT_NAV = [
 
 const TOOLS_NAV = [
   { href: "/cv-processor", icon: FileText, label: "CV Processor", exact: true },
-  { href: "/screening", icon: Zap, label: "AI Screening", exact: true },
   { href: "/fee-calculator", icon: Calculator, label: "Fee Calculator", exact: false },
   { href: "/sourcing", icon: Search, label: "Source Candidates", exact: true },
   { href: "/vacancy-monitor", icon: Radar, label: "Vacancy Monitor", exact: true },

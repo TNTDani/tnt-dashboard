@@ -269,9 +269,39 @@ export default function SourcingPage() {
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const [vacancies, setVacancies] = useState<import('@/lib/types').Vacancy[]>([]);
+  const [selectedVacancyForSourcing, setSelectedVacancyForSourcing] = useState('');
 
   useEffect(() => {
-    db.getVacancies().then(all => setVacancies(all.filter(v => v.status === 'open')));
+    db.getVacancies().then(all => {
+      const open = all.filter(v => v.status === 'open');
+      setVacancies(open);
+      // Pre-select if vacancyId is in the URL
+      const paramId = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('vacancyId')
+        : null;
+      if (paramId) {
+        const vac = open.find(v => v.id === paramId) ?? all.find(v => v.id === paramId);
+        if (vac) {
+          setSelectedVacancyForSourcing(vac.id);
+          const filled = new Set<AutoFilledField>();
+          setForm(prev => {
+            const next = { ...prev };
+            next.jobTitle = vac.title; filled.add('jobTitle');
+            if (Array.isArray(vac.requirements) && vac.requirements.length > 0) {
+              next.skills = vac.requirements.slice(0, 10); filled.add('skills');
+            }
+            if (vac.seniorityLevel && SENIORITY_LEVELS.includes(vac.seniorityLevel)) {
+              next.seniorityLevel = vac.seniorityLevel; filled.add('seniorityLevel');
+            }
+            if (vac.salaryMin) { next.salaryMin = String(vac.salaryMin); filled.add('salaryMin'); }
+            if (vac.salaryMax) { next.salaryMax = String(vac.salaryMax); filled.add('salaryMax'); }
+            return next;
+          });
+          setAutoFilled(filled);
+        }
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const clearAutoFilled = (field: AutoFilledField) => {
@@ -430,12 +460,63 @@ export default function SourcingPage() {
     setSavingToVacancy(false);
   };
 
+  const handleVacancySelect = (vacancyId: string) => {
+    setSelectedVacancyForSourcing(vacancyId);
+    if (!vacancyId) return;
+    const vac = vacancies.find(v => v.id === vacancyId);
+    if (!vac) return;
+    const filled = new Set<AutoFilledField>();
+    setForm(prev => {
+      const next = { ...prev };
+      next.jobTitle = vac.title; filled.add('jobTitle');
+      if (Array.isArray(vac.requirements) && vac.requirements.length > 0) {
+        next.skills = vac.requirements.slice(0, 10); filled.add('skills');
+      }
+      if (vac.seniorityLevel && SENIORITY_LEVELS.includes(vac.seniorityLevel)) {
+        next.seniorityLevel = vac.seniorityLevel; filled.add('seniorityLevel');
+      }
+      if (vac.salaryMin) { next.salaryMin = String(vac.salaryMin); filled.add('salaryMin'); }
+      if (vac.salaryMax) { next.salaryMax = String(vac.salaryMax); filled.add('salaryMax'); }
+      return next;
+    });
+    setAutoFilled(filled);
+  };
+
+  const selectedVacancyData = vacancies.find(v => v.id === selectedVacancyForSourcing);
+
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#2D4A2D]">Source Candidates</h1>
         <p className="text-[#94a3b8] mt-1">AI-powered sourcing strategy generator</p>
       </div>
+
+      {/* Vacancy selector */}
+      {vacancies.length > 0 && (
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5 mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Briefcase size={15} className="text-[#2D4A2D]" />
+            <h2 className="text-[#2D4A2D] font-semibold text-sm">Source for a Vacancy</h2>
+            <span className="text-[#6B7280] text-xs">(optional — auto-fills the form below)</span>
+          </div>
+          <select
+            className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
+            value={selectedVacancyForSourcing}
+            onChange={e => handleVacancySelect(e.target.value)}
+          >
+            <option value="">Select a vacancy to pre-fill…</option>
+            {vacancies.map(v => (
+              <option key={v.id} value={v.id}>{v.title} — {v.company}</option>
+            ))}
+          </select>
+          {selectedVacancyData && (
+            <div className="mt-3 flex items-center gap-2 text-xs text-[#3D6B3D] bg-[rgba(45,74,45,0.06)] rounded-lg px-3 py-2">
+              <Sparkles size={12} />
+              <span>Sourcing for: <strong>{selectedVacancyData.title}</strong> at <strong>{selectedVacancyData.company}</strong></span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Input Form */}
       <form onSubmit={handleSubmit} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 mb-6">

@@ -1,616 +1,718 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
-import { db } from "@/lib/db";
-import { Candidate, Vacancy, FollowUp } from "@/lib/types";
-import { Users, Briefcase, TrendingUp, CheckCircle, FileText, Zap, Clock, AlertCircle, Bell, Send, Check, Moon } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { useSession } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
+import { db, initDb } from "@/lib/db";
+import { storage } from "@/lib/storage";
+import {
+  CandidateProfile, Vacancy, FollowUp, Placement, RecentItem,
+} from "@/lib/types";
+import {
+  UserCircle, Briefcase, Building2, ArrowLeft, Search, Plus,
+  ChevronRight, Clock, Users, TrendingUp, Bell,
+} from "lucide-react";
 import Link from "next/link";
-import EmailComposer from "@/components/EmailComposer";
-import CalendarWidget from "@/components/CalendarWidget";
-import { TimelineEntry } from "@/lib/types";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type View = "home" | "candidates" | "vacancies";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  sourced:     { bg: "rgba(148,163,184,0.15)", text: "#94a3b8" },
-  screened:    { bg: "rgba(59,130,246,0.15)",  text: "#60a5fa" },
-  shortlisted: { bg: "rgba(245,158,11,0.15)",  text: "#fbbf24" },
-  interviewed: { bg: "rgba(45,74,45,0.15)",  text: "#3D6B3D" },
-  placed:      { bg: "rgba(76,175,80,0.15)",  text: "#4CAF50" },
+const CAND_STATUS_STYLE: Record<string, { bg: string; text: string }> = {
+  active:  { bg: "rgba(76,175,80,0.1)",   text: "#4CAF50" },
+  passive: { bg: "rgba(245,158,11,0.1)",  text: "#f59e0b" },
+  placed:  { bg: "rgba(45,74,45,0.1)",    text: "#3D6B3D" },
 };
 
-function getEffectiveDueDate(f: FollowUp): Date {
-  if (f.status === "snoozed" && f.snoozedUntil) return new Date(f.snoozedUntil);
-  return new Date(f.dueDate);
+const VAC_STATUS_LABEL: Record<string, string> = {
+  open: "Active", "on-hold": "Prospected", closed: "Filled",
+};
+const VAC_STATUS_STYLE: Record<string, { bg: string; text: string }> = {
+  open:     { bg: "rgba(76,175,80,0.1)",    text: "#4CAF50" },
+  "on-hold": { bg: "rgba(45,74,45,0.1)",    text: "#3D6B3D" },
+  closed:   { bg: "rgba(148,163,184,0.1)", text: "#94a3b8" },
+};
+
+const STAGE_ORDER = [
+  "intake", "sourcing", "screening",
+  "sent-to-client", "interviewing", "offer", "placed",
+];
+
+const RECENT_ICON: Record<RecentItem["type"], React.ElementType> = {
+  candidate: UserCircle, vacancy: Briefcase, client: Building2,
+};
+
+function daysOpen(createdAt: string): number {
+  return Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000);
 }
 
-function getFollowUpBucket(f: FollowUp): "overdue" | "today" | "week" | "future" {
-  const due = getEffectiveDueDate(f);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dueDay = new Date(due);
-  dueDay.setHours(0, 0, 0, 0);
-  const diff = Math.floor((dueDay.getTime() - today.getTime()) / 86400000);
-  if (diff < 0) return "overdue";
-  if (diff === 0) return "today";
-  if (diff <= 7) return "week";
-  return "future";
-}
+// ── Filter Pill ───────────────────────────────────────────────────────────────
 
-function daysSinceContact(f: FollowUp): number {
-  return Math.floor((Date.now() - new Date(f.lastContactDate).getTime()) / 86400000);
-}
-
-function daysUntilDue(f: FollowUp): number {
-  const due = getEffectiveDueDate(f);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dueDay = new Date(due);
-  dueDay.setHours(0, 0, 0, 0);
-  return Math.floor((dueDay.getTime() - today.getTime()) / 86400000);
-}
-
-function getInitials(name: string) {
-  return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-}
-
-// ── FollowUpItem ──────────────────────────────────────────────────────────────
-
-interface FollowUpItemProps {
-  followUp: FollowUp;
-  bucket: "overdue" | "today" | "week";
-  onDone: (id: string) => void;
-  onSnooze: (id: string) => void;
-  onSendFollowUp: (followUp: FollowUp) => void;
-}
-
-function FollowUpItem({ followUp, bucket, onDone, onSnooze, onSendFollowUp }: FollowUpItemProps) {
-  const days = daysSinceContact(followUp);
-  const daysLeft = daysUntilDue(followUp);
-
-  const accentColor =
-    bucket === "overdue" ? "#EF4444" : bucket === "today" ? "#F59E0B" : "#6B7280";
-  const dueBadgeText =
-    bucket === "overdue"
-      ? `${Math.abs(daysLeft)}d overdue`
-      : bucket === "today"
-      ? "Due today"
-      : `Due in ${daysLeft}d`;
-
+function FilterPill({
+  active, onClick, children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="group relative rounded-xl p-4 transition-all"
+    <button
+      onClick={onClick}
+      className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
       style={{
-        background: "#FFFFFF",
-        border: `1px solid ${accentColor}22`,
-        borderLeft: `3px solid ${accentColor}`,
+        background: active ? "#2D4A2D" : "#FFFFFF",
+        color: active ? "white" : "#6B7280",
+        border: `1px solid ${active ? "#2D4A2D" : "rgba(45,74,45,0.15)"}`,
       }}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[#2D4A2D] text-sm font-medium">{followUp.contactName}</span>
-            <span className="text-[#6B7280] text-xs">·</span>
-            <span className="text-[#6B7280] text-xs">{followUp.company}</span>
-          </div>
-          <p className="text-[#6B7280] text-xs truncate mt-0.5">Re: {followUp.originalEmailSubject}</p>
-          <p className="text-[#6B7280] text-xs mt-0.5">
-            {days === 0 ? "Contacted today" : `${days}d since last contact`}
-          </p>
-        </div>
-        <span
-          className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap"
-          style={{ background: `${accentColor}18`, color: accentColor }}
-        >
-          {dueBadgeText}
-        </span>
-      </div>
-      <div className="flex items-center gap-2 mt-3">
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={() => onSendFollowUp(followUp)}
-          className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-        >
-          <Send size={11} /> Send Follow-up
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={() => onSnooze(followUp.id)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#6B7280] hover:text-[#2D4A2D] text-xs transition-colors"
-          style={{ background: "rgba(45,74,45,0.08)", border: "1px solid rgba(45,74,45,0.15)" }}
-        >
-          <Moon size={11} /> Snooze 2d
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={() => onDone(followUp.id)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#6B7280] hover:text-[#4CAF50] text-xs transition-colors"
-          style={{ background: "rgba(45,74,45,0.08)", border: "1px solid rgba(45,74,45,0.15)" }}
-        >
-          <Check size={11} /> Done
-        </motion.button>
-      </div>
-    </motion.div>
+      {children}
+    </button>
   );
 }
 
-// ── Animation variants ────────────────────────────────────────────────────────
+// ── Stat Card ─────────────────────────────────────────────────────────────────
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.07, duration: 0.35, ease: [0.4, 0, 0.2, 1] as const },
-  }),
-};
-
-const containerVariants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06 } },
-};
+function StatCard({
+  label, value, Icon,
+}: {
+  label: string;
+  value: string | number;
+  Icon: React.ElementType;
+}) {
+  return (
+    <div
+      className="bg-white rounded-xl p-4 text-center"
+      style={{ border: "1px solid rgba(45,74,45,0.1)" }}
+    >
+      <Icon size={14} className="text-[#6B7280] mx-auto mb-1.5" />
+      <p className="text-[22px] font-semibold text-[#2D4A2D] leading-none">{value}</p>
+      <p className="text-[11px] text-[#6B7280] mt-1 leading-tight">{label}</p>
+    </div>
+  );
+}
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const { data: session } = useSession();
+  const agencyId = session?.user?.agencyId;
+
+  const [view, setView] = useState<View>("home");
+  const [candidates, setCandidates] = useState<CandidateProfile[]>([]);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
-  const [composerOpen, setComposerOpen] = useState(false);
-  const [composerFollowUp, setComposerFollowUp] = useState<FollowUp | null>(null);
+  const [placements, setPlacements] = useState<Placement[]>([]);
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
 
-  const loadFollowUps = useCallback(async () => {
-    const all = await db.getFollowUps();
-    const pending = all
-      .filter((f) => f.status !== "done")
-      .filter((f) => getFollowUpBucket(f) !== "future");
-    pending.sort(
-      (a, b) => getEffectiveDueDate(a).getTime() - getEffectiveDueDate(b).getTime()
-    );
-    setFollowUps(pending);
+  // Finder state
+  const [candSearch, setCandSearch] = useState("");
+  const [candFilter, setCandFilter] = useState<"all" | "active" | "passive" | "placed">("all");
+  const [vacSearch, setVacSearch] = useState("");
+  const [vacFilter, setVacFilter] = useState<"all" | "open" | "on-hold" | "closed">("all");
+
+  // Recent items — from localStorage, no auth needed
+  useEffect(() => {
+    setRecentItems(storage.getRecentItems().slice(0, 3));
   }, []);
 
+  // Entity data — requires agencyId
   useEffect(() => {
-    db.getCandidates().then(setCandidates);
-    db.getVacancies().then(setVacancies);
-    loadFollowUps();
-  }, [loadFollowUps]);
+    if (!agencyId) return;
+    initDb(agencyId);
+    Promise.all([
+      db.getCandidateProfiles(),
+      db.getVacancies(),
+      db.getFollowUps(),
+      db.getPlacements(),
+    ])
+      .then(([profs, vacs, fups, pls]) => {
+        setCandidates(profs);
+        setVacancies(vacs);
+        const now = new Date();
+        now.setHours(23, 59, 59, 999);
+        setFollowUps(fups.filter((f) => f.status !== "done" && new Date(f.dueDate) <= now));
+        setPlacements(pls);
+      })
+      .catch(() => {});
+  }, [agencyId]);
 
-  const handleDone = (id: string) => {
-    db.getFollowUps().then((all) => {
-      db.saveFollowUps(all.map((f) => (f.id === id ? { ...f, status: "done" as const } : f)));
-      loadFollowUps();
-    });
-  };
+  // ── Derived stats ─────────────────────────────────────────────────────────
 
-  const handleSnooze = (id: string) => {
-    db.getFollowUps().then((all) => {
-      const snoozedUntil = new Date();
-      snoozedUntil.setDate(snoozedUntil.getDate() + 2);
-      db.saveFollowUps(
-        all.map((f) =>
-          f.id === id
-            ? { ...f, status: "snoozed" as const, snoozedUntil: snoozedUntil.toISOString() }
-            : f
+  const activeVacanciesCount = vacancies.filter((v) => v.status === "open").length;
+  const activeCandidatesCount = candidates.filter((c) => c.status === "active").length;
+  const followUpsCount = followUps.length;
+
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const monthlyRevenue = placements
+    .filter((p) => new Date(p.placementDate) >= monthStart)
+    .reduce((sum, p) => sum + (p.feeAmount || 0), 0);
+  const revenueLabel =
+    monthlyRevenue >= 1000
+      ? `€${Math.round(monthlyRevenue / 1000)}k`
+      : monthlyRevenue > 0
+      ? `€${monthlyRevenue}`
+      : "—";
+
+  // ── Filtered lists ────────────────────────────────────────────────────────
+
+  const filteredCandidates = useMemo(
+    () =>
+      candidates.filter((c) => {
+        const q = candSearch.toLowerCase();
+        if (
+          q &&
+          !`${c.firstName} ${c.lastName}`.toLowerCase().includes(q) &&
+          !(c.jobTitle || "").toLowerCase().includes(q) &&
+          !(c.branch || "").toLowerCase().includes(q)
         )
-      );
-      loadFollowUps();
-    });
-  };
+          return false;
+        if (candFilter !== "all" && c.status !== candFilter) return false;
+        return true;
+      }),
+    [candidates, candSearch, candFilter]
+  );
 
-  const handleSendFollowUp = (followUp: FollowUp) => {
-    setComposerFollowUp(followUp);
-    setComposerOpen(true);
-  };
+  const filteredVacancies = useMemo(
+    () =>
+      vacancies.filter((v) => {
+        const q = vacSearch.toLowerCase();
+        if (
+          q &&
+          !v.title.toLowerCase().includes(q) &&
+          !v.company.toLowerCase().includes(q)
+        )
+          return false;
+        if (vacFilter !== "all" && v.status !== vacFilter) return false;
+        return true;
+      }),
+    [vacancies, vacSearch, vacFilter]
+  );
 
-  const handleFollowUpSent = (entry: TimelineEntry) => {
-    if (composerFollowUp) {
-      db.getFollowUps().then((all) => {
-        db.saveFollowUps(
-          all.map((f) => (f.id === composerFollowUp.id ? { ...f, status: "done" as const } : f))
-        );
-      });
-    }
-    loadFollowUps();
-    void entry;
-  };
+  // ── Date string ───────────────────────────────────────────────────────────
 
-  // Derived
-  const placed = candidates.filter((c) => c.status === "placed").length;
-  const openVacancies = vacancies.filter((v) => v.status === "open").length;
-  const activeInPipeline = candidates.filter((c) => c.status !== "placed").length;
+  const dateStr = new Date().toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 
-  const stats = [
-    {
-      label: "Total Candidates",
-      value: candidates.length,
-      icon: Users,
-      color: "#3D6B3D",
-      accent: "rgba(45,74,45,0.15)",
-      href: "/candidates",
-    },
-    {
-      label: "Open Vacancies",
-      value: openVacancies,
-      icon: Briefcase,
-      color: "#60a5fa",
-      accent: "rgba(59,130,246,0.15)",
-      href: "/vacancies",
-    },
-    {
-      label: "Active in Pipeline",
-      value: activeInPipeline,
-      icon: TrendingUp,
-      color: "#fbbf24",
-      accent: "rgba(245,158,11,0.15)",
-      href: "/pipeline",
-    },
-    {
-      label: "Placements Made",
-      value: placed,
-      icon: CheckCircle,
-      color: "#4CAF50",
-      accent: "rgba(76,175,80,0.15)",
-      href: "/placements",
-    },
-  ];
-
-  const recentCandidates = [...candidates]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
-
-  const overdueFollowUps = followUps.filter((f) => getFollowUpBucket(f) === "overdue");
-  const todayFollowUps = followUps.filter((f) => getFollowUpBucket(f) === "today");
-  const weekFollowUps = followUps.filter((f) => getFollowUpBucket(f) === "week");
-  const totalDue = overdueFollowUps.length + todayFollowUps.length + weekFollowUps.length;
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div>
-      {/* Page header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="mb-8"
-      >
-        <h1 className="text-2xl font-semibold text-[#2D4A2D] tracking-tight">Dashboard</h1>
-        <p className="text-[#6B7280] text-sm mt-1">Pipeline Overview</p>
-      </motion.div>
+    <div className="min-h-full">
+      <AnimatePresence mode="wait">
+        {/* ─────────────────────────── HOME ──────────────────────────────── */}
+        {view === "home" && (
+          <motion.div
+            key="home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, x: -30 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Focus header */}
+            <div className="text-center mb-10 mt-2">
+              <h1 className="text-[28px] font-medium text-[#2D4A2D] leading-tight">
+                What&apos;s your focus today?
+              </h1>
+              <p className="text-[#6B7280] text-sm mt-1.5">{dateStr}</p>
+            </div>
 
-      {/* Stats grid */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
-      >
-        {stats.map((s, i) => (
-          <motion.div key={s.label} variants={fadeUp} custom={i}>
-            <Link href={s.href} className="group block h-full">
-              <motion.div
-                whileHover={{ y: -2, boxShadow: `0 8px 24px ${s.color}18` }}
-                transition={{ duration: 0.2 }}
-                className="h-full rounded-xl p-5 cursor-pointer transition-colors"
+            {/* Main tiles */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-10">
+              {/* Find Candidates */}
+              <motion.button
+                whileHover={{
+                  y: -3,
+                  boxShadow: "0 8px 24px rgba(45,74,45,0.12)",
+                }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setView("candidates")}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="group relative overflow-hidden text-left rounded-2xl p-10 w-full sm:w-[280px] flex-shrink-0 cursor-pointer"
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid rgba(45,74,45,0.12)",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor = `${s.color}40`;
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(45,74,45,0.12)";
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                 }}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[#6B7280] text-xs font-medium tracking-wide">{s.label}</span>
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: s.accent }}
-                  >
-                    <s.icon size={15} style={{ color: s.color }} />
-                  </div>
-                </div>
-                <p className="text-3xl font-semibold" style={{ color: s.color }}>
-                  {s.value}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(to right, rgba(45,74,45,0.04) 0%, transparent 40%)",
+                  }}
+                />
+                <UserCircle
+                  size={48}
+                  className="text-[#2D4A2D] mb-5 relative z-10"
+                  strokeWidth={1.5}
+                />
+                <h2 className="text-[18px] font-medium text-[#2D4A2D] leading-tight relative z-10">
+                  Find Candidates
+                </h2>
+                <p className="text-[#6B7280] text-[13px] mt-1.5 relative z-10">
+                  Search, track and engage talent
                 </p>
-                <p className="text-[#6B7280] text-xs mt-2 group-hover:text-[#6B7280] transition-colors">
-                  View all →
-                </p>
-              </motion.div>
-            </Link>
-          </motion.div>
-        ))}
-      </motion.div>
+              </motion.button>
 
-      {/* Follow-ups */}
-      {totalDue > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.28, duration: 0.35 }}
-          className="rounded-xl p-5 mb-6"
-          style={{
-            background: "#FFFFFF",
-            border: "1px solid rgba(239,68,68,0.18)",
-          }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: "rgba(239,68,68,0.12)" }}
+              {/* Find Vacancies */}
+              <motion.button
+                whileHover={{
+                  y: -3,
+                  boxShadow: "0 8px 24px rgba(45,74,45,0.12)",
+                }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setView("vacancies")}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="group relative overflow-hidden text-left rounded-2xl p-10 w-full sm:w-[280px] flex-shrink-0 cursor-pointer"
+                style={{
+                  background: "#FFFFFF",
+                  border: "1px solid rgba(45,74,45,0.12)",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                }}
               >
-                <Bell size={16} className="text-[#EF4444]" />
-              </div>
-              <div>
-                <h2 className="text-[#2D4A2D] font-semibold text-sm">Follow-ups</h2>
-                <p className="text-[#6B7280] text-xs">
-                  {totalDue} {totalDue === 1 ? "contact needs" : "contacts need"} attention
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(to right, rgba(45,74,45,0.04) 0%, transparent 40%)",
+                  }}
+                />
+                <Briefcase
+                  size={48}
+                  className="text-[#2D4A2D] mb-5 relative z-10"
+                  strokeWidth={1.5}
+                />
+                <h2 className="text-[18px] font-medium text-[#2D4A2D] leading-tight relative z-10">
+                  Find Vacancies
+                </h2>
+                <p className="text-[#6B7280] text-[13px] mt-1.5 relative z-10">
+                  Add roles and manage pipelines
                 </p>
+              </motion.button>
+            </div>
+
+            {/* Continue where you left off */}
+            {recentItems.length > 0 && (
+              <div className="mb-8 max-w-[600px] mx-auto">
+                <h2 className="text-[#2D4A2D] text-sm font-medium mb-3">
+                  Continue where you left off
+                </h2>
+                <div className="flex flex-col gap-2">
+                  {recentItems.map((item) => {
+                    const Icon = RECENT_ICON[item.type];
+                    return (
+                      <Link
+                        key={`${item.type}-${item.id}`}
+                        href={item.href}
+                        className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 transition-all group"
+                        style={{
+                          border: "1px solid rgba(45,74,45,0.1)",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.borderColor =
+                            "rgba(45,74,45,0.25)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.borderColor =
+                            "rgba(45,74,45,0.1)";
+                        }}
+                      >
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ background: "rgba(45,74,45,0.1)" }}
+                        >
+                          <Icon size={14} className="text-[#2D4A2D]" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[#2D4A2D] text-sm font-medium truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-[#6B7280] text-xs capitalize">{item.type}</p>
+                        </div>
+                        <ChevronRight
+                          size={14}
+                          className="text-[#6B7280] group-hover:text-[#2D4A2D] transition-colors flex-shrink-0"
+                        />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Quick stats bar */}
+            <div className="max-w-[600px] mx-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatCard label="Active vacancies" value={activeVacanciesCount} Icon={Briefcase} />
+                <StatCard label="Active candidates" value={activeCandidatesCount} Icon={Users} />
+                <StatCard label="Follow-ups due" value={followUpsCount} Icon={Bell} />
+                <StatCard label="Revenue this month" value={revenueLabel} Icon={TrendingUp} />
               </div>
             </div>
-          </div>
+          </motion.div>
+        )}
 
-          <div className="space-y-4">
-            {overdueFollowUps.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle size={12} className="text-[#EF4444]" />
-                  <span className="text-[#EF4444] text-[10px] font-semibold uppercase tracking-[0.08em]">
-                    Overdue
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {overdueFollowUps.map((f) => (
-                    <FollowUpItem
-                      key={f.id}
-                      followUp={f}
-                      bucket="overdue"
-                      onDone={handleDone}
-                      onSnooze={handleSnooze}
-                      onSendFollowUp={handleSendFollowUp}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            {todayFollowUps.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock size={12} className="text-[#F59E0B]" />
-                  <span className="text-[#F59E0B] text-[10px] font-semibold uppercase tracking-[0.08em]">
-                    Due Today
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {todayFollowUps.map((f) => (
-                    <FollowUpItem
-                      key={f.id}
-                      followUp={f}
-                      bucket="today"
-                      onDone={handleDone}
-                      onSnooze={handleSnooze}
-                      onSendFollowUp={handleSendFollowUp}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            {weekFollowUps.length > 0 && (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock size={12} className="text-[#6B7280]" />
-                  <span className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-[0.08em]">
-                    This Week
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {weekFollowUps.map((f) => (
-                    <FollowUpItem
-                      key={f.id}
-                      followUp={f}
-                      bucket="week"
-                      onDone={handleDone}
-                      onSnooze={handleSnooze}
-                      onSendFollowUp={handleSendFollowUp}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Bottom row: Recent Candidates + Quick Actions + Calendar */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35, duration: 0.35 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6"
-      >
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Recent Candidates */}
-          <div
-            className="rounded-xl p-5"
-            style={{
-              background: "#FFFFFF",
-              border: "1px solid rgba(45,74,45,0.12)",
-            }}
+        {/* ─────────────────────── CANDIDATES FINDER ─────────────────────── */}
+        {view === "candidates" && (
+          <motion.div
+            key="candidates"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 40 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[#2D4A2D] font-semibold text-sm">Recent Candidates</h2>
+            {/* Back + header */}
+            <button
+              onClick={() => setView("home")}
+              className="flex items-center gap-1.5 text-[#6B7280] hover:text-[#2D4A2D] text-sm mb-5 transition-colors"
+            >
+              <ArrowLeft size={14} /> Back to home
+            </button>
+
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h1 className="text-2xl font-medium text-[#2D4A2D]">Candidates</h1>
+                <p className="text-[#6B7280] text-sm mt-0.5">
+                  {filteredCandidates.length} of {candidates.length}
+                </p>
+              </div>
               <Link
-                href="/pipeline"
-                className="text-[#2D4A2D] hover:text-[#3D6B3D] text-xs font-medium transition-colors"
+                href="/candidates"
+                className="text-[#2D4A2D] text-sm font-medium hover:underline"
               >
-                View all →
+                Open full view →
               </Link>
             </div>
-            {recentCandidates.length === 0 ? (
-              <div className="text-center py-10">
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style={{ background: "rgba(45,74,45,0.1)" }}
+
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search
+                size={15}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280]"
+              />
+              <input
+                className="w-full bg-white rounded-xl pl-10 pr-4 py-3 text-sm text-[#2D4A2D] placeholder-[#6B7280] focus:outline-none transition-colors"
+                style={{
+                  border: "1px solid rgba(45,74,45,0.15)",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                }}
+                placeholder="Search candidates by name, skill or location..."
+                value={candSearch}
+                onChange={(e) => setCandSearch(e.target.value)}
+              />
+            </div>
+
+            {/* Filter pills */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {(
+                [
+                  { key: "all", label: "All" },
+                  { key: "active", label: "Available" },
+                  { key: "passive", label: "Passive" },
+                  { key: "placed", label: "Placed" },
+                ] as const
+              ).map((f) => (
+                <FilterPill
+                  key={f.key}
+                  active={candFilter === f.key}
+                  onClick={() => setCandFilter(f.key)}
                 >
-                  <Users size={20} className="text-[#2D4A2D]" />
-                </div>
-                <p className="text-[#6B7280] text-sm mb-1">No candidates yet</p>
-                <Link
-                  href="/cv-processor"
-                  className="text-[#2D4A2D] hover:text-[#3D6B3D] text-xs font-medium transition-colors"
-                >
-                  Process your first CV →
-                </Link>
+                  {f.label}
+                </FilterPill>
+              ))}
+            </div>
+
+            {/* Candidate grid */}
+            {filteredCandidates.length === 0 ? (
+              <div className="text-center py-20">
+                <UserCircle
+                  size={40}
+                  className="mx-auto mb-3"
+                  style={{ color: "rgba(45,74,45,0.2)" }}
+                />
+                <p className="text-[#2D4A2D] font-medium mb-1">
+                  {candidates.length === 0 ? "No candidates yet" : "No results"}
+                </p>
+                {candidates.length === 0 && (
+                  <Link
+                    href="/candidates"
+                    className="inline-flex items-center gap-1.5 mt-3 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <Plus size={14} /> Add your first candidate →
+                  </Link>
+                )}
               </div>
             ) : (
-              <div className="space-y-2">
-                {recentCandidates.map((c) => {
-                  const vacancy = vacancies.find((v) => v.id === c.vacancyId);
-                  const sc = STATUS_COLORS[c.status] ?? STATUS_COLORS.sourced;
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredCandidates.map((c, i) => {
+                  const ss =
+                    CAND_STATUS_STYLE[c.status] ?? CAND_STATUS_STYLE.active;
                   return (
                     <motion.div
                       key={c.id}
-                      whileHover={{ x: 2 }}
-                      className="flex items-center gap-3 py-2.5 rounded-lg px-2 -mx-2 transition-colors cursor-pointer"
-                      style={{ borderBottom: "1px solid rgba(45,74,45,0.08)" }}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.025, duration: 0.2 }}
                     >
-                      {/* Avatar */}
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
-                        style={{ background: "rgba(45,74,45,0.15)", color: "#3D6B3D" }}
+                      <Link
+                        href={`/candidates/${c.id}`}
+                        className="block bg-white rounded-xl p-4 transition-all group"
+                        style={{
+                          border: "1px solid rgba(45,74,45,0.1)",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.borderColor =
+                            "rgba(45,74,45,0.25)";
+                          (e.currentTarget as HTMLAnchorElement).style.boxShadow =
+                            "0 4px 12px rgba(0,0,0,0.08)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.borderColor =
+                            "rgba(45,74,45,0.1)";
+                          (e.currentTarget as HTMLAnchorElement).style.boxShadow =
+                            "0 1px 4px rgba(0,0,0,0.04)";
+                        }}
                       >
-                        {c.firstName.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[#2D4A2D] text-sm font-medium truncate">{c.firstName}</p>
-                        <p className="text-[#6B7280] text-xs truncate">
-                          {c.currentRole}
-                          {vacancy ? ` · ${vacancy.title}` : ""}
-                        </p>
-                      </div>
-                      <span
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 uppercase"
-                        style={{ background: sc.bg, color: sc.text }}
-                      >
-                        {c.status}
-                      </span>
+                        <div className="flex items-start gap-3 mb-3">
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
+                            style={{
+                              background: "rgba(45,74,45,0.12)",
+                              color: "#2D4A2D",
+                            }}
+                          >
+                            {c.firstName.charAt(0)}
+                            {c.lastName.charAt(0)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[#2D4A2D] font-medium text-sm truncate group-hover:text-[#3D6B3D] transition-colors">
+                              {c.firstName} {c.lastName}
+                            </p>
+                            <p className="text-[#6B7280] text-xs truncate">
+                              {c.jobTitle}
+                            </p>
+                          </div>
+                          <span
+                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize flex-shrink-0"
+                            style={{ background: ss.bg, color: ss.text }}
+                          >
+                            {c.status}
+                          </span>
+                        </div>
+                        {c.branch && (
+                          <div className="flex items-center gap-1.5 text-[#6B7280] text-xs mb-3">
+                            <Briefcase size={10} />
+                            <span>{c.branch}</span>
+                          </div>
+                        )}
+                        <div
+                          className="w-full text-center text-[#2D4A2D] text-xs font-medium py-1.5 rounded-lg transition-colors"
+                          style={{ border: "1px solid rgba(45,74,45,0.15)" }}
+                        >
+                          View profile
+                        </div>
+                      </Link>
                     </motion.div>
                   );
                 })}
               </div>
             )}
-          </div>
+          </motion.div>
+        )}
 
-          {/* Quick Actions */}
-          <div
-            className="rounded-xl p-5"
-            style={{
-              background: "#FFFFFF",
-              border: "1px solid rgba(45,74,45,0.12)",
-            }}
+        {/* ─────────────────────── VACANCIES FINDER ──────────────────────── */}
+        {view === "vacancies" && (
+          <motion.div
+            key="vacancies"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 40 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
           >
-            <h2 className="text-[#2D4A2D] font-semibold text-sm mb-4">Quick Actions</h2>
-            <div className="space-y-2">
-              {[
-                {
-                  href: "/cv-processor",
-                  icon: FileText,
-                  label: "Process a CV",
-                  sub: "Upload and reformat with AI",
-                  color: "#3D6B3D",
-                  accent: "rgba(45,74,45,0.15)",
-                },
-                {
-                  href: "/screening",
-                  icon: Zap,
-                  label: "Screen a Candidate",
-                  sub: "Score against a vacancy",
-                  color: "#fbbf24",
-                  accent: "rgba(245,158,11,0.12)",
-                },
-                {
-                  href: "/vacancies",
-                  icon: Briefcase,
-                  label: "Add a Vacancy",
-                  sub: "Post a new open role",
-                  color: "#60a5fa",
-                  accent: "rgba(59,130,246,0.12)",
-                },
-                {
-                  href: "/pipeline",
-                  icon: Users,
-                  label: "View Pipeline",
-                  sub: "Track all candidates",
-                  color: "#4CAF50",
-                  accent: "rgba(76,175,80,0.12)",
-                },
-              ].map((a) => (
-                <Link key={a.href} href={a.href}>
-                  <motion.div
-                    whileHover={{ x: 3 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer group"
-                    style={{ border: "1px solid rgba(45,74,45,0.1)" }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.background =
-                        "rgba(45,74,45,0.06)";
-                      (e.currentTarget as HTMLDivElement).style.borderColor =
-                        "rgba(45,74,45,0.25)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.background = "";
-                      (e.currentTarget as HTMLDivElement).style.borderColor =
-                        "rgba(45,74,45,0.1)";
-                    }}
-                  >
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: a.accent }}
-                    >
-                      <a.icon size={15} style={{ color: a.color }} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[#2D4A2D] text-sm font-medium truncate">{a.label}</p>
-                      <p className="text-[#6B7280] text-xs truncate">{a.sub}</p>
-                    </div>
-                  </motion.div>
-                </Link>
+            {/* Back + header */}
+            <button
+              onClick={() => setView("home")}
+              className="flex items-center gap-1.5 text-[#6B7280] hover:text-[#2D4A2D] text-sm mb-5 transition-colors"
+            >
+              <ArrowLeft size={14} /> Back to home
+            </button>
+
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h1 className="text-2xl font-medium text-[#2D4A2D]">Vacancies</h1>
+                <p className="text-[#6B7280] text-sm mt-0.5">
+                  {filteredVacancies.length} of {vacancies.length}
+                </p>
+              </div>
+              <Link
+                href="/vacancies"
+                className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                <Plus size={13} /> Add vacancy
+              </Link>
+            </div>
+
+            {/* Search */}
+            <div className="relative mb-4">
+              <Search
+                size={15}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280]"
+              />
+              <input
+                className="w-full bg-white rounded-xl pl-10 pr-4 py-3 text-sm text-[#2D4A2D] placeholder-[#6B7280] focus:outline-none transition-colors"
+                style={{
+                  border: "1px solid rgba(45,74,45,0.15)",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                }}
+                placeholder="Search vacancies by title, client or stage..."
+                value={vacSearch}
+                onChange={(e) => setVacSearch(e.target.value)}
+              />
+            </div>
+
+            {/* Filter pills */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {(
+                [
+                  { key: "all", label: "All" },
+                  { key: "open", label: "Active" },
+                  { key: "on-hold", label: "Prospected" },
+                  { key: "closed", label: "Filled" },
+                ] as const
+              ).map((f) => (
+                <FilterPill
+                  key={f.key}
+                  active={vacFilter === f.key}
+                  onClick={() => setVacFilter(f.key)}
+                >
+                  {f.label}
+                </FilterPill>
               ))}
             </div>
-          </div>
-        </div>
 
-        {/* Calendar Widget */}
-        <div className="lg:col-span-1">
-          <CalendarWidget />
-        </div>
-      </motion.div>
+            {/* Vacancy grid */}
+            {filteredVacancies.length === 0 ? (
+              <div className="text-center py-20">
+                <Briefcase
+                  size={40}
+                  className="mx-auto mb-3"
+                  style={{ color: "rgba(45,74,45,0.2)" }}
+                />
+                <p className="text-[#2D4A2D] font-medium mb-1">
+                  {vacancies.length === 0 ? "No vacancies yet" : "No results"}
+                </p>
+                {vacancies.length === 0 && (
+                  <Link
+                    href="/vacancies"
+                    className="inline-flex items-center gap-1.5 mt-3 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <Plus size={14} /> Add your first vacancy →
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredVacancies.map((v, i) => {
+                  const ss =
+                    VAC_STATUS_STYLE[v.status] ?? VAC_STATUS_STYLE["on-hold"];
+                  const days = daysOpen(v.createdAt);
+                  const stageIdx = STAGE_ORDER.indexOf(v.stage ?? "intake");
 
-      {/* Follow-up email composer */}
-      {composerFollowUp && (
-        <EmailComposer
-          isOpen={composerOpen}
-          onClose={() => {
-            setComposerOpen(false);
-            setComposerFollowUp(null);
-          }}
-          defaultTo={composerFollowUp.contactEmail}
-          defaultSubject={`Follow-up: ${composerFollowUp.originalEmailSubject}`}
-          defaultBody={`Hi ${composerFollowUp.contactName.split(" ")[0]},\n\nI wanted to follow up on my previous email regarding ${composerFollowUp.originalEmailSubject}.\n\nI'd love to connect and discuss this further. Are you available for a brief call this week?\n\nBest regards,\nDani\nOrchard`}
-          followUpConfig={{
-            contactType: composerFollowUp.contactType,
-            contactId: composerFollowUp.contactId,
-            contactName: composerFollowUp.contactName,
-            company: composerFollowUp.company,
-          }}
-          onSent={handleFollowUpSent}
-        />
-      )}
+                  return (
+                    <motion.div
+                      key={v.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.025, duration: 0.2 }}
+                    >
+                      <Link
+                        href="/vacancies"
+                        className="block bg-white rounded-xl p-4 transition-all group"
+                        style={{
+                          border: "1px solid rgba(45,74,45,0.1)",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.borderColor =
+                            "rgba(45,74,45,0.25)";
+                          (e.currentTarget as HTMLAnchorElement).style.boxShadow =
+                            "0 4px 12px rgba(0,0,0,0.08)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLAnchorElement).style.borderColor =
+                            "rgba(45,74,45,0.1)";
+                          (e.currentTarget as HTMLAnchorElement).style.boxShadow =
+                            "0 1px 4px rgba(0,0,0,0.04)";
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="min-w-0">
+                            <p className="text-[#2D4A2D] font-medium text-sm truncate group-hover:text-[#3D6B3D] transition-colors">
+                              {v.title}
+                            </p>
+                            <p className="text-[#6B7280] text-xs truncate mt-0.5">
+                              {v.company}
+                            </p>
+                          </div>
+                          <span
+                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                            style={{ background: ss.bg, color: ss.text }}
+                          >
+                            {VAC_STATUS_LABEL[v.status]}
+                          </span>
+                        </div>
+
+                        {/* Stage progress bar */}
+                        <div className="flex items-center gap-0.5 mb-3">
+                          {STAGE_ORDER.map((_, si) => (
+                            <div
+                              key={si}
+                              className="flex-1 h-1 rounded-full"
+                              style={{
+                                background:
+                                  si <= stageIdx
+                                    ? "#2D4A2D"
+                                    : "rgba(45,74,45,0.12)",
+                              }}
+                            />
+                          ))}
+                        </div>
+
+                        <div className="flex items-center gap-3 text-xs text-[#6B7280] mb-3">
+                          <span className="flex items-center gap-1">
+                            <Clock size={10} /> {days}d open
+                          </span>
+                          {(v.clientFeedback?.length ?? 0) > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Users size={10} />
+                              {v.clientFeedback.length} candidates
+                            </span>
+                          )}
+                        </div>
+
+                        <div
+                          className="w-full text-center text-[#2D4A2D] text-xs font-medium py-1.5 rounded-lg transition-colors"
+                          style={{ border: "1px solid rgba(45,74,45,0.15)" }}
+                        >
+                          View vacancy
+                        </div>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
