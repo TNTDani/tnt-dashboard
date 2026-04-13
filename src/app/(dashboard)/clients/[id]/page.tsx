@@ -260,11 +260,11 @@ export default function ClientDetailPage() {
   if (!client) {
     return (
       <div className="p-8">
-        <button onClick={() => router.push('/clients')} className="flex items-center gap-2 text-[#94a3b8] hover:text-white text-sm mb-6 transition-colors">
+        <button onClick={() => router.push('/clients')} className="flex items-center gap-2 text-[#94a3b8] hover:text-[#2D4A2D] text-sm mb-6 transition-colors">
           <ArrowLeft size={16} /> Back to Clients
         </button>
         <div className="text-center py-20">
-          <Building2 size={40} className="mx-auto mb-3 text-[#1e3a5f]" />
+          <Building2 size={40} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
           <p className="text-[#94a3b8]">Client not found</p>
         </div>
       </div>
@@ -273,7 +273,7 @@ export default function ClientDetailPage() {
 
   return (
     <div className="p-8">
-      <button onClick={() => router.push('/clients')} className="flex items-center gap-2 text-[#94a3b8] hover:text-white text-sm mb-6 transition-colors">
+      <button onClick={() => router.push('/clients')} className="flex items-center gap-2 text-[#94a3b8] hover:text-[#2D4A2D] text-sm mb-6 transition-colors">
         <ArrowLeft size={16} /> Back to Clients
       </button>
 
@@ -281,21 +281,21 @@ export default function ClientDetailPage() {
         {/* LEFT COLUMN */}
         <div className="xl:col-span-3 space-y-4">
           {/* Header */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-[#7C3AED20] flex items-center justify-center flex-shrink-0">
-                  <Building2 size={24} className="text-[#7C3AED]" />
+                <div className="w-14 h-14 rounded-xl bg-[#2D4A2D20] flex items-center justify-center flex-shrink-0">
+                  <Building2 size={24} className="text-[#2D4A2D]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-3 flex-wrap">
-                    <h1 className="text-2xl font-bold text-white">{client.companyName}</h1>
+                    <h1 className="text-2xl font-bold text-[#2D4A2D]">{client.companyName}</h1>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TYPE_BADGE[client.type]}`}>
                       {TYPE_LABELS[client.type]}
                     </span>
                   </div>
                   {client.website && (
-                    <a href={client.website} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[#94a3b8] hover:text-white text-sm mt-1 transition-colors">
+                    <a href={client.website} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[#94a3b8] hover:text-[#2D4A2D] text-sm mt-1 transition-colors">
                       <Globe size={12} />
                       {client.website}
                       <ExternalLink size={11} />
@@ -303,42 +303,42 @@ export default function ClientDetailPage() {
                   )}
                 </div>
               </div>
-              <button onClick={handleEdit} className="flex items-center gap-2 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors">
+              <button onClick={handleEdit} className="flex items-center gap-2 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors">
                 <Edit size={14} /> Edit
               </button>
             </div>
           </div>
 
           {/* Contact */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
-            <p className="text-white font-semibold text-sm mb-4">Primary Contact</p>
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
+            <p className="text-[#2D4A2D] font-semibold text-sm mb-4">Primary Contact</p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-[#7C3AED20] flex items-center justify-center text-[#7C3AED] text-sm font-bold flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-[#2D4A2D20] flex items-center justify-center text-[#2D4A2D] text-sm font-bold flex-shrink-0">
                   {client.contactName.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-white text-sm font-medium">{client.contactName}</p>
+                  <p className="text-[#2D4A2D] text-sm font-medium">{client.contactName}</p>
                   <p className="text-[#94a3b8] text-xs">{client.contactRole}</p>
                 </div>
               </div>
               {client.contactEmail && (
                 <div className="flex items-center gap-3">
-                  <Mail size={14} className="text-[#7C3AED] flex-shrink-0" />
-                  <a href={`mailto:${client.contactEmail}`} className="text-[#94a3b8] text-sm hover:text-white transition-colors">
+                  <Mail size={14} className="text-[#2D4A2D] flex-shrink-0" />
+                  <a href={`mailto:${client.contactEmail}`} className="text-[#94a3b8] text-sm hover:text-[#2D4A2D] transition-colors">
                     {client.contactEmail}
                   </a>
                 </div>
               )}
               {client.contactPhone && (
                 <div className="flex items-center gap-3">
-                  <Phone size={14} className="text-[#7C3AED] flex-shrink-0" />
+                  <Phone size={14} className="text-[#2D4A2D] flex-shrink-0" />
                   <span className="text-[#94a3b8] text-sm">{client.contactPhone}</span>
                 </div>
               )}
               {client.location && (
                 <div className="flex items-center gap-3">
-                  <MapPin size={14} className="text-[#7C3AED] flex-shrink-0" />
+                  <MapPin size={14} className="text-[#2D4A2D] flex-shrink-0" />
                   <span className="text-[#94a3b8] text-sm">{client.location}</span>
                 </div>
               )}
@@ -346,32 +346,32 @@ export default function ClientDetailPage() {
           </div>
 
           {/* Company card */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
-            <p className="text-white font-semibold text-sm mb-4">Company Details</p>
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
+            <p className="text-[#2D4A2D] font-semibold text-sm mb-4">Company Details</p>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[#94a3b8] text-xs">Sector</span>
-                <span className="text-white text-sm">{client.sector}</span>
+                <span className="text-[#2D4A2D] text-sm">{client.sector}</span>
               </div>
-              <div className="border-t border-[#1e3a5f]" />
+              <div className="border-t border-[rgba(45,74,45,0.15)]" />
               <div className="flex items-center justify-between">
                 <span className="text-[#94a3b8] text-xs">Size</span>
-                <span className="text-white text-sm">{SIZE_LABELS[client.size]}</span>
+                <span className="text-[#2D4A2D] text-sm">{SIZE_LABELS[client.size]}</span>
               </div>
-              <div className="border-t border-[#1e3a5f]" />
+              <div className="border-t border-[rgba(45,74,45,0.15)]" />
               <div className="flex items-center justify-between">
                 <span className="text-[#94a3b8] text-xs">Guarantee Period</span>
-                <span className="text-white text-sm">{client.guaranteePeriod} months</span>
+                <span className="text-[#2D4A2D] text-sm">{client.guaranteePeriod} months</span>
               </div>
             </div>
           </div>
 
           {/* Fee Agreement */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-white font-semibold text-sm">Fee Agreement</p>
+              <p className="text-[#2D4A2D] font-semibold text-sm">Fee Agreement</p>
               {!editingFee && (
-                <button onClick={startEditFee} className="text-[#7C3AED] text-xs hover:text-[#6d28d9] transition-colors">
+                <button onClick={startEditFee} className="text-[#2D4A2D] text-xs hover:text-[#3D6B3D] transition-colors">
                   Edit
                 </button>
               )}
@@ -382,7 +382,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Fee Type</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={feeForm.type}
                     onChange={e => setFeeForm(f => ({ ...f, type: e.target.value as FeeAgreement['type'] }))}
                   >
@@ -396,7 +396,7 @@ export default function ClientDetailPage() {
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">Custom Percentage (%)</label>
                     <input
                       type="number"
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       value={feeForm.customPercentage}
                       onChange={e => setFeeForm(f => ({ ...f, customPercentage: e.target.value }))}
                     />
@@ -408,7 +408,7 @@ export default function ClientDetailPage() {
                       <label className="block text-[#94a3b8] text-xs font-medium mb-1">Upfront (€)</label>
                       <input
                         type="number"
-                        className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                        className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                         value={feeForm.retainerAmount}
                         onChange={e => setFeeForm(f => ({ ...f, retainerAmount: e.target.value }))}
                       />
@@ -417,7 +417,7 @@ export default function ClientDetailPage() {
                       <label className="block text-[#94a3b8] text-xs font-medium mb-1">On Placement (%)</label>
                       <input
                         type="number"
-                        className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                        className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                         value={feeForm.retainerPercentage}
                         onChange={e => setFeeForm(f => ({ ...f, retainerPercentage: e.target.value }))}
                       />
@@ -425,10 +425,10 @@ export default function ClientDetailPage() {
                   </div>
                 )}
                 <div className="flex gap-2">
-                  <button onClick={handleFeeSave} className="flex items-center gap-1 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
+                  <button onClick={handleFeeSave} className="flex items-center gap-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
                     <Check size={12} /> Save
                   </button>
-                  <button onClick={() => setEditingFee(false)} className="bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-3 py-1.5 rounded-lg text-xs transition-colors">
+                  <button onClick={() => setEditingFee(false)} className="bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-3 py-1.5 rounded-lg text-xs transition-colors">
                     Cancel
                   </button>
                 </div>
@@ -436,7 +436,7 @@ export default function ClientDetailPage() {
             ) : (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[#7C3AED] text-xs font-semibold uppercase tracking-wider">
+                  <span className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider">
                     {client.feeAgreement.type === 'standard' ? 'Standard Rates' : client.feeAgreement.type === 'custom' ? 'Custom Rate' : 'Retainer Agreement'}
                   </span>
                 </div>
@@ -444,34 +444,34 @@ export default function ClientDetailPage() {
                 {client.feeAgreement.type === 'standard' && (
                   <div className="space-y-2">
                     {STANDARD_RATES.map(r => (
-                      <div key={r.label} className="flex items-center justify-between bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2">
+                      <div key={r.label} className="flex items-center justify-between bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2">
                         <span className="text-[#94a3b8] text-sm">{r.label}</span>
-                        <span className="text-white font-semibold text-sm">{r.rate}%</span>
+                        <span className="text-[#2D4A2D] font-semibold text-sm">{r.rate}%</span>
                       </div>
                     ))}
                   </div>
                 )}
 
                 {client.feeAgreement.type === 'custom' && (
-                  <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 flex items-center justify-between">
+                  <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 flex items-center justify-between">
                     <span className="text-[#94a3b8] text-sm">Agreed percentage</span>
-                    <span className="text-white font-semibold text-xl">{client.feeAgreement.customPercentage ?? '—'}%</span>
+                    <span className="text-[#2D4A2D] font-semibold text-xl">{client.feeAgreement.customPercentage ?? '—'}%</span>
                   </div>
                 )}
 
                 {client.feeAgreement.type === 'retainer' && (
                   <div className="space-y-2">
-                    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 flex items-center justify-between">
+                    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 flex items-center justify-between">
                       <span className="text-[#94a3b8] text-sm">Upfront retainer</span>
-                      <span className="text-white font-semibold text-sm">
+                      <span className="text-[#2D4A2D] font-semibold text-sm">
                         {client.feeAgreement.retainerAmount
                           ? `€ ${client.feeAgreement.retainerAmount.toLocaleString('nl-NL')}`
                           : '—'}
                       </span>
                     </div>
-                    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 flex items-center justify-between">
+                    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 flex items-center justify-between">
                       <span className="text-[#94a3b8] text-sm">On placement</span>
-                      <span className="text-white font-semibold text-sm">{client.feeAgreement.retainerPercentage ?? '—'}%</span>
+                      <span className="text-[#2D4A2D] font-semibold text-sm">{client.feeAgreement.retainerPercentage ?? '—'}%</span>
                     </div>
                   </div>
                 )}
@@ -480,10 +480,10 @@ export default function ClientDetailPage() {
           </div>
 
           {/* Open Vacancies */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-white font-semibold text-sm">Open Vacancies</p>
-              <span className="bg-[#7C3AED20] text-[#7C3AED] text-xs font-semibold px-2 py-0.5 rounded-full">
+              <p className="text-[#2D4A2D] font-semibold text-sm">Open Vacancies</p>
+              <span className="bg-[#2D4A2D20] text-[#2D4A2D] text-xs font-semibold px-2 py-0.5 rounded-full">
                 {vacancyCount}
               </span>
             </div>
@@ -491,7 +491,7 @@ export default function ClientDetailPage() {
               {vacancyCount === 0 ? 'No vacancies linked to this client.' : `${vacancyCount} vacanc${vacancyCount !== 1 ? 'ies' : 'y'} for ${client.companyName}`}
             </p>
             {client.lastVacancyScan && (
-              <p className="text-[#4a6fa5] text-xs mb-3">
+              <p className="text-[#6B7280] text-xs mb-3">
                 Last scanned: {new Date(client.lastVacancyScan).toLocaleString('en-GB', {
                   day: 'numeric', month: 'short', year: 'numeric',
                   hour: '2-digit', minute: '2-digit',
@@ -501,7 +501,7 @@ export default function ClientDetailPage() {
             <div className="flex items-center gap-3 mt-3 flex-wrap">
               <Link
                 href="/vacancies"
-                className="inline-flex items-center gap-2 text-[#7C3AED] hover:text-[#6d28d9] text-sm transition-colors"
+                className="inline-flex items-center gap-2 text-[#2D4A2D] hover:text-[#3D6B3D] text-sm transition-colors"
               >
                 <Briefcase size={14} />
                 View all vacancies →
@@ -509,7 +509,7 @@ export default function ClientDetailPage() {
               {client.website && (
                 <button
                   onClick={() => setShowScanner(true)}
-                  className="inline-flex items-center gap-1.5 text-[#94a3b8] hover:text-white text-sm transition-colors"
+                  className="inline-flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] text-sm transition-colors"
                 >
                   <ScanSearch size={14} />
                   Scan website for vacancies
@@ -517,14 +517,14 @@ export default function ClientDetailPage() {
               )}
             </div>
             {!client.website && (
-              <p className="text-[#4a6fa5] text-xs mt-2">Add a website URL to enable scanning.</p>
+              <p className="text-[#6B7280] text-xs mt-2">Add a website URL to enable scanning.</p>
             )}
           </div>
 
           {/* Notes */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-white font-semibold text-sm">Notes</p>
+              <p className="text-[#2D4A2D] font-semibold text-sm">Notes</p>
               {savedFlash && (
                 <span className="flex items-center gap-1 text-green-400 text-xs">
                   <Check size={12} /> Saved
@@ -532,7 +532,7 @@ export default function ClientDetailPage() {
               )}
             </div>
             <textarea
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] resize-none transition-colors"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] resize-none transition-colors"
               rows={5}
               placeholder="Internal notes about this client..."
               value={notesValue}
@@ -545,12 +545,12 @@ export default function ClientDetailPage() {
         {/* RIGHT COLUMN */}
         <div className="xl:col-span-2 space-y-4">
           {/* Quick Actions */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
-            <p className="text-white font-semibold text-sm mb-3">Quick Actions</p>
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
+            <p className="text-[#2D4A2D] font-semibold text-sm mb-3">Quick Actions</p>
             <div className="space-y-2">
               <button
                 onClick={() => setShowEmail(true)}
-                className="w-full flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                className="w-full flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 <Mail size={14} /> Send Email
               </button>
@@ -558,7 +558,7 @@ export default function ClientDetailPage() {
               <div className="relative" ref={typeMenuRef}>
                 <button
                   onClick={() => setShowTypeMenu(s => !s)}
-                  className="w-full flex items-center justify-between gap-2 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                  className="w-full flex items-center justify-between gap-2 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <Building2 size={14} />
@@ -567,12 +567,12 @@ export default function ClientDetailPage() {
                   <ChevronDown size={14} />
                 </button>
                 {showTypeMenu && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg overflow-hidden z-10">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg overflow-hidden z-10">
                     {(['prospect', 'active', 'inactive'] as const).map(t => (
                       <button
                         key={t}
                         onClick={() => handleTypeChange(t)}
-                        className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-[#1e3a5f] ${client.type === t ? 'text-[#7C3AED]' : 'text-[#94a3b8]'}`}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-[rgba(45,74,45,0.15)] ${client.type === t ? 'text-[#2D4A2D]' : 'text-[#94a3b8]'}`}
                       >
                         {TYPE_LABELS[t]}
                         {client.type === t && ' ✓'}
@@ -584,7 +584,7 @@ export default function ClientDetailPage() {
 
               <Link
                 href={`/vacancies`}
-                className="w-full flex items-center gap-2 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                className="w-full flex items-center gap-2 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
               >
                 <Briefcase size={14} /> Add Vacancy
               </Link>
@@ -593,17 +593,17 @@ export default function ClientDetailPage() {
 
           {/* Follow-up Status */}
           {followUp && (
-            <div className={`bg-[#0d1f3c] border rounded-xl p-4 ${
+            <div className={`bg-[#FFFFFF] border rounded-xl p-4 ${
               (() => {
                 const due = followUp.snoozedUntil ? new Date(followUp.snoozedUntil) : new Date(followUp.dueDate);
                 const diffDays = Math.floor((due.getTime() - Date.now()) / 86400000);
-                if (followUp.status === 'snoozed') return 'border-[#1e3a5f]';
-                return diffDays < 0 ? 'border-red-500/30' : diffDays === 0 ? 'border-amber-500/30' : 'border-[#1e3a5f]';
+                if (followUp.status === 'snoozed') return 'border-[rgba(45,74,45,0.15)]';
+                return diffDays < 0 ? 'border-red-500/30' : diffDays === 0 ? 'border-amber-500/30' : 'border-[rgba(45,74,45,0.15)]';
               })()
             }`}>
               <div className="flex items-center gap-2 mb-3">
-                <Bell size={14} className="text-[#7C3AED]" />
-                <p className="text-white font-semibold text-sm">Follow-up Reminder</p>
+                <Bell size={14} className="text-[#2D4A2D]" />
+                <p className="text-[#2D4A2D] font-semibold text-sm">Follow-up Reminder</p>
               </div>
               {(() => {
                 const effectiveDate = followUp.snoozedUntil ? new Date(followUp.snoozedUntil) : new Date(followUp.dueDate);
@@ -617,7 +617,7 @@ export default function ClientDetailPage() {
                 return (
                   <>
                     <p className="text-[#94a3b8] text-xs mb-1">Re: {followUp.originalEmailSubject}</p>
-                    <p className="text-[#4a6fa5] text-xs mb-3">
+                    <p className="text-[#6B7280] text-xs mb-3">
                       {daysSince === 0 ? 'Contacted today' : `${daysSince}d since last contact`} · <span className={statusColor}>{statusLabel}</span>
                       {followUp.status === 'snoozed' && ' · Snoozed'}
                     </p>
@@ -627,13 +627,13 @@ export default function ClientDetailPage() {
               <div className="flex gap-2">
                 <button
                   onClick={handleSnoozeFollowUp}
-                  className="flex items-center gap-1.5 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-3 py-1.5 rounded-md text-xs transition-colors"
+                  className="flex items-center gap-1.5 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-3 py-1.5 rounded-md text-xs transition-colors"
                 >
                   <Moon size={11} /> Snooze 2d
                 </button>
                 <button
                   onClick={handleMarkFollowUpDone}
-                  className="flex items-center gap-1.5 bg-[#1e3a5f] hover:bg-[#10b981]/20 text-[#94a3b8] hover:text-[#10b981] px-3 py-1.5 rounded-md text-xs transition-colors"
+                  className="flex items-center gap-1.5 bg-[rgba(45,74,45,0.15)] hover:bg-[#4CAF50]/20 text-[#94a3b8] hover:text-[#4CAF50] px-3 py-1.5 rounded-md text-xs transition-colors"
                 >
                   <Check size={11} /> Mark Done
                 </button>
@@ -652,10 +652,10 @@ export default function ClientDetailPage() {
       {/* Edit Modal */}
       {showEdit && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-semibold">Edit Client</h2>
-              <button onClick={() => setShowEdit(false)} className="text-[#94a3b8] hover:text-white transition-colors">
+              <h2 className="text-[#2D4A2D] font-semibold">Edit Client</h2>
+              <button onClick={() => setShowEdit(false)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
                 <X size={18} />
               </button>
             </div>
@@ -665,7 +665,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Company Name</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.companyName || ''}
                     onChange={e => setEditForm(f => ({ ...f, companyName: e.target.value }))}
                   />
@@ -673,7 +673,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Website</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.website || ''}
                     onChange={e => setEditForm(f => ({ ...f, website: e.target.value }))}
                   />
@@ -683,7 +683,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Sector</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.sector || ''}
                     onChange={e => setEditForm(f => ({ ...f, sector: e.target.value }))}
                   >
@@ -693,7 +693,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Size</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.size || ''}
                     onChange={e => setEditForm(f => ({ ...f, size: e.target.value as Client['size'] }))}
                   >
@@ -703,7 +703,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Type</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.type || ''}
                     onChange={e => setEditForm(f => ({ ...f, type: e.target.value as Client['type'] }))}
                   >
@@ -717,7 +717,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Location</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.location || ''}
                     onChange={e => setEditForm(f => ({ ...f, location: e.target.value }))}
                   />
@@ -726,7 +726,7 @@ export default function ClientDetailPage() {
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Guarantee Period (months)</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.guaranteePeriod || ''}
                     onChange={e => setEditForm(f => ({ ...f, guaranteePeriod: parseInt(e.target.value) || 3 }))}
                   />
@@ -736,7 +736,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Contact Name</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.contactName || ''}
                     onChange={e => setEditForm(f => ({ ...f, contactName: e.target.value }))}
                   />
@@ -744,7 +744,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Contact Role</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.contactRole || ''}
                     onChange={e => setEditForm(f => ({ ...f, contactRole: e.target.value }))}
                   />
@@ -755,7 +755,7 @@ export default function ClientDetailPage() {
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Contact Email</label>
                   <input
                     type="email"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.contactEmail || ''}
                     onChange={e => setEditForm(f => ({ ...f, contactEmail: e.target.value }))}
                   />
@@ -763,7 +763,7 @@ export default function ClientDetailPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Contact Phone</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={editForm.contactPhone || ''}
                     onChange={e => setEditForm(f => ({ ...f, contactPhone: e.target.value }))}
                   />
@@ -772,10 +772,10 @@ export default function ClientDetailPage() {
             </div>
 
             <div className="flex gap-3 mt-5">
-              <button onClick={handleEditSave} className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-medium py-2.5 rounded-lg transition-colors text-sm">
+              <button onClick={handleEditSave} className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-medium py-2.5 rounded-lg transition-colors text-sm">
                 Save Changes
               </button>
-              <button onClick={() => setShowEdit(false)} className="flex-1 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white py-2.5 rounded-lg transition-colors text-sm">
+              <button onClick={() => setShowEdit(false)} className="flex-1 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm">
                 Cancel
               </button>
             </div>

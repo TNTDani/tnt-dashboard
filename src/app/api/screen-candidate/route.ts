@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const { cv, vacancy }: { cv: ProcessedCV; vacancy: Vacancy } = await req.json();
 
-    const prompt = `You are a senior recruiter at TrueNorth Talent. Score this candidate against the vacancy below.
+    const prompt = `You are a senior recruiter at Orchard. Score this candidate against the vacancy below.
 
 VACANCY:
 Title: ${vacancy.title}

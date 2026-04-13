@@ -232,27 +232,27 @@ export default function EmailComposer({
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-5 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#7C3AED20] flex items-center justify-center">
-              <Mail size={16} className="text-[#7C3AED]" />
+            <div className="w-8 h-8 rounded-lg bg-[#2D4A2D20] flex items-center justify-center">
+              <Mail size={16} className="text-[#2D4A2D]" />
             </div>
             <h2 className="text-white font-semibold">Compose Email</h2>
           </div>
-          <button onClick={onClose} className="text-[#94a3b8] hover:text-white transition-colors">
+          <button onClick={onClose} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {/* Gmail status */}
-        <div className="mb-4 flex items-center justify-between bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 flex-shrink-0">
+        <div className="mb-4 flex items-center justify-between bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 flex-shrink-0">
           <div className="flex items-center gap-2">
             {gmailToken ? (
               <>
-                <Wifi size={14} className="text-[#10b981]" />
-                <span className="text-[#10b981] text-xs font-medium">Gmail connected</span>
+                <Wifi size={14} className="text-[#4CAF50]" />
+                <span className="text-[#4CAF50] text-xs font-medium">Gmail connected</span>
               </>
             ) : (
               <>
@@ -264,7 +264,7 @@ export default function EmailComposer({
           {!gmailToken && (
             <button
               onClick={connectGmail}
-              className="text-xs text-[#7C3AED] hover:text-[#6d28d9] font-medium transition-colors"
+              className="text-xs text-[#2D4A2D] hover:text-[#3D6B3D] font-medium transition-colors"
             >
               Connect Gmail →
             </button>
@@ -278,7 +278,7 @@ export default function EmailComposer({
             Template
           </label>
           <select
-            className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
             value={selectedTemplate}
             onChange={e => handleTemplateSelect(e.target.value)}
           >
@@ -295,7 +295,7 @@ export default function EmailComposer({
             {!showLangPicker && !generating && (
               <button
                 onClick={() => setShowLangPicker(true)}
-                className="flex items-center gap-2 w-full justify-center bg-gradient-to-r from-[#7C3AED] to-[#6d28d9] hover:from-[#6d28d9] hover:to-[#5b21b6] text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-lg shadow-[#7C3AED]/20"
+                className="flex items-center gap-2 w-full justify-center bg-gradient-to-r from-[#2D4A2D] to-[#3D6B3D] hover:from-[#3D6B3D] hover:to-[#5b21b6] text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-lg shadow-[#2D4A2D]/20"
               >
                 <Sparkles size={15} />
                 {hasGenerated ? 'Regenerate Cold Email' : 'Generate Cold Email'}
@@ -305,24 +305,24 @@ export default function EmailComposer({
 
             {/* Language picker */}
             {showLangPicker && !generating && (
-              <div className="flex items-center gap-2 bg-[#0a1628] border border-[#7C3AED]/40 rounded-lg p-2">
-                <Sparkles size={14} className="text-[#7C3AED] ml-1 flex-shrink-0" />
+              <div className="flex items-center gap-2 bg-[#FFFFFF] border border-[#2D4A2D]/40 rounded-lg p-2">
+                <Sparkles size={14} className="text-[#2D4A2D] ml-1 flex-shrink-0" />
                 <span className="text-[#94a3b8] text-xs mr-1">Language:</span>
                 <button
                   onClick={() => generateColdEmail('en')}
-                  className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+                  className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
                 >
                   English
                 </button>
                 <button
                   onClick={() => generateColdEmail('nl')}
-                  className="flex-1 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+                  className="flex-1 bg-[rgba(45,74,45,0.1)] hover:bg-[rgba(45,74,45,0.2)] text-[#2D4A2D] px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
                 >
                   Dutch
                 </button>
                 <button
                   onClick={() => setShowLangPicker(false)}
-                  className="text-[#94a3b8] hover:text-white p-1 transition-colors"
+                  className="text-[#94a3b8] hover:text-[#2D4A2D] p-1 transition-colors"
                 >
                   <X size={14} />
                 </button>
@@ -331,8 +331,8 @@ export default function EmailComposer({
 
             {/* Loading state */}
             {generating && (
-              <div className="flex items-center gap-3 bg-[#0a1628] border border-[#7C3AED]/30 rounded-lg px-4 py-2.5">
-                <Loader2 size={15} className="text-[#7C3AED] animate-spin flex-shrink-0" />
+              <div className="flex items-center gap-3 bg-[#FFFFFF] border border-[#2D4A2D]/30 rounded-lg px-4 py-2.5">
+                <Loader2 size={15} className="text-[#2D4A2D] animate-spin flex-shrink-0" />
                 <span className="text-[#94a3b8] text-sm">{generationStatus}</span>
               </div>
             )}
@@ -345,7 +345,7 @@ export default function EmailComposer({
             <label className="block text-[#94a3b8] text-xs font-medium mb-1">To *</label>
             <input
               type="email"
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
               placeholder="recipient@example.com"
               value={to}
               onChange={e => setTo(e.target.value)}
@@ -355,7 +355,7 @@ export default function EmailComposer({
             <label className="block text-[#94a3b8] text-xs font-medium mb-1">Subject *</label>
             <input
               type="text"
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
               placeholder="Email subject"
               value={subject}
               onChange={e => setSubject(e.target.value)}
@@ -365,16 +365,16 @@ export default function EmailComposer({
             {/* Write / Preview tab bar */}
             <div className="flex items-center justify-between mb-1">
               <label className="text-[#94a3b8] text-xs font-medium">Body</label>
-              <div className="flex items-center gap-0.5 bg-[#0a1628] border border-[#1e3a5f] rounded-md p-0.5">
+              <div className="flex items-center gap-0.5 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-md p-0.5">
                 <button
                   onClick={() => setShowPreview(false)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors ${!showPreview ? 'bg-[#7C3AED] text-white' : 'text-[#94a3b8] hover:text-white'}`}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors ${!showPreview ? 'bg-[#2D4A2D] text-white' : 'text-[#94a3b8] hover:text-[#2D4A2D]'}`}
                 >
                   <Pencil size={11} /> Write
                 </button>
                 <button
                   onClick={() => setShowPreview(true)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors ${showPreview ? 'bg-[#7C3AED] text-white' : 'text-[#94a3b8] hover:text-white'}`}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors ${showPreview ? 'bg-[#2D4A2D] text-white' : 'text-[#94a3b8] hover:text-[#2D4A2D]'}`}
                 >
                   <Eye size={11} /> Preview
                 </button>
@@ -383,7 +383,7 @@ export default function EmailComposer({
 
             {!showPreview ? (
               <textarea
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] resize-none transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] resize-none transition-colors"
                 rows={8}
                 placeholder="Email body..."
                 value={body}
@@ -392,7 +392,7 @@ export default function EmailComposer({
             ) : (
               <iframe
                 srcDoc={buildHtmlEmail(body || '(No body yet)')}
-                className="w-full border border-[#1e3a5f] rounded-lg bg-white"
+                className="w-full border border-[rgba(45,74,45,0.15)] rounded-lg bg-white"
                 style={{ height: '320px' }}
                 sandbox="allow-same-origin"
                 title="Email preview"
@@ -408,11 +408,11 @@ export default function EmailComposer({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 mt-4 flex-shrink-0 pt-4 border-t border-[#1e3a5f]">
+        <div className="flex gap-3 mt-4 flex-shrink-0 pt-4 border-t border-[rgba(45,74,45,0.15)]">
           <button
             onClick={handleSend}
             disabled={sending || !gmailToken}
-            className="flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Send size={14} />
             {sending ? 'Sending...' : 'Send via Gmail'}
@@ -420,14 +420,14 @@ export default function EmailComposer({
           <button
             onClick={handleLogOnly}
             disabled={sending}
-            className="flex items-center gap-2 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors"
+            className="flex items-center gap-2 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
           >
             Log Only
           </button>
           <button
             onClick={onClose}
             disabled={sending}
-            className="ml-auto text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors"
+            className="ml-auto text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
           >
             Cancel
           </button>

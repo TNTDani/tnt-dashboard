@@ -104,7 +104,7 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#10b981] text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#4CAF50] text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
       <CheckCircle2 size={16} />
       {message}
     </div>
@@ -124,10 +124,10 @@ function SourceStatusBar({
   const working = allSources.filter(s => statuses[s] === "ok").length;
 
   return (
-    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-xl p-4 mb-5">
+    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4 mb-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-white text-xs font-semibold">Source Status</span>
+          <span className="text-[#2D4A2D] text-xs font-semibold">Source Status</span>
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
             working > 0 ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
           }`}>
@@ -135,7 +135,7 @@ function SourceStatusBar({
           </span>
         </div>
         {lastFetched && (
-          <span className="text-[#4a6fa5] text-xs flex items-center gap-1">
+          <span className="text-[#6B7280] text-xs flex items-center gap-1">
             <Clock size={11} />
             {daysAgo(lastFetched) === "Today"
               ? `Today at ${new Date(lastFetched).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`
@@ -160,19 +160,19 @@ function SourceStatusBar({
             s === "ok"             ? "bg-green-500/5 border-green-500/15" :
             s === "error"          ? "bg-red-500/5 border-red-500/15" :
             s === "not_configured" ? "bg-amber-500/5 border-amber-500/15" :
-                                     "bg-[#0d1f3c] border-[#1e3a5f]";
+                                     "bg-[#FFFFFF] border-[rgba(45,74,45,0.15)]";
 
           return (
             <div key={src} className={`flex items-start gap-3 px-3 py-2 rounded-lg border text-xs ${rowStyle}`}>
               <span className="flex-shrink-0 mt-0.5">{icon}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-medium">{SOURCE_LABELS[src]}</span>
+                  <span className="text-[#2D4A2D] font-medium">{SOURCE_LABELS[src]}</span>
                   {s === "ok" && (
                     <span className="text-green-400">{count} jobs found</span>
                   )}
                   {s === "empty" && (
-                    <span className="text-[#4a6fa5]">0 matching jobs</span>
+                    <span className="text-[#6B7280]">0 matching jobs</span>
                   )}
                   {s === "not_configured" && (
                     <span className="text-amber-400 font-medium">API key required</span>
@@ -204,7 +204,7 @@ function VacancyCard({
   onToggleWatchlist: (l: VacancyListing) => void;
 }) {
   return (
-    <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5 hover:border-[#2a4f7a] transition-colors">
+    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5 hover:border-[#6B7280] transition-colors">
       {/* Header row */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0">
@@ -216,12 +216,12 @@ function VacancyCard({
               {CATEGORY_LABELS[listing.category]}
             </span>
             {isInSystem && (
-              <span className="flex items-center gap-1 text-[10px] font-semibold bg-[#10b981]/15 text-[#10b981] px-2 py-0.5 rounded-full">
+              <span className="flex items-center gap-1 text-[10px] font-semibold bg-[#4CAF50]/15 text-[#4CAF50] px-2 py-0.5 rounded-full">
                 <CheckCircle2 size={9} /> In system
               </span>
             )}
           </div>
-          <h3 className="text-white font-semibold text-sm leading-snug">
+          <h3 className="text-[#2D4A2D] font-semibold text-sm leading-snug">
             {listing.title}
           </h3>
           <div className="flex items-center gap-2 mt-1 text-[#94a3b8] text-xs">
@@ -236,7 +236,7 @@ function VacancyCard({
           </div>
         </div>
         <div className="flex-shrink-0 text-right">
-          <p className="text-[#4a6fa5] text-xs">{daysAgo(listing.postedAt)}</p>
+          <p className="text-[#6B7280] text-xs">{daysAgo(listing.postedAt)}</p>
         </div>
       </div>
 
@@ -253,7 +253,7 @@ function VacancyCard({
           href={listing.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-[#94a3b8] hover:text-white text-xs border border-[#1e3a5f] hover:border-[#2a4f7a] px-3 py-1.5 rounded-md transition-colors"
+          className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] text-xs border border-[rgba(45,74,45,0.15)] hover:border-[#6B7280] px-3 py-1.5 rounded-md transition-colors"
         >
           <ExternalLink size={11} /> View vacancy
         </a>
@@ -262,8 +262,8 @@ function VacancyCard({
           onClick={() => onToggleWatchlist(listing)}
           className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border transition-colors ${
             isWatchlisted
-              ? "bg-[#7C3AED]/20 border-[#7C3AED]/30 text-[#a78bfa]"
-              : "border-[#1e3a5f] text-[#94a3b8] hover:text-white hover:border-[#2a4f7a]"
+              ? "bg-[#2D4A2D]/20 border-[#2D4A2D]/30 text-[#3D6B3D]"
+              : "border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:border-[#6B7280]"
           }`}
         >
           {isWatchlisted ? <BookmarkCheck size={11} /> : <Bookmark size={11} />}
@@ -273,7 +273,7 @@ function VacancyCard({
         {!isInSystem && (
           <button
             onClick={() => onAddProspect(listing)}
-            className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] text-white text-xs px-3 py-1.5 rounded-md font-medium transition-colors ml-auto"
+            className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white text-xs px-3 py-1.5 rounded-md font-medium transition-colors ml-auto"
           >
             <Plus size={11} /> Add as Prospect
           </button>
@@ -292,8 +292,8 @@ function WatchlistCard({
   onToggleContacted: (id: string) => void;
 }) {
   return (
-    <div className={`bg-[#0d1f3c] border rounded-xl p-5 transition-colors ${
-      item.contacted ? "border-[#10b981]/30" : "border-[#1e3a5f] hover:border-[#2a4f7a]"
+    <div className={`bg-[#FFFFFF] border rounded-xl p-5 transition-colors ${
+      item.contacted ? "border-[#4CAF50]/30" : "border-[rgba(45,74,45,0.15)] hover:border-[#6B7280]"
     }`}>
       <div className="flex items-start justify-between gap-3 mb-2">
         <div>
@@ -302,19 +302,19 @@ function WatchlistCard({
               {SOURCE_LABELS[item.listing.source]}
             </span>
             {item.contacted && (
-              <span className="flex items-center gap-1 text-[10px] font-semibold bg-[#10b981]/15 text-[#10b981] px-2 py-0.5 rounded-full">
+              <span className="flex items-center gap-1 text-[10px] font-semibold bg-[#4CAF50]/15 text-[#4CAF50] px-2 py-0.5 rounded-full">
                 <Send size={9} /> Contacted
               </span>
             )}
           </div>
-          <h3 className="text-white font-semibold text-sm">{item.listing.title}</h3>
+          <h3 className="text-[#2D4A2D] font-semibold text-sm">{item.listing.title}</h3>
           <p className="text-[#94a3b8] text-xs mt-0.5">
             {item.listing.company && `${item.listing.company} · `}{item.listing.location}
           </p>
         </div>
         <button
           onClick={() => onRemove(item.id)}
-          className="text-[#4a6fa5] hover:text-red-400 transition-colors flex-shrink-0"
+          className="text-[#6B7280] hover:text-red-400 transition-colors flex-shrink-0"
         >
           <X size={14} />
         </button>
@@ -325,7 +325,7 @@ function WatchlistCard({
           href={item.listing.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-[#94a3b8] hover:text-white text-xs border border-[#1e3a5f] px-3 py-1.5 rounded-md transition-colors"
+          className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] text-xs border border-[rgba(45,74,45,0.15)] px-3 py-1.5 rounded-md transition-colors"
         >
           <ExternalLink size={11} /> View
         </a>
@@ -333,14 +333,14 @@ function WatchlistCard({
           onClick={() => onToggleContacted(item.id)}
           className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md border transition-colors ${
             item.contacted
-              ? "border-[#10b981]/30 bg-[#10b981]/10 text-[#10b981]"
-              : "border-[#1e3a5f] text-[#94a3b8] hover:text-white"
+              ? "border-[#4CAF50]/30 bg-[#4CAF50]/10 text-[#4CAF50]"
+              : "border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D]"
           }`}
         >
           {item.contacted ? <CheckCircle2 size={11} /> : <Send size={11} />}
           {item.contacted ? "Contacted" : "Mark contacted"}
         </button>
-        <span className="text-[#4a6fa5] text-xs ml-auto">Saved {daysAgo(item.savedAt)}</span>
+        <span className="text-[#6B7280] text-xs ml-auto">Saved {daysAgo(item.savedAt)}</span>
       </div>
     </div>
   );
@@ -544,13 +544,13 @@ export default function VacancyMonitorPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Vacancy Monitor</h1>
+          <h1 className="text-2xl font-bold text-[#2D4A2D]">Vacancy Monitor</h1>
           <p className="text-[#94a3b8] mt-1">Amsterdam Sales, Design, Tech &amp; AI roles — updated daily</p>
         </div>
         <button
           onClick={() => refresh(true)}
           disabled={loading}
-          className="flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           {loading
             ? <><Loader2 size={14} className="animate-spin" /> Fetching…</>
@@ -570,11 +570,11 @@ export default function VacancyMonitorPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-5 bg-[#0a1628] rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-5 bg-[#FFFFFF] rounded-lg p-1 w-fit">
         <button
           onClick={() => setTab("listings")}
           className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            tab === "listings" ? "bg-[#7C3AED] text-white" : "text-[#94a3b8] hover:text-white"
+            tab === "listings" ? "bg-[#2D4A2D] text-white" : "text-[#94a3b8] hover:text-[#2D4A2D]"
           }`}
         >
           <Eye size={13} />
@@ -586,13 +586,13 @@ export default function VacancyMonitorPage() {
         <button
           onClick={() => setTab("watchlist")}
           className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            tab === "watchlist" ? "bg-[#7C3AED] text-white" : "text-[#94a3b8] hover:text-white"
+            tab === "watchlist" ? "bg-[#2D4A2D] text-white" : "text-[#94a3b8] hover:text-[#2D4A2D]"
           }`}
         >
           <Star size={13} />
           Watchlist
           {watchlist.length > 0 && (
-            <span className={`text-xs px-1.5 rounded-full ${tab === "watchlist" ? "bg-white/20" : "bg-[#1e3a5f]"}`}>
+            <span className={`text-xs px-1.5 rounded-full ${tab === "watchlist" ? "bg-white/20" : "bg-[rgba(45,74,45,0.15)]"}`}>
               {watchlist.length}
             </span>
           )}
@@ -603,17 +603,17 @@ export default function VacancyMonitorPage() {
       {tab === "listings" && (
         <>
           {/* Filter bar */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4 mb-5">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4 mb-5">
             <div className="flex items-center gap-3 flex-wrap">
               {/* Search */}
               <div className="relative flex-1 min-w-[200px]">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
                 <input
                   type="text"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search by keyword, company…"
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg pl-9 pr-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg pl-9 pr-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 />
               </div>
 
@@ -621,7 +621,7 @@ export default function VacancyMonitorPage() {
               <select
                 value={catFilter}
                 onChange={e => setCatFilter(e.target.value as VacancyCategory | "all")}
-                className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
               >
                 <option value="all">All roles</option>
                 {(Object.keys(CATEGORY_LABELS) as VacancyCategory[]).map(k => (
@@ -633,7 +633,7 @@ export default function VacancyMonitorPage() {
               <select
                 value={dateFilter}
                 onChange={e => setDateFilter(e.target.value as "all" | "today" | "week" | "month")}
-                className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
               >
                 <option value="all">Any date</option>
                 <option value="today">Today</option>
@@ -645,7 +645,7 @@ export default function VacancyMonitorPage() {
               <select
                 value={sourceFilter}
                 onChange={e => setSourceFilter(e.target.value as VacancySourceId | "all")}
-                className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
               >
                 <option value="all">All sources</option>
                 {(Object.keys(SOURCE_LABELS) as VacancySourceId[]).map(k => (
@@ -658,8 +658,8 @@ export default function VacancyMonitorPage() {
                 onClick={() => setHideInSystem(v => !v)}
                 className={`flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border transition-colors ${
                   hideInSystem
-                    ? "bg-[#7C3AED]/20 border-[#7C3AED]/30 text-[#a78bfa]"
-                    : "border-[#1e3a5f] text-[#94a3b8] hover:text-white"
+                    ? "bg-[#2D4A2D]/20 border-[#2D4A2D]/30 text-[#3D6B3D]"
+                    : "border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D]"
                 }`}
               >
                 {hideInSystem ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -668,14 +668,14 @@ export default function VacancyMonitorPage() {
             </div>
 
             {/* Result count */}
-            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[#1e3a5f]">
-              <span className="text-[#4a6fa5] text-xs">
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[rgba(45,74,45,0.15)]">
+              <span className="text-[#6B7280] text-xs">
                 {filtered.length} listing{filtered.length !== 1 ? "s" : ""}
                 {search || catFilter !== "all" || dateFilter !== "all" || sourceFilter !== "all"
                   ? " (filtered)" : ""}
               </span>
               {totalInSystem > 0 && (
-                <span className="text-[#10b981] text-xs flex items-center gap-1">
+                <span className="text-[#4CAF50] text-xs flex items-center gap-1">
                   <CheckCircle2 size={11} />
                   {totalInSystem} already in your client database
                 </span>
@@ -685,14 +685,14 @@ export default function VacancyMonitorPage() {
 
           {/* Listings grid */}
           {loading && listings.length === 0 ? (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-16 text-center">
-              <Loader2 size={32} className="text-[#7C3AED] mx-auto mb-3 animate-spin" />
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-16 text-center">
+              <Loader2 size={32} className="text-[#2D4A2D] mx-auto mb-3 animate-spin" />
               <p className="text-[#94a3b8] text-sm">Fetching from Arbeitnow, RemoteOK, Jobicy, Findwork, EuroJobs &amp; Startup.jobs…</p>
-              <p className="text-[#4a6fa5] text-xs mt-1">This takes around 10–20 seconds</p>
+              <p className="text-[#6B7280] text-xs mt-1">This takes around 10–20 seconds</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-12 text-center">
-              <Inbox size={32} className="text-[#1e3a5f] mx-auto mb-3" />
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-12 text-center">
+              <Inbox size={32} className="text-[rgba(45,74,45,0.15)] mx-auto mb-3" />
               <p className="text-[#94a3b8] text-sm">
                 {listings.length === 0
                   ? "No vacancies found. Try refreshing."
@@ -701,7 +701,7 @@ export default function VacancyMonitorPage() {
               {listings.length > 0 && (
                 <button
                   onClick={() => { setSearch(""); setCatFilter("all"); setDateFilter("all"); setSourceFilter("all"); setHideInSystem(false); }}
-                  className="text-[#7C3AED] text-xs mt-2"
+                  className="text-[#2D4A2D] text-xs mt-2"
                 >
                   Clear filters
                 </button>
@@ -743,10 +743,10 @@ export default function VacancyMonitorPage() {
       {tab === "watchlist" && (
         <div className="space-y-3">
           {watchlist.length === 0 ? (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-12 text-center">
-              <Star size={32} className="text-[#1e3a5f] mx-auto mb-3" />
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-12 text-center">
+              <Star size={32} className="text-[rgba(45,74,45,0.15)] mx-auto mb-3" />
               <p className="text-[#94a3b8] text-sm">Your watchlist is empty.</p>
-              <p className="text-[#4a6fa5] text-xs mt-1">
+              <p className="text-[#6B7280] text-xs mt-1">
                 Bookmark interesting vacancies from the listings tab.
               </p>
             </div>

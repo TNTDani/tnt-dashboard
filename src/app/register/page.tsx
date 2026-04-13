@@ -43,12 +43,12 @@ export default function RegisterPage() {
   };
 
   const INP =
-    "w-full bg-[#0d1b2a] border border-[rgba(124,58,237,0.2)] rounded-lg px-4 py-2.5 pl-10 text-[#F5F5F5] text-sm placeholder-[#4B5563] focus:outline-none focus:border-[#7C3AED] transition-colors";
+    "w-full bg-white border border-[rgba(45,74,45,0.2)] rounded-lg px-4 py-2.5 pl-10 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors";
 
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: "#0d1b2a" }}
+      style={{ background: "#EDEDEB" }}
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -61,22 +61,22 @@ export default function RegisterPage() {
           <h1
             className="text-2xl font-bold tracking-tight"
             style={{
-              background: "linear-gradient(135deg, #A855F7 0%, #7C3AED 100%)",
+              background: "#2D4A2D",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
           >
-            TNT Dashboard
+            Orchard
           </h1>
-          <p className="text-[#4B5563] text-sm mt-1">Create your agency account</p>
+          <p className="text-[#6B7280] text-sm mt-1">Create your agency account</p>
         </div>
 
         {/* Card */}
         <div
           className="rounded-2xl p-8"
           style={{
-            background: "#111e2d",
-            border: "1px solid rgba(124,58,237,0.15)",
+            background: "#FFFFFF",
+            border: "1px solid rgba(45,74,45,0.15)",
           }}
         >
           {success ? (
@@ -85,44 +85,44 @@ export default function RegisterPage() {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center py-6"
             >
-              <p className="text-[#10B981] font-semibold text-lg">Account created!</p>
-              <p className="text-[#4B5563] text-sm mt-1">Redirecting to dashboard…</p>
+              <p className="text-[#4CAF50] font-semibold text-lg">Account created!</p>
+              <p className="text-[#6B7280] text-sm mt-1">Redirecting to dashboard…</p>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Agency name */}
               <div>
-                <label className="block text-[#A0A0A0] text-xs font-medium mb-1.5">
+                <label className="block text-[#6B7280] text-xs font-medium mb-1.5">
                   Agency name
                 </label>
                 <div className="relative">
                   <Building2
                     size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
                   />
                   <input
                     type="text"
                     value={agencyName}
                     onChange={(e) => setAgencyName(e.target.value)}
-                    placeholder="TrueNorth Talent"
+                    placeholder="Orchard"
                     className={INP}
                     required
                   />
                 </div>
-                <p className="text-[#4B5563] text-[11px] mt-1">
+                <p className="text-[#6B7280] text-[11px] mt-1">
                   If your agency already exists, typing its exact name will join it.
                 </p>
               </div>
 
               {/* Your name */}
               <div>
-                <label className="block text-[#A0A0A0] text-xs font-medium mb-1.5">
+                <label className="block text-[#6B7280] text-xs font-medium mb-1.5">
                   Your name
                 </label>
                 <div className="relative">
                   <User
                     size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
                   />
                   <input
                     type="text"
@@ -137,13 +137,13 @@ export default function RegisterPage() {
 
               {/* Email */}
               <div>
-                <label className="block text-[#A0A0A0] text-xs font-medium mb-1.5">
+                <label className="block text-[#6B7280] text-xs font-medium mb-1.5">
                   Email
                 </label>
                 <div className="relative">
                   <Mail
                     size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
                   />
                   <input
                     type="email"
@@ -158,13 +158,13 @@ export default function RegisterPage() {
 
               {/* Password */}
               <div>
-                <label className="block text-[#A0A0A0] text-xs font-medium mb-1.5">
+                <label className="block text-[#6B7280] text-xs font-medium mb-1.5">
                   Password
                 </label>
                 <div className="relative">
                   <Lock
                     size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
                   />
                   <input
                     type={showPwd ? "text" : "password"}
@@ -178,7 +178,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPwd((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4B5563] hover:text-[#A0A0A0]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#6B7280]"
                   >
                     {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
@@ -196,15 +196,15 @@ export default function RegisterPage() {
                 type="submit"
                 disabled={loading}
                 className="w-full py-2.5 rounded-lg text-white text-sm font-semibold flex items-center justify-center gap-2 mt-2"
-                style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}
+                style={{ background: "#2D4A2D" }}
               >
                 {loading ? <Loader2 size={15} className="animate-spin" /> : null}
                 {loading ? "Creating account…" : "Create account"}
               </motion.button>
 
-              <p className="text-center text-[#4B5563] text-xs">
+              <p className="text-center text-[#6B7280] text-xs">
                 Already have an account?{" "}
-                <a href="/login" className="text-[#A855F7] hover:underline">
+                <a href="/login" className="text-[#3D6B3D] hover:underline">
                   Sign in
                 </a>
               </p>

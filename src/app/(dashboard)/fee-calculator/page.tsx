@@ -118,28 +118,28 @@ export default function FeeCalculatorPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold text-white mb-1">Fee Calculator</h1>
+      <h1 className="text-2xl font-bold text-[#2D4A2D] mb-1">Fee Calculator</h1>
       <p className="text-[#94a3b8] text-sm mb-6">Calculate recruitment fees and manage client agreements</p>
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
         {/* Calculator inputs */}
         <div className="xl:col-span-3 space-y-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-[#7C3AED20] flex items-center justify-center">
-                <Calculator size={16} className="text-[#7C3AED]" />
+              <div className="w-8 h-8 rounded-lg bg-[#2D4A2D20] flex items-center justify-center">
+                <Calculator size={16} className="text-[#2D4A2D]" />
               </div>
-              <p className="text-white font-semibold text-sm">Calculator</p>
+              <p className="text-[#2D4A2D] font-semibold text-sm">Calculator</p>
             </div>
 
             <div className="space-y-4">
               {/* Client selector */}
               <div>
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1">
-                  Client {!selectedClient && <span className="text-[#4a6fa5]">(Standard rates)</span>}
+                  Client {!selectedClient && <span className="text-[#6B7280]">(Standard rates)</span>}
                 </label>
                 <select
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                   value={selectedClientId}
                   onChange={e => setSelectedClientId(e.target.value)}
                 >
@@ -152,8 +152,8 @@ export default function FeeCalculatorPage() {
                 </select>
                 {selectedClient && (
                   <p className="text-[#94a3b8] text-xs mt-1">
-                    Fee type: <span className="text-[#7C3AED]">{FEE_TYPE_LABELS[selectedClient.feeAgreement.type]}</span>
-                    {' · '}Guarantee: <span className="text-[#7C3AED]">{selectedClient.guaranteePeriod} months</span>
+                    Fee type: <span className="text-[#2D4A2D]">{FEE_TYPE_LABELS[selectedClient.feeAgreement.type]}</span>
+                    {' · '}Guarantee: <span className="text-[#2D4A2D]">{selectedClient.guaranteePeriod} months</span>
                   </p>
                 )}
               </div>
@@ -164,7 +164,7 @@ export default function FeeCalculatorPage() {
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Min Gross Annual Salary (€)</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="60000"
                     value={salaryMin}
                     onChange={e => setSalaryMin(e.target.value)}
@@ -174,7 +174,7 @@ export default function FeeCalculatorPage() {
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Max Gross Annual Salary (€)</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="80000"
                     value={salaryMax}
                     onChange={e => setSalaryMax(e.target.value)}
@@ -196,8 +196,8 @@ export default function FeeCalculatorPage() {
                       disabled={!!isRateOverridden}
                       className={`px-3 py-2 rounded-lg text-sm transition-colors text-left border ${
                         seniority === opt.value && !isRateOverridden
-                          ? 'bg-[#7C3AED20] border-[#7C3AED] text-[#7C3AED]'
-                          : 'bg-[#0a1628] border-[#1e3a5f] text-[#94a3b8] hover:border-[#7C3AED40]'
+                          ? 'bg-[#2D4A2D20] border-[#2D4A2D] text-[#2D4A2D]'
+                          : 'bg-[#FFFFFF] border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2D4A2D40]'
                       } ${isRateOverridden ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
                     >
                       <span className="font-medium">{opt.label}</span>
@@ -211,7 +211,7 @@ export default function FeeCalculatorPage() {
                   <div className="mt-2">
                     <input
                       type="number"
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       placeholder="Custom % e.g. 19"
                       value={customRate}
                       onChange={e => setCustomRate(e.target.value)}
@@ -226,7 +226,7 @@ export default function FeeCalculatorPage() {
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Guarantee Period (months)</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="3"
                     value={guaranteePeriod}
                     onChange={e => setGuaranteePeriod(e.target.value)}
@@ -239,48 +239,48 @@ export default function FeeCalculatorPage() {
 
         {/* Output */}
         <div className="xl:col-span-2 space-y-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
-            <p className="text-white font-semibold text-sm mb-4">Fee Estimate</p>
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
+            <p className="text-[#2D4A2D] font-semibold text-sm mb-4">Fee Estimate</p>
 
             {minSal <= 0 ? (
               <div className="text-center py-8">
-                <Calculator size={32} className="mx-auto mb-2 text-[#1e3a5f]" />
+                <Calculator size={32} className="mx-auto mb-2 text-[rgba(45,74,45,0.15)]" />
                 <p className="text-[#94a3b8] text-sm">Enter a salary to see the fee</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {/* Effective rate */}
-                <div className="bg-[#0a1628] border border-[#7C3AED40] rounded-lg px-4 py-3 flex items-center justify-between">
+                <div className="bg-[#FFFFFF] border border-[#2D4A2D40] rounded-lg px-4 py-3 flex items-center justify-between">
                   <span className="text-[#94a3b8] text-sm">Effective rate</span>
-                  <span className="text-[#7C3AED] font-bold text-xl">
+                  <span className="text-[#2D4A2D] font-bold text-xl">
                     {effectiveRate !== null ? `${effectiveRate}%` : '—'}
                   </span>
                 </div>
 
                 {/* Retainer */}
                 {isRetainer && retainerAmount > 0 && (
-                  <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-4 py-2 flex items-center justify-between">
+                  <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-4 py-2 flex items-center justify-between">
                     <span className="text-[#94a3b8] text-xs">Upfront retainer</span>
-                    <span className="text-white font-semibold text-sm">{fmtEur(retainerAmount)}</span>
+                    <span className="text-[#2D4A2D] font-semibold text-sm">{fmtEur(retainerAmount)}</span>
                   </div>
                 )}
 
                 {/* Fee breakdown */}
                 {effectiveRate !== null && (
                   <>
-                    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-4 py-2 flex items-center justify-between">
+                    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-4 py-2 flex items-center justify-between">
                       <span className="text-[#94a3b8] text-xs">Fee at minimum</span>
-                      <span className="text-white font-semibold text-sm">{fmtEur(feeAtMin)}</span>
+                      <span className="text-[#2D4A2D] font-semibold text-sm">{fmtEur(feeAtMin)}</span>
                     </div>
                     {hasRange && (
                       <>
-                        <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-4 py-2 flex items-center justify-between">
+                        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-4 py-2 flex items-center justify-between">
                           <span className="text-[#94a3b8] text-xs">Fee at midpoint</span>
-                          <span className="text-white font-semibold text-sm">{fmtEur(feeAtMid)}</span>
+                          <span className="text-[#2D4A2D] font-semibold text-sm">{fmtEur(feeAtMid)}</span>
                         </div>
-                        <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-4 py-2 flex items-center justify-between">
+                        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-4 py-2 flex items-center justify-between">
                           <span className="text-[#94a3b8] text-xs">Fee at maximum</span>
-                          <span className="text-[#10b981] font-semibold text-sm">{fmtEur(feeAtMax)}</span>
+                          <span className="text-[#4CAF50] font-semibold text-sm">{fmtEur(feeAtMax)}</span>
                         </div>
 
                         {/* Visual bar */}
@@ -289,9 +289,9 @@ export default function FeeCalculatorPage() {
                             <span>{fmtEur(feeAtMin)}</span>
                             <span>{fmtEur(feeAtMax)}</span>
                           </div>
-                          <div className="h-2 bg-[#0a1628] border border-[#1e3a5f] rounded-full overflow-hidden">
+                          <div className="h-2 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-[#7C3AED] to-[#10b981] rounded-full"
+                              className="h-full bg-gradient-to-r from-[#2D4A2D] to-[#4CAF50] rounded-full"
                               style={{ width: '100%' }}
                             />
                           </div>
@@ -302,8 +302,8 @@ export default function FeeCalculatorPage() {
                 )}
 
                 {/* Guarantee note */}
-                <div className="mt-2 text-xs text-[#94a3b8] bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2">
-                  Guarantee period: <span className="text-white font-medium">{effectiveGuarantee} months</span>
+                <div className="mt-2 text-xs text-[#94a3b8] bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2">
+                  Guarantee period: <span className="text-[#2D4A2D] font-medium">{effectiveGuarantee} months</span>
                 </div>
 
                 {isRetainer && (
@@ -318,8 +318,8 @@ export default function FeeCalculatorPage() {
       </div>
 
       {/* Client fee agreements table */}
-      <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6">
-        <p className="text-white font-semibold text-sm mb-4">Client Fee Agreements</p>
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6">
+        <p className="text-[#2D4A2D] font-semibold text-sm mb-4">Client Fee Agreements</p>
 
         {clients.length === 0 ? (
           <div className="text-center py-8">
@@ -329,7 +329,7 @@ export default function FeeCalculatorPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#1e3a5f]">
+                <tr className="border-b border-[rgba(45,74,45,0.15)]">
                   <th className="text-left text-[#94a3b8] text-xs font-medium pb-3 pr-4">Client</th>
                   <th className="text-left text-[#94a3b8] text-xs font-medium pb-3 pr-4">Type</th>
                   <th className="text-left text-[#94a3b8] text-xs font-medium pb-3 pr-4">Rate</th>
@@ -339,15 +339,15 @@ export default function FeeCalculatorPage() {
               </thead>
               <tbody>
                 {clients.map(client => (
-                  <tr key={client.id} className="border-b border-[#1e3a5f] last:border-0">
+                  <tr key={client.id} className="border-b border-[rgba(45,74,45,0.15)] last:border-0">
                     {editingClientId === client.id ? (
                       <td colSpan={5} className="py-3">
-                        <div className="bg-[#0a1628] border border-[#7C3AED40] rounded-lg p-4">
+                        <div className="bg-[#FFFFFF] border border-[#2D4A2D40] rounded-lg p-4">
                           <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
                             <div>
                               <label className="block text-[#94a3b8] text-xs font-medium mb-1">Fee Type</label>
                               <select
-                                className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                                 value={editFeeForm.type}
                                 onChange={e => setEditFeeForm(f => ({ ...f, type: e.target.value as FeeAgreement['type'] }))}
                               >
@@ -361,7 +361,7 @@ export default function FeeCalculatorPage() {
                                 <label className="block text-[#94a3b8] text-xs font-medium mb-1">%</label>
                                 <input
                                   type="number"
-                                  className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                                   value={editFeeForm.customPercentage}
                                   onChange={e => setEditFeeForm(f => ({ ...f, customPercentage: e.target.value }))}
                                 />
@@ -373,7 +373,7 @@ export default function FeeCalculatorPage() {
                                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Upfront (€)</label>
                                   <input
                                     type="number"
-                                    className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                                     value={editFeeForm.retainerAmount}
                                     onChange={e => setEditFeeForm(f => ({ ...f, retainerAmount: e.target.value }))}
                                   />
@@ -382,7 +382,7 @@ export default function FeeCalculatorPage() {
                                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Placement %</label>
                                   <input
                                     type="number"
-                                    className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                                     value={editFeeForm.retainerPercentage}
                                     onChange={e => setEditFeeForm(f => ({ ...f, retainerPercentage: e.target.value }))}
                                   />
@@ -393,7 +393,7 @@ export default function FeeCalculatorPage() {
                               <label className="block text-[#94a3b8] text-xs font-medium mb-1">Guarantee (months)</label>
                               <input
                                 type="number"
-                                className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                                 value={editFeeForm.guaranteePeriod}
                                 onChange={e => setEditFeeForm(f => ({ ...f, guaranteePeriod: e.target.value }))}
                               />
@@ -402,13 +402,13 @@ export default function FeeCalculatorPage() {
                           <div className="flex gap-2 mt-3">
                             <button
                               onClick={() => saveClientFee(client.id)}
-                              className="flex items-center gap-1 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                              className="flex items-center gap-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                             >
                               <Check size={12} /> Save
                             </button>
                             <button
                               onClick={() => setEditingClientId(null)}
-                              className="flex items-center gap-1 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] px-3 py-1.5 rounded-lg text-xs transition-colors"
+                              className="flex items-center gap-1 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] px-3 py-1.5 rounded-lg text-xs transition-colors"
                             >
                               <X size={12} /> Cancel
                             </button>
@@ -418,7 +418,7 @@ export default function FeeCalculatorPage() {
                     ) : (
                       <>
                         <td className="py-3 pr-4">
-                          <p className="text-white font-medium">{client.companyName}</p>
+                          <p className="text-[#2D4A2D] font-medium">{client.companyName}</p>
                           <p className="text-[#94a3b8] text-xs">{client.sector}</p>
                         </td>
                         <td className="py-3 pr-4">
@@ -447,7 +447,7 @@ export default function FeeCalculatorPage() {
                         <td className="py-3">
                           <button
                             onClick={() => startEditClient(client)}
-                            className="flex items-center gap-1 text-[#7C3AED] hover:text-[#6d28d9] text-xs transition-colors"
+                            className="flex items-center gap-1 text-[#2D4A2D] hover:text-[#3D6B3D] text-xs transition-colors"
                           >
                             <Edit size={12} /> Edit
                           </button>

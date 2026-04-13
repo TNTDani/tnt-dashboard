@@ -37,7 +37,7 @@ export default function VacancyStageBar({ stage, stageLog = [], compact = false,
               key={s.id}
               title={s.label}
               className={`h-1.5 rounded-full flex-1 transition-all ${
-                active ? "bg-[#7C3AED]" : done ? "bg-[#7C3AED]/50" : "bg-[#1e3a5f]"
+                active ? "bg-[#2D4A2D]" : done ? "bg-[#2D4A2D]/50" : "bg-[rgba(45,74,45,0.15)]"
               }`}
             />
           );
@@ -63,7 +63,7 @@ export default function VacancyStageBar({ stage, stageLog = [], compact = false,
               <div className="w-full flex items-center">
                 {/* Left line */}
                 {i > 0 && (
-                  <div className={`h-0.5 flex-1 ${done || active ? "bg-[#7C3AED]" : "bg-[#1e3a5f]"}`} />
+                  <div className={`h-0.5 flex-1 ${done || active ? "bg-[#2D4A2D]" : "bg-[rgba(45,74,45,0.15)]"}`} />
                 )}
                 {/* Circle */}
                 <button
@@ -72,10 +72,10 @@ export default function VacancyStageBar({ stage, stageLog = [], compact = false,
                   title={clickable ? `Move to ${s.label}` : s.label}
                   className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all border-2 ${
                     active
-                      ? "bg-[#7C3AED] border-[#7C3AED] text-white"
+                      ? "bg-[#2D4A2D] border-[#2D4A2D] text-white"
                       : done
-                      ? "bg-[#7C3AED]/30 border-[#7C3AED]/60 text-[#7C3AED]"
-                      : "bg-[#0a1628] border-[#1e3a5f] text-[#4a6fa5]"
+                      ? "bg-[#2D4A2D]/30 border-[#2D4A2D]/60 text-[#2D4A2D]"
+                      : "bg-[#FFFFFF] border-[rgba(45,74,45,0.15)] text-[#6B7280]"
                   } ${clickable ? "cursor-pointer hover:scale-110" : "cursor-default"}`}
                 >
                   {done ? (
@@ -86,12 +86,12 @@ export default function VacancyStageBar({ stage, stageLog = [], compact = false,
                 </button>
                 {/* Right line */}
                 {i < VACANCY_STAGES.length - 1 && (
-                  <div className={`h-0.5 flex-1 ${done ? "bg-[#7C3AED]" : "bg-[#1e3a5f]"}`} />
+                  <div className={`h-0.5 flex-1 ${done ? "bg-[#2D4A2D]" : "bg-[rgba(45,74,45,0.15)]"}`} />
                 )}
               </div>
               {/* Label */}
               <span className={`text-[9px] font-medium text-center leading-tight ${
-                active ? "text-[#7C3AED]" : done ? "text-[#7C3AED]/70" : "text-[#4a6fa5]"
+                active ? "text-[#2D4A2D]" : done ? "text-[#2D4A2D]/70" : "text-[#6B7280]"
               }`}>
                 {s.label}
               </span>
@@ -102,7 +102,7 @@ export default function VacancyStageBar({ stage, stageLog = [], compact = false,
 
       {/* Last stage change log */}
       {stageLog.length > 0 && (
-        <p className="text-[10px] text-[#4a6080] mt-2 text-right">
+        <p className="text-[10px] text-[#9CA3AF] mt-2 text-right">
           Moved to {VACANCY_STAGES.find(s => s.id === stageLog[stageLog.length - 1].stage)?.label} ·{" "}
           {new Date(stageLog[stageLog.length - 1].changedAt).toLocaleDateString("en-GB", {
             day: "numeric", month: "short",

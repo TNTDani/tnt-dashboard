@@ -29,8 +29,8 @@ function EntryIcon({ type }: { type: TimelineEntry['type'] }) {
   switch (type) {
     case 'note':
       return (
-        <div className="w-7 h-7 rounded-full bg-[#7C3AED20] border border-[#7C3AED40] flex items-center justify-center flex-shrink-0">
-          <MessageSquare size={13} className="text-[#7C3AED]" />
+        <div className="w-7 h-7 rounded-full bg-[#2D4A2D20] border border-[#2D4A2D40] flex items-center justify-center flex-shrink-0">
+          <MessageSquare size={13} className="text-[#2D4A2D]" />
         </div>
       );
     case 'email_sent':
@@ -41,8 +41,8 @@ function EntryIcon({ type }: { type: TimelineEntry['type'] }) {
       );
     case 'status_change':
       return (
-        <div className="w-7 h-7 rounded-full bg-[#10b98120] border border-[#10b98140] flex items-center justify-center flex-shrink-0">
-          <RefreshCw size={13} className="text-[#10b981]" />
+        <div className="w-7 h-7 rounded-full bg-[#4CAF5020] border border-[#4CAF5040] flex items-center justify-center flex-shrink-0">
+          <RefreshCw size={13} className="text-[#4CAF50]" />
         </div>
       );
     case 'cv_upload':
@@ -92,10 +92,10 @@ export default function Timeline({ entries, onAddNote }: TimelineProps) {
   return (
     <div className="flex flex-col gap-4">
       {/* Add note */}
-      <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
         <p className="text-white font-semibold text-sm mb-3">Add Note</p>
         <textarea
-          className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] resize-none transition-colors"
+          className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] resize-none transition-colors"
           rows={3}
           placeholder="Write a note..."
           value={noteText}
@@ -107,13 +107,13 @@ export default function Timeline({ entries, onAddNote }: TimelineProps) {
             <button
               onClick={handleAdd}
               disabled={!noteText.trim()}
-              className="bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Add Note
             </button>
             <button
               onClick={() => { setNoteText(''); setAdding(false); }}
-              className="bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors"
+              className="bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
             >
               Cancel
             </button>
@@ -122,11 +122,11 @@ export default function Timeline({ entries, onAddNote }: TimelineProps) {
       </div>
 
       {/* Timeline entries */}
-      <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
         <p className="text-white font-semibold text-sm mb-4">Activity Timeline</p>
         {sorted.length === 0 ? (
           <div className="text-center py-8">
-            <MessageSquare size={28} className="text-[#1e3a5f] mx-auto mb-2" />
+            <MessageSquare size={28} className="text-[rgba(45,74,45,0.15)] mx-auto mb-2" />
             <p className="text-[#94a3b8] text-sm">No activity yet</p>
           </div>
         ) : (
@@ -136,19 +136,19 @@ export default function Timeline({ entries, onAddNote }: TimelineProps) {
                 <div className="flex flex-col items-center">
                   <EntryIcon type={entry.type} />
                   {idx < sorted.length - 1 && (
-                    <div className="w-px flex-1 bg-[#1e3a5f] mt-1 mb-0 min-h-[16px]" />
+                    <div className="w-px flex-1 bg-[rgba(45,74,45,0.15)] mt-1 mb-0 min-h-[16px]" />
                   )}
                 </div>
                 <div className="flex-1 pb-2">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-white text-xs font-medium">{entryTypeLabel(entry.type)}</span>
-                    <span className="text-[#4a6fa5] text-[10px]">{getRelativeTime(entry.createdAt)}</span>
+                    <span className="text-[#6B7280] text-[10px]">{getRelativeTime(entry.createdAt)}</span>
                   </div>
                   <p className="text-[#94a3b8] text-sm leading-relaxed whitespace-pre-wrap">{entry.content}</p>
                   {entry.metadata && Object.keys(entry.metadata).length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {Object.entries(entry.metadata).map(([k, v]) => (
-                        <span key={k} className="text-[10px] bg-[#0a1628] border border-[#1e3a5f] px-2 py-0.5 rounded text-[#94a3b8]">
+                        <span key={k} className="text-[10px] bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] px-2 py-0.5 rounded text-[#94a3b8]">
                           {k}: {v}
                         </span>
                       ))}

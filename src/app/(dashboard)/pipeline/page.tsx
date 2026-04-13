@@ -13,8 +13,8 @@ const COLUMNS: { status: PipelineStatus; label: string; color: string; bg: strin
   { status: "sourced",     label: "Sourced",     color: "text-[#94a3b8]", bg: "bg-[#94a3b830]" },
   { status: "screened",    label: "Screened",    color: "text-[#3b82f6]", bg: "bg-[#3b82f630]" },
   { status: "shortlisted", label: "Shortlisted", color: "text-[#f59e0b]", bg: "bg-[#f59e0b30]" },
-  { status: "interviewed", label: "Interviewed", color: "text-[#7C3AED]", bg: "bg-[#7C3AED30]" },
-  { status: "placed",      label: "Placed",      color: "text-[#10b981]", bg: "bg-[#10b98130]" },
+  { status: "interviewed", label: "Interviewed", color: "text-[#2D4A2D]", bg: "bg-[#2D4A2D30]" },
+  { status: "placed",      label: "Placed",      color: "text-[#4CAF50]", bg: "bg-[#4CAF5030]" },
 ];
 
 const FEE_PRESETS = ["18", "20", "22"] as const;
@@ -188,21 +188,21 @@ function Pipeline() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Candidate Pipeline</h1>
+          <h1 className="text-2xl font-bold text-[#2D4A2D]">Candidate Pipeline</h1>
           <p className="text-[#94a3b8] mt-1">{candidates.length} candidates across {COLUMNS.length} stages</p>
         </div>
         <div className="flex items-center gap-3">
           {stageFilter && (
             <button
               onClick={() => setStageFilter(null)}
-              className="flex items-center gap-1.5 bg-[#10b981]/10 border border-[#10b981]/30 text-[#10b981] text-xs font-medium px-3 py-1.5 rounded-full hover:bg-[#10b981]/20 transition-colors"
+              className="flex items-center gap-1.5 bg-[#4CAF50]/10 border border-[#4CAF50]/30 text-[#4CAF50] text-xs font-medium px-3 py-1.5 rounded-full hover:bg-[#4CAF50]/20 transition-colors"
             >
               Showing: {stageFilter} <X size={12} />
             </button>
           )}
           <button
             onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 text-sm"
+            className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 text-sm"
           >
             <Plus size={16} /> Add Candidate
           </button>
@@ -226,10 +226,10 @@ function Pipeline() {
       {/* Add manual candidate modal */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 w-full max-w-md">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-semibold">Add Candidate</h2>
-              <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-white"><X size={18} /></button>
+              <h2 className="text-[#2D4A2D] font-semibold">Add Candidate</h2>
+              <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><X size={18} /></button>
             </div>
             <div className="space-y-4">
               {[
@@ -241,7 +241,7 @@ function Pipeline() {
                 <div key={key}>
                   <label className="text-[#94a3b8] text-xs uppercase tracking-wider font-medium block mb-1.5">{label}</label>
                   <input
-                    className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder={placeholder}
                     value={form[key as keyof typeof form]}
                     onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
@@ -251,7 +251,7 @@ function Pipeline() {
               <div>
                 <label className="text-[#94a3b8] text-xs uppercase tracking-wider font-medium block mb-1.5">Assign to Vacancy</label>
                 <select
-                  className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                   value={form.vacancyId}
                   onChange={e => setForm(f => ({ ...f, vacancyId: e.target.value }))}
                 >
@@ -263,8 +263,8 @@ function Pipeline() {
               </div>
             </div>
             <div className="flex gap-3 mt-5">
-              <button onClick={addCandidate} className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-semibold py-2.5 rounded-lg transition-all duration-200">Add</button>
-              <button onClick={() => setShowAdd(false)} className="flex-1 border border-[#1e3a5f] text-[#94a3b8] hover:text-white py-2.5 rounded-lg transition-all duration-200">Cancel</button>
+              <button onClick={addCandidate} className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold py-2.5 rounded-lg transition-all duration-200">Add</button>
+              <button onClick={() => setShowAdd(false)} className="flex-1 border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-all duration-200">Cancel</button>
             </div>
           </div>
         </div>
@@ -273,15 +273,15 @@ function Pipeline() {
       {/* Placement confirmation modal */}
       {placementTarget && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl w-full max-w-md shadow-2xl">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-md shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-[#10b981]/20 flex items-center justify-center">
-                  <Trophy size={13} className="text-[#10b981]" />
+                <div className="w-7 h-7 rounded-full bg-[#4CAF50]/20 flex items-center justify-center">
+                  <Trophy size={13} className="text-[#4CAF50]" />
                 </div>
                 <div>
-                  <h2 className="text-white font-semibold text-sm leading-none">Confirm Placement</h2>
+                  <h2 className="text-[#2D4A2D] font-semibold text-sm leading-none">Confirm Placement</h2>
                   <p className="text-[#94a3b8] text-xs mt-0.5">
                     {placementTarget.firstName}
                     {placementTarget.vacancyId && vacancies.find(v => v.id === placementTarget.vacancyId)
@@ -290,7 +290,7 @@ function Pipeline() {
                   </p>
                 </div>
               </div>
-              <button onClick={() => setPlacementTarget(null)} className="text-[#94a3b8] hover:text-white transition-colors">
+              <button onClick={() => setPlacementTarget(null)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
                 <X size={15} />
               </button>
             </div>
@@ -302,7 +302,7 @@ function Pipeline() {
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">Gross Annual Salary (€)</label>
                 <input
                   type="number"
-                  className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                   placeholder="e.g. 75000"
                   value={placementForm.salary}
                   onChange={e => setPlacementForm(f => ({ ...f, salary: e.target.value }))}
@@ -319,8 +319,8 @@ function Pipeline() {
                       onClick={() => setPlacementForm(f => ({ ...f, feePreset: p }))}
                       className={`py-2 rounded-lg text-sm font-medium transition-all ${
                         placementForm.feePreset === p
-                          ? "bg-[#7C3AED] text-white"
-                          : "bg-[#112244] border border-[#1e3a5f] text-[#94a3b8] hover:border-[#7C3AED] hover:text-white"
+                          ? "bg-[#2D4A2D] text-white"
+                          : "bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2D4A2D] hover:text-[#2D4A2D]"
                       }`}
                     >
                       {p === "custom" ? "Custom" : `${p}%`}
@@ -331,7 +331,7 @@ function Pipeline() {
                   <div className="mt-2 flex items-center gap-2">
                     <input
                       type="number"
-                      className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       placeholder="e.g. 21.5"
                       value={placementForm.customFee}
                       onChange={e => setPlacementForm(f => ({ ...f, customFee: e.target.value }))}
@@ -344,11 +344,11 @@ function Pipeline() {
               {/* Live fee calculation */}
               <div className={`rounded-lg px-4 py-3 border ${
                 modalSalary > 0
-                  ? "bg-[#10b981]/10 border-[#10b981]/30"
-                  : "bg-[#112244] border-[#1e3a5f]"
+                  ? "bg-[#4CAF50]/10 border-[#4CAF50]/30"
+                  : "bg-[#FFFFFF] border-[rgba(45,74,45,0.15)]"
               }`}>
                 <p className="text-[#94a3b8] text-xs mb-0.5">Calculated Fee</p>
-                <p className={`text-xl font-bold ${modalSalary > 0 ? "text-[#10b981]" : "text-[#4a6fa5]"}`}>
+                <p className={`text-xl font-bold ${modalSalary > 0 ? "text-[#4CAF50]" : "text-[#6B7280]"}`}>
                   {modalSalary > 0
                     ? `€${modalFeeAmount.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
                     : "Enter salary to calculate"}
@@ -364,7 +364,7 @@ function Pipeline() {
               <div>
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">Notes (optional)</label>
                 <textarea
-                  className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors resize-none"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors resize-none"
                   rows={2}
                   placeholder="e.g. start date 01-05-2026, offer confirmed by email"
                   value={placementForm.notes}
@@ -377,13 +377,13 @@ function Pipeline() {
             <div className="flex gap-2 px-5 pb-5">
               <button
                 onClick={() => setPlacementTarget(null)}
-                className="flex-1 px-4 py-2.5 rounded-lg text-sm bg-[#1e3a5f] text-[#94a3b8] hover:text-white hover:bg-[#2a4f7a] transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm bg-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[#6B7280] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmPlacement}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-[#10b981] hover:bg-[#0d9e6e] text-white font-semibold transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-[#4CAF50] hover:bg-[#0d9e6e] text-white font-semibold transition-colors"
               >
                 <Trophy size={14} /> Confirm Placement
               </button>
@@ -394,12 +394,12 @@ function Pipeline() {
 
       {/* Smart suggestion banner */}
       {showSuggestion && suggestedProfile && (
-        <div className="flex items-center gap-4 mb-6 bg-[#0d1f3c] border border-[#7C3AED]/40 rounded-xl px-5 py-3.5">
-          <div className="w-8 h-8 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] text-xs font-bold flex-shrink-0">
+        <div className="flex items-center gap-4 mb-6 bg-[#FFFFFF] border border-[#2D4A2D]/40 rounded-xl px-5 py-3.5">
+          <div className="w-8 h-8 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] text-xs font-bold flex-shrink-0">
             {suggestedProfile.firstName.charAt(0)}{suggestedProfile.lastName.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-medium leading-none mb-0.5">
+            <p className="text-[#2D4A2D] text-sm font-medium leading-none mb-0.5">
               Recently viewed: {suggestedProfile.firstName} {suggestedProfile.lastName}
             </p>
             <p className="text-[#94a3b8] text-xs truncate">
@@ -409,13 +409,13 @@ function Pipeline() {
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={() => setShowPipelineModal(true)}
-              className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
             >
               <GitMerge size={12} /> Add to Pipeline
             </button>
             <button
               onClick={() => { setShowSuggestion(false); storage.clearLastViewedCandidate(); }}
-              className="text-[#94a3b8] hover:text-white p-1 rounded transition-colors"
+              className="text-[#94a3b8] hover:text-[#2D4A2D] p-1 rounded transition-colors"
               title="Dismiss"
             >
               <X size={14} />
@@ -451,16 +451,16 @@ function Pipeline() {
                       draggable
                       onDragStart={e => { e.dataTransfer.setData("candidateId", c.id); setDragging(c.id); }}
                       onDragEnd={() => setDragging(null)}
-                      className={`bg-[#0d1f3c] border rounded-xl p-3.5 cursor-grab active:cursor-grabbing transition-all duration-200 group ${
-                        dragging === c.id ? "opacity-50 border-[#7C3AED]" : "border-[#1e3a5f] hover:border-[#7C3AED40]"
+                      className={`bg-[#FFFFFF] border rounded-xl p-3.5 cursor-grab active:cursor-grabbing transition-all duration-200 group ${
+                        dragging === c.id ? "opacity-50 border-[#2D4A2D]" : "border-[rgba(45,74,45,0.15)] hover:border-[#2D4A2D40]"
                       }`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-[#7C3AED30] flex items-center justify-center text-[#7C3AED] text-xs font-bold">
+                          <div className="w-7 h-7 rounded-full bg-[#2D4A2D30] flex items-center justify-center text-[#2D4A2D] text-xs font-bold">
                             {c.firstName.charAt(0)}
                           </div>
-                          <span className="text-white text-sm font-medium">{c.firstName}</span>
+                          <span className="text-[#2D4A2D] text-sm font-medium">{c.firstName}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           {col.status !== "shortlisted" && col.status !== "placed" && (
@@ -474,17 +474,17 @@ function Pipeline() {
                           )}
                           <button
                             onClick={() => removeCandidate(c.id)}
-                            className="text-[#1e3a5f] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                            className="text-[rgba(45,74,45,0.15)] hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                           >
                             <X size={12} />
                           </button>
                         </div>
                       </div>
                       {c.currentRole && <p className="text-[#94a3b8] text-xs mb-1 truncate">{c.currentRole}</p>}
-                      {c.currentCompany && <p className="text-[#4a6080] text-xs truncate">{c.currentCompany}</p>}
+                      {c.currentCompany && <p className="text-[#9CA3AF] text-xs truncate">{c.currentCompany}</p>}
                       {vacancy && (
-                        <div className="mt-2 pt-2 border-t border-[#1e3a5f]">
-                          <p className="text-[#7C3AED] text-[10px] flex items-center gap-1 truncate">
+                        <div className="mt-2 pt-2 border-t border-[rgba(45,74,45,0.15)]">
+                          <p className="text-[#2D4A2D] text-[10px] flex items-center gap-1 truncate">
                             <Briefcase size={10} />{vacancy.title}
                           </p>
                         </div>
@@ -492,14 +492,14 @@ function Pipeline() {
                       {c.skills.slice(0, 2).length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {c.skills.slice(0, 2).map((s, i) => (
-                            <span key={i} className="text-[#94a3b8] text-[10px] bg-[#112244] px-1.5 py-0.5 rounded">{s}</span>
+                            <span key={i} className="text-[#94a3b8] text-[10px] bg-[#FFFFFF] px-1.5 py-0.5 rounded">{s}</span>
                           ))}
-                          {c.skills.length > 2 && <span className="text-[#4a6080] text-[10px]">+{c.skills.length - 2}</span>}
+                          {c.skills.length > 2 && <span className="text-[#9CA3AF] text-[10px]">+{c.skills.length - 2}</span>}
                         </div>
                       )}
 
                       {/* Move buttons */}
-                      <div className="flex gap-1 mt-2 pt-2 border-t border-[#1e3a5f] opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1 mt-2 pt-2 border-t border-[rgba(45,74,45,0.15)] opacity-0 group-hover:opacity-100 transition-opacity">
                         {COLUMNS.filter(c2 => c2.status !== col.status).map(c2 => (
                           <button
                             key={c2.status}

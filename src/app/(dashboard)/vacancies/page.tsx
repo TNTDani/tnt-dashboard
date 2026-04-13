@@ -25,24 +25,24 @@ const SENIORITY_FILTER_GROUPS = ["Junior/Medior", "Senior", "Management"];
 const STATUS_OPTS: Vacancy["status"][] = ["open", "on-hold", "closed"];
 const STATUS_LABEL: Record<Vacancy["status"], string> = { open: "Active", "on-hold": "Prospected", closed: "Filled" };
 const STATUS_STYLES: Record<Vacancy["status"], string> = {
-  open:     "text-[#10b981] bg-[#10b98118] border-[#10b98140]",
-  "on-hold":"text-[#a78bfa] bg-[#7C3AED18] border-[#7C3AED40]",
+  open:     "text-[#4CAF50] bg-[#4CAF5018] border-[#4CAF5040]",
+  "on-hold":"text-[#3D6B3D] bg-[#2D4A2D18] border-[#2D4A2D40]",
   closed:   "text-[#94a3b8] bg-[#94a3b818] border-[#94a3b840]",
 };
 const MATCH_STATUS_STYLES: Record<CandidateVacancyMatch["status"], string> = {
-  active:    "text-[#10b981] bg-[#10b98118] border-[#10b98140]",
+  active:    "text-[#4CAF50] bg-[#4CAF5018] border-[#4CAF5040]",
   "on-hold": "text-[#f59e0b] bg-[#f59e0b18] border-[#f59e0b40]",
   rejected:  "text-[#ef4444] bg-[#ef444418] border-[#ef444440]",
-  placed:    "text-[#7C3AED] bg-[#7C3AED18] border-[#7C3AED40]",
+  placed:    "text-[#2D4A2D] bg-[#2D4A2D18] border-[#2D4A2D40]",
 };
 const FEEDBACK_STATUS_STYLES: Record<ClientFeedback["status"], string> = {
   pending:   "text-[#94a3b8] bg-[#94a3b818]",
   interview: "text-[#3b82f6] bg-[#3b82f618]",
   rejected:  "text-[#ef4444] bg-[#ef444418]",
-  offer:     "text-[#10b981] bg-[#10b98118]",
+  offer:     "text-[#4CAF50] bg-[#4CAF5018]",
 };
 const FLAG_CONFIG: Record<CandidateMatch["flag"], { icon: React.ElementType; bar: string; badge: string; label: string }> = {
-  green: { icon: CheckCircle2, bar: "bg-[#10b981]", badge: "bg-[#10b981]/15 text-[#10b981] border-[#10b981]/30", label: "Strong Match" },
+  green: { icon: CheckCircle2, bar: "bg-[#4CAF50]", badge: "bg-[#4CAF50]/15 text-[#4CAF50] border-[#4CAF50]/30", label: "Strong Match" },
   amber: { icon: AlertCircle,  bar: "bg-[#f59e0b]", badge: "bg-[#f59e0b]/15 text-[#f59e0b] border-[#f59e0b]/30", label: "Possible Fit"  },
   red:   { icon: MinusCircle,  bar: "bg-[#ef4444]", badge: "bg-[#ef4444]/15 text-[#ef4444] border-[#ef4444]/30", label: "Poor Fit"      },
 };
@@ -60,7 +60,7 @@ function seniorityGroup(level: string): string {
   return "Management";
 }
 function InputCls(extra = "") {
-  return `w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors ${extra}`;
+  return `w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors ${extra}`;
 }
 function Label({ children }: { children: React.ReactNode }) {
   return <label className="text-[#94a3b8] text-xs uppercase tracking-wider font-medium block mb-1.5">{children}</label>;
@@ -95,21 +95,21 @@ function VacancyFormFields({
               onFocus={() => setShowClientPicker(true)}
               onBlur={() => setTimeout(() => setShowClientPicker(false), 150)} />
             {showClientPicker && clients.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1 bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg shadow-xl z-20 max-h-48 overflow-y-auto">
+              <div className="absolute left-0 right-0 top-full mt-1 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg shadow-xl z-20 max-h-48 overflow-y-auto">
                 <div className="px-2 pt-2 pb-1">
-                  <input className="w-full bg-[#112244] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs placeholder-[#4a6080] focus:outline-none"
+                  <input className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs placeholder-[#9CA3AF] focus:outline-none"
                     placeholder="Search clients..." value={clientSearch}
                     onChange={e => setClientSearch(e.target.value)}
                     onMouseDown={e => e.preventDefault()} />
                 </div>
                 {filteredClients.map(c => (
                   <button key={c.id} type="button" onMouseDown={() => { setForm(f => ({ ...f, company: c.companyName })); setShowClientPicker(false); }}
-                    className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#1e3a5f] transition-colors">
+                    className="w-full text-left px-3 py-2 text-sm text-[#2D4A2D] hover:bg-[rgba(45,74,45,0.15)] transition-colors">
                     <span className="block">{c.companyName}</span>
-                    <span className="text-[#4a6080] text-xs">{c.sector}</span>
+                    <span className="text-[#9CA3AF] text-xs">{c.sector}</span>
                   </button>
                 ))}
-                {filteredClients.length === 0 && <p className="px-3 py-2 text-[#4a6080] text-xs">No clients found</p>}
+                {filteredClients.length === 0 && <p className="px-3 py-2 text-[#9CA3AF] text-xs">No clients found</p>}
               </div>
             )}
           </div>
@@ -142,14 +142,14 @@ function VacancyCard({ vacancy, candidateCount, matchCount, onView, onEdit, onDe
 }) {
   const date = new Date(vacancy.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   return (
-    <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5 flex flex-col gap-3 hover:border-[#2a4a7f] transition-colors">
+    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5 flex flex-col gap-3 hover:border-[#2a4a7f] transition-colors">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-lg bg-[#7C3AED20] flex items-center justify-center flex-shrink-0">
-            <Briefcase size={16} className="text-[#7C3AED]" />
+          <div className="w-9 h-9 rounded-lg bg-[#2D4A2D20] flex items-center justify-center flex-shrink-0">
+            <Briefcase size={16} className="text-[#2D4A2D]" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-white font-semibold text-sm leading-tight truncate">{vacancy.title}</h3>
+            <h3 className="text-[#2D4A2D] font-semibold text-sm leading-tight truncate">{vacancy.title}</h3>
             <p className="text-[#94a3b8] text-xs mt-0.5 truncate">{vacancy.company}</p>
           </div>
         </div>
@@ -158,17 +158,17 @@ function VacancyCard({ vacancy, candidateCount, matchCount, onView, onEdit, onDe
       {/* Stage bar */}
       <VacancyStageBar stage={vacancy.stage ?? "intake"} compact />
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-[#4a6fa5] text-xs bg-[#112244] px-2 py-1 rounded">{vacancy.seniorityLevel}</span>
+        <span className="text-[#6B7280] text-xs bg-[#FFFFFF] px-2 py-1 rounded">{vacancy.seniorityLevel}</span>
         <span className="text-[#94a3b8] text-xs">{vacancy.currency} {vacancy.salaryMin.toLocaleString()}–{vacancy.salaryMax.toLocaleString()}</span>
-        <span className="text-[#4a6080] text-xs flex items-center gap-1"><Users size={11} /> {candidateCount}</span>
-        {matchCount > 0 && <span className="text-[#7C3AED] text-xs flex items-center gap-1"><LinkIcon size={11} /> {matchCount} matched</span>}
-        <span className="text-[#4a6080] text-xs flex items-center gap-1 ml-auto"><CalendarDays size={11} /> {date}</span>
+        <span className="text-[#9CA3AF] text-xs flex items-center gap-1"><Users size={11} /> {candidateCount}</span>
+        {matchCount > 0 && <span className="text-[#2D4A2D] text-xs flex items-center gap-1"><LinkIcon size={11} /> {matchCount} matched</span>}
+        <span className="text-[#9CA3AF] text-xs flex items-center gap-1 ml-auto"><CalendarDays size={11} /> {date}</span>
       </div>
-      <div className="flex items-center gap-2 pt-1 border-t border-[#1e3a5f]">
-        <button onClick={onView} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-white border border-[#1e3a5f] hover:border-[#2a4a7f] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Eye size={11} /> View</button>
-        <button onClick={onEdit} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-white border border-[#1e3a5f] hover:border-[#2a4a7f] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Pencil size={11} /> Edit</button>
-        <button onClick={onMatch} className="flex items-center gap-1.5 bg-[#7C3AED]/15 hover:bg-[#7C3AED]/30 text-[#7C3AED] border border-[#7C3AED]/30 hover:border-[#7C3AED]/60 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Sparkles size={11} /> AI Match</button>
-        <button onClick={onDelete} className="ml-auto text-[#1e3a5f] hover:text-red-400 transition-colors p-1.5"><Trash2 size={13} /></button>
+      <div className="flex items-center gap-2 pt-1 border-t border-[rgba(45,74,45,0.15)]">
+        <button onClick={onView} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] hover:border-[#2a4a7f] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Eye size={11} /> View</button>
+        <button onClick={onEdit} className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] hover:border-[#2a4a7f] px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Pencil size={11} /> Edit</button>
+        <button onClick={onMatch} className="flex items-center gap-1.5 bg-[#2D4A2D]/15 hover:bg-[#2D4A2D]/30 text-[#2D4A2D] border border-[#2D4A2D]/30 hover:border-[#2D4A2D]/60 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"><Sparkles size={11} /> AI Match</button>
+        <button onClick={onDelete} className="ml-auto text-[rgba(45,74,45,0.15)] hover:text-red-400 transition-colors p-1.5"><Trash2 size={13} /></button>
       </div>
     </div>
   );
@@ -394,7 +394,7 @@ export default function Vacancies() {
   }, [vacancies, specStatus, specCompany, specSector, specSeniority, specSalaryMin, specSalaryMax, specDateOrder, specKeyword, companySectorMap]);
 
   const displayedVacancies = activeTab === "all" ? allFiltered : specFiltered;
-  const filterInputCls = "bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors";
+  const filterInputCls = "bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors";
 
   const filteredProfilesForMatch = profiles.filter(p => {
     const q = addMatchSearch.toLowerCase();
@@ -407,10 +407,10 @@ export default function Vacancies() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Vacancy Manager</h1>
+          <h1 className="text-2xl font-bold text-[#2D4A2D]">Vacancy Manager</h1>
           <p className="text-[#94a3b8] mt-1">{stats.active} active · {stats.filled} filled · {stats.prospected} prospected</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-semibold py-2 px-4 rounded-lg transition-all text-sm">
+        <button onClick={() => setShowAdd(true)} className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold py-2 px-4 rounded-lg transition-all text-sm">
           <Plus size={16} /> Add Vacancy
         </button>
       </div>
@@ -422,12 +422,12 @@ export default function Vacancies() {
           { id: "specific" as const, label: "Specific Vacancies", sub: "Advanced filters & search", icon: Filter, count: specFiltered.length },
         ].map(({ id, label, sub, icon: Icon, count }) => (
           <button key={id} onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-4 p-5 rounded-xl border transition-all text-left ${activeTab === id ? "bg-[#7C3AED]/15 border-[#7C3AED]/50 text-white" : "bg-[#0d1f3c] border-[#1e3a5f] text-[#94a3b8] hover:border-[#2a4a7f]"}`}>
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activeTab === id ? "bg-[#7C3AED]/30" : "bg-[#112244]"}`}>
-              <Icon size={18} className={activeTab === id ? "text-[#7C3AED]" : "text-[#4a6fa5]"} />
+            className={`flex items-center gap-4 p-5 rounded-xl border transition-all text-left ${activeTab === id ? "bg-[#2D4A2D]/15 border-[#2D4A2D]/50 text-white" : "bg-[#FFFFFF] border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2a4a7f]"}`}>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activeTab === id ? "bg-[#2D4A2D]/30" : "bg-[#FFFFFF]"}`}>
+              <Icon size={18} className={activeTab === id ? "text-[#2D4A2D]" : "text-[#6B7280]"} />
             </div>
-            <div><p className="font-semibold text-sm">{label}</p><p className="text-xs mt-0.5 text-[#4a6fa5]">{sub}</p></div>
-            <span className={`ml-auto text-xl font-bold ${activeTab === id ? "text-[#7C3AED]" : "text-[#1e3a5f]"}`}>{count}</span>
+            <div><p className="font-semibold text-sm">{label}</p><p className="text-xs mt-0.5 text-[#6B7280]">{sub}</p></div>
+            <span className={`ml-auto text-xl font-bold ${activeTab === id ? "text-[#2D4A2D]" : "text-[rgba(45,74,45,0.15)]"}`}>{count}</span>
           </button>
         ))}
       </div>
@@ -437,8 +437,8 @@ export default function Vacancies() {
         <>
           <div className="grid grid-cols-3 gap-3 mb-5">
             {[
-              { label: "Active", value: stats.active, color: "text-[#10b981]", bg: "bg-[#10b981]/10", border: "border-[#10b981]/20" },
-              { label: "Prospected", value: stats.prospected, color: "text-[#a78bfa]", bg: "bg-[#7C3AED]/10", border: "border-[#7C3AED]/20" },
+              { label: "Active", value: stats.active, color: "text-[#4CAF50]", bg: "bg-[#4CAF50]/10", border: "border-[#4CAF50]/20" },
+              { label: "Prospected", value: stats.prospected, color: "text-[#3D6B3D]", bg: "bg-[#2D4A2D]/10", border: "border-[#2D4A2D]/20" },
               { label: "Filled", value: stats.filled, color: "text-[#94a3b8]", bg: "bg-[#94a3b8]/10", border: "border-[#94a3b8]/20" },
             ].map(({ label, value, color, bg, border }) => (
               <div key={label} className={`${bg} border ${border} rounded-xl px-4 py-3 flex items-center justify-between`}>
@@ -450,7 +450,7 @@ export default function Vacancies() {
           <div className="flex items-center gap-2 mb-5">
             {(["all", ...STATUS_OPTS] as const).map(s => (
               <button key={s} onClick={() => setAllStatusFilter(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${allStatusFilter === s ? "bg-[#7C3AED] border-[#7C3AED] text-white" : "border-[#1e3a5f] text-[#94a3b8] hover:text-white hover:border-[#2a4a7f]"}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${allStatusFilter === s ? "bg-[#2D4A2D] border-[#2D4A2D] text-white" : "border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:border-[#2a4a7f]"}`}>
                 {s === "all" ? "All" : STATUS_LABEL[s]}
               </button>
             ))}
@@ -460,14 +460,14 @@ export default function Vacancies() {
 
       {/* Specific Vacancies panel */}
       {activeTab === "specific" && (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5 mb-5">
-          <div className="flex items-center gap-2 mb-4"><Filter size={14} className="text-[#7C3AED]" /><span className="text-white text-sm font-semibold">Filters</span></div>
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5 mb-5">
+          <div className="flex items-center gap-2 mb-4"><Filter size={14} className="text-[#2D4A2D]" /><span className="text-[#2D4A2D] text-sm font-semibold">Filters</span></div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div><label className="text-[#94a3b8] text-xs block mb-1">Status</label>
               <select className={filterInputCls} value={specStatus} onChange={e => setSpecStatus(e.target.value as Vacancy["status"] | "all")}>
                 <option value="all">All Statuses</option>{STATUS_OPTS.map(s => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></div>
             <div><label className="text-[#94a3b8] text-xs block mb-1">Company</label>
-              <div className="relative"><Building2 size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
+              <div className="relative"><Building2 size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
                 <input list="company-suggestions" className={`${filterInputCls} pl-8`} placeholder="Search company..." value={specCompany} onChange={e => setSpecCompany(e.target.value)} />
                 <datalist id="company-suggestions">{uniqueCompanies.map(c => <option key={c} value={c} />)}</datalist></div></div>
             <div><label className="text-[#94a3b8] text-xs block mb-1">Branch / Sector</label>
@@ -482,13 +482,13 @@ export default function Vacancies() {
               <select className={filterInputCls} value={specDateOrder} onChange={e => setSpecDateOrder(e.target.value as "newest" | "oldest")}>
                 <option value="newest">Newest First</option><option value="oldest">Oldest First</option></select></div>
             <div><label className="text-[#94a3b8] text-xs block mb-1">Keyword</label>
-              <div className="relative"><Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
+              <div className="relative"><Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
                 <input className={`${filterInputCls} pl-8`} placeholder="Title or description..." value={specKeyword} onChange={e => setSpecKeyword(e.target.value)} /></div></div>
           </div>
           {[specStatus !== "all", specCompany, specSector, specSeniority, specSalaryMin, specSalaryMax, specKeyword].filter(Boolean).length > 0 && (
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#1e3a5f]">
-              <span className="text-[#7C3AED] text-xs">{specFiltered.length} result{specFiltered.length !== 1 ? "s" : ""} found</span>
-              <button onClick={() => { setSpecStatus("all"); setSpecCompany(""); setSpecSector(""); setSpecSeniority(""); setSpecSalaryMin(""); setSpecSalaryMax(""); setSpecKeyword(""); setSpecDateOrder("newest"); }} className="text-[#4a6fa5] hover:text-white text-xs transition-colors">Clear all filters</button>
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-[rgba(45,74,45,0.15)]">
+              <span className="text-[#2D4A2D] text-xs">{specFiltered.length} result{specFiltered.length !== 1 ? "s" : ""} found</span>
+              <button onClick={() => { setSpecStatus("all"); setSpecCompany(""); setSpecSector(""); setSpecSeniority(""); setSpecSalaryMin(""); setSpecSalaryMax(""); setSpecKeyword(""); setSpecDateOrder("newest"); }} className="text-[#6B7280] hover:text-[#2D4A2D] text-xs transition-colors">Clear all filters</button>
             </div>
           )}
         </div>
@@ -496,8 +496,8 @@ export default function Vacancies() {
 
       {/* Vacancy Grid */}
       {displayedVacancies.length === 0 ? (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-16 text-center">
-          <Briefcase size={40} className="mx-auto mb-3 text-[#1e3a5f]" />
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-16 text-center">
+          <Briefcase size={40} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
           <p className="text-[#94a3b8]">{vacancies.length === 0 ? "No vacancies yet. Add your first open role." : "No vacancies match your filters."}</p>
         </div>
       ) : (
@@ -515,15 +515,15 @@ export default function Vacancies() {
       {/* ── ADD MODAL ───────────────────────────────────────────────────────── */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-semibold">New Vacancy</h2>
-              <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-white"><X size={18} /></button>
+              <h2 className="text-[#2D4A2D] font-semibold">New Vacancy</h2>
+              <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><X size={18} /></button>
             </div>
             <VacancyFormFields form={form} setForm={setForm} clients={clients} />
             <div className="flex gap-3 mt-5">
-              <button onClick={addVacancy} className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-semibold py-2.5 rounded-lg transition-all">Add Vacancy</button>
-              <button onClick={() => setShowAdd(false)} className="flex-1 border border-[#1e3a5f] text-[#94a3b8] hover:text-white py-2.5 rounded-lg transition-all">Cancel</button>
+              <button onClick={addVacancy} className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold py-2.5 rounded-lg transition-all">Add Vacancy</button>
+              <button onClick={() => setShowAdd(false)} className="flex-1 border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-all">Cancel</button>
             </div>
           </div>
         </div>
@@ -532,15 +532,15 @@ export default function Vacancies() {
       {/* ── EDIT MODAL ──────────────────────────────────────────────────────── */}
       {editingVacancy && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-              <div><h2 className="text-white font-semibold">Edit Vacancy</h2><p className="text-[#4a6fa5] text-xs mt-0.5">{editingVacancy.title}</p></div>
-              <button onClick={() => setEditingVacancy(null)} className="text-[#94a3b8] hover:text-white"><X size={18} /></button>
+              <div><h2 className="text-[#2D4A2D] font-semibold">Edit Vacancy</h2><p className="text-[#6B7280] text-xs mt-0.5">{editingVacancy.title}</p></div>
+              <button onClick={() => setEditingVacancy(null)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><X size={18} /></button>
             </div>
             <VacancyFormFields form={editForm} setForm={setEditForm} clients={clients} />
             <div className="flex gap-3 mt-5">
-              <button onClick={saveEdit} className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-semibold py-2.5 rounded-lg transition-all">Save Changes</button>
-              <button onClick={() => setEditingVacancy(null)} className="flex-1 border border-[#1e3a5f] text-[#94a3b8] hover:text-white py-2.5 rounded-lg transition-all">Cancel</button>
+              <button onClick={saveEdit} className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold py-2.5 rounded-lg transition-all">Save Changes</button>
+              <button onClick={() => setEditingVacancy(null)} className="flex-1 border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-all">Cancel</button>
             </div>
           </div>
         </div>
@@ -550,13 +550,13 @@ export default function Vacancies() {
       {viewingVacancy && (
         <div className="fixed inset-0 z-50 flex">
           <div className="flex-1 bg-black/50" onClick={() => setViewingVacancy(null)} />
-          <div className="w-[580px] bg-[#0d1f3c] border-l border-[#1e3a5f] h-full flex flex-col shadow-2xl overflow-hidden">
+          <div className="w-[580px] bg-[#FFFFFF] border-l border-[rgba(45,74,45,0.15)] h-full flex flex-col shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="px-5 py-4 border-b border-[#1e3a5f] flex-shrink-0 space-y-3">
+            <div className="px-5 py-4 border-b border-[rgba(45,74,45,0.15)] flex-shrink-0 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h2 className="text-white font-semibold">{viewingVacancy.title}</h2>
+                    <h2 className="text-[#2D4A2D] font-semibold">{viewingVacancy.title}</h2>
                     <StatusBadge status={viewingVacancy.status} />
                   </div>
                   <p className="text-[#94a3b8] text-sm">{viewingVacancy.company} · {viewingVacancy.seniorityLevel} · {viewingVacancy.currency} {viewingVacancy.salaryMin.toLocaleString()}–{viewingVacancy.salaryMax.toLocaleString()}</p>
@@ -571,8 +571,8 @@ export default function Vacancies() {
                   >
                     <CalendarDays size={11} /> Schedule Call
                   </button>
-                  <button onClick={() => { setViewingVacancy(null); openEdit(viewingVacancy); }} className="flex items-center gap-1.5 bg-[#112244] hover:bg-[#1e3a5f] text-[#94a3b8] hover:text-white border border-[#1e3a5f] px-3 py-1.5 rounded-lg text-xs font-medium transition-all"><Pencil size={11} /> Edit</button>
-                  <button onClick={() => setViewingVacancy(null)} className="text-[#94a3b8] hover:text-white transition-colors"><X size={16} /></button>
+                  <button onClick={() => { setViewingVacancy(null); openEdit(viewingVacancy); }} className="flex items-center gap-1.5 bg-[#FFFFFF] hover:bg-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] px-3 py-1.5 rounded-lg text-xs font-medium transition-all"><Pencil size={11} /> Edit</button>
+                  <button onClick={() => setViewingVacancy(null)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors"><X size={16} /></button>
                 </div>
               </div>
               {/* Stage tracker */}
@@ -587,7 +587,7 @@ export default function Vacancies() {
               <div className="flex gap-1">
                 {(["overview", "matches", "feedback"] as const).map(t => (
                   <button key={t} onClick={() => setDetailTab(t)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${detailTab === t ? "bg-[#7C3AED] text-white" : "text-[#94a3b8] hover:text-white hover:bg-[#112244]"}`}>
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${detailTab === t ? "bg-[#2D4A2D] text-white" : "text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[#FFFFFF]"}`}>
                     {t === "matches" ? `Matches (${vacancyMatches(viewingVacancy.id).length})` : t === "feedback" ? `Client Feedback (${(viewingVacancy.clientFeedback ?? []).length})` : t}
                   </button>
                 ))}
@@ -602,40 +602,40 @@ export default function Vacancies() {
                 <>
                   {viewingVacancy.description && (
                     <div>
-                      <p className="text-[#7C3AED] text-xs font-bold uppercase tracking-wider mb-2">Description</p>
+                      <p className="text-[#2D4A2D] text-xs font-bold uppercase tracking-wider mb-2">Description</p>
                       <p className="text-[#94a3b8] text-sm leading-relaxed">{viewingVacancy.description}</p>
                     </div>
                   )}
                   {viewingVacancy.requirements.length > 0 && (
                     <div>
-                      <p className="text-[#7C3AED] text-xs font-bold uppercase tracking-wider mb-2">Requirements</p>
+                      <p className="text-[#2D4A2D] text-xs font-bold uppercase tracking-wider mb-2">Requirements</p>
                       <div className="flex flex-wrap gap-1.5">
                         {viewingVacancy.requirements.map((r, i) => (
-                          <span key={i} className="text-xs bg-[#112244] border border-[#1e3a5f] text-[#94a3b8] px-2 py-1 rounded">{r}</span>
+                          <span key={i} className="text-xs bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#94a3b8] px-2 py-1 rounded">{r}</span>
                         ))}
                       </div>
                     </div>
                   )}
                   {sourcingStrategies.filter(s => s.vacancyId === viewingVacancy.id).length > 0 && (
                     <div>
-                      <p className="text-[#7C3AED] text-xs font-bold uppercase tracking-wider mb-2">Sourcing Strategies</p>
+                      <p className="text-[#2D4A2D] text-xs font-bold uppercase tracking-wider mb-2">Sourcing Strategies</p>
                       {sourcingStrategies.filter(s => s.vacancyId === viewingVacancy.id).map(s => (
-                        <div key={s.id} className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg p-3 mb-2">
+                        <div key={s.id} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg p-3 mb-2">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-white text-sm font-medium">{s.jobTitle}</span>
-                            <span className="text-[#4a6080] text-xs">{new Date(s.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                            <span className="text-[#2D4A2D] text-sm font-medium">{s.jobTitle}</span>
+                            <span className="text-[#9CA3AF] text-xs">{new Date(s.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
                           </div>
-                          <div className="flex flex-wrap gap-1">{s.skills.slice(0, 5).map((sk, i) => <span key={i} className="text-[10px] bg-[#7C3AED20] text-[#a78bfa] px-1.5 py-0.5 rounded">{sk}</span>)}{s.skills.length > 5 && <span className="text-[10px] text-[#4a6080]">+{s.skills.length - 5}</span>}</div>
+                          <div className="flex flex-wrap gap-1">{s.skills.slice(0, 5).map((sk, i) => <span key={i} className="text-[10px] bg-[#2D4A2D20] text-[#3D6B3D] px-1.5 py-0.5 rounded">{sk}</span>)}{s.skills.length > 5 && <span className="text-[10px] text-[#9CA3AF]">+{s.skills.length - 5}</span>}</div>
                         </div>
                       ))}
                     </div>
                   )}
                   {candidates.filter(c => c.vacancyId === viewingVacancy.id).length > 0 && (
                     <div>
-                      <p className="text-[#7C3AED] text-xs font-bold uppercase tracking-wider mb-2">Pipeline Candidates</p>
+                      <p className="text-[#2D4A2D] text-xs font-bold uppercase tracking-wider mb-2">Pipeline Candidates</p>
                       {candidates.filter(c => c.vacancyId === viewingVacancy.id).map(c => (
-                        <div key={c.id} className="flex items-center justify-between bg-[#112244] rounded-lg px-3 py-2 mb-1">
-                          <span className="text-white text-sm">{c.firstName}</span>
+                        <div key={c.id} className="flex items-center justify-between bg-[#FFFFFF] rounded-lg px-3 py-2 mb-1">
+                          <span className="text-[#2D4A2D] text-sm">{c.firstName}</span>
                           <span className="text-[#94a3b8] text-xs capitalize">{c.status}</span>
                         </div>
                       ))}
@@ -651,34 +651,34 @@ export default function Vacancies() {
                     <div className="flex gap-1">
                       {(["all", "active", "on-hold", "rejected", "placed"] as const).map(s => (
                         <button key={s} onClick={() => setMatchFilter(s)}
-                          className={`px-2.5 py-1 rounded text-[10px] font-medium transition-all capitalize ${matchFilter === s ? "bg-[#7C3AED] text-white" : "text-[#94a3b8] hover:text-white bg-[#112244]"}`}>
+                          className={`px-2.5 py-1 rounded text-[10px] font-medium transition-all capitalize ${matchFilter === s ? "bg-[#2D4A2D] text-white" : "text-[#94a3b8] hover:text-[#2D4A2D] bg-[#FFFFFF]"}`}>
                           {s === "all" ? "All" : s}
                         </button>
                       ))}
                     </div>
-                    <button onClick={() => setShowAddMatch(s => !s)} className="flex items-center gap-1.5 bg-[#7C3AED]/15 hover:bg-[#7C3AED]/30 text-[#7C3AED] border border-[#7C3AED]/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
+                    <button onClick={() => setShowAddMatch(s => !s)} className="flex items-center gap-1.5 bg-[#2D4A2D]/15 hover:bg-[#2D4A2D]/30 text-[#2D4A2D] border border-[#2D4A2D]/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-all">
                       <Plus size={11} /> Add Match
                     </button>
                   </div>
 
                   {/* Add match search */}
                   {showAddMatch && (
-                    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-xl p-3">
+                    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-3">
                       <div className="relative mb-2">
-                        <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
-                        <input autoFocus className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg pl-8 pr-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                        <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+                        <input autoFocus className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg pl-8 pr-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                           placeholder="Search candidates by name or role..." value={addMatchSearch} onChange={e => setAddMatchSearch(e.target.value)} />
                       </div>
                       {filteredProfilesForMatch.length === 0
-                        ? <p className="text-[#4a6080] text-xs text-center py-3">{addMatchSearch ? "No candidates found" : "Type to search candidates"}</p>
+                        ? <p className="text-[#9CA3AF] text-xs text-center py-3">{addMatchSearch ? "No candidates found" : "Type to search candidates"}</p>
                         : filteredProfilesForMatch.map(p => (
                           <button key={p.id} onClick={() => addMatch(p)}
-                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-[#112244] transition-colors text-left">
-                            <div className="w-7 h-7 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] text-xs font-bold flex-shrink-0">
+                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-[#FFFFFF] transition-colors text-left">
+                            <div className="w-7 h-7 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] text-xs font-bold flex-shrink-0">
                               {p.firstName.charAt(0)}{p.lastName.charAt(0)}
                             </div>
-                            <div><p className="text-white text-xs font-medium">{p.firstName} {p.lastName}</p><p className="text-[#4a6080] text-[10px]">{p.jobTitle}</p></div>
-                            <Plus size={12} className="ml-auto text-[#7C3AED]" />
+                            <div><p className="text-[#2D4A2D] text-xs font-medium">{p.firstName} {p.lastName}</p><p className="text-[#9CA3AF] text-[10px]">{p.jobTitle}</p></div>
+                            <Plus size={12} className="ml-auto text-[#2D4A2D]" />
                           </button>
                         ))}
                     </div>
@@ -691,41 +691,41 @@ export default function Vacancies() {
                       const profile = profiles.find(p => p.id === m.candidateId);
                       if (!profile) return null;
                       return (
-                        <div key={m.id} className="bg-[#0a1628] border border-[#1e3a5f] rounded-xl p-4">
+                        <div key={m.id} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
                           <div className="flex items-start justify-between gap-3 mb-3">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] text-xs font-bold flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] text-xs font-bold flex-shrink-0">
                                 {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
                               </div>
                               <div>
-                                <p className="text-white text-sm font-medium">{profile.firstName} {profile.lastName}</p>
-                                <p className="text-[#4a6080] text-xs">{profile.jobTitle}</p>
+                                <p className="text-[#2D4A2D] text-sm font-medium">{profile.firstName} {profile.lastName}</p>
+                                <p className="text-[#9CA3AF] text-xs">{profile.jobTitle}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              {m.matchScore && <span className="text-xs font-bold text-[#7C3AED]">{m.matchScore}%</span>}
+                              {m.matchScore && <span className="text-xs font-bold text-[#2D4A2D]">{m.matchScore}%</span>}
                               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${MATCH_STATUS_STYLES[m.status]}`}>{m.status}</span>
-                              <button onClick={() => removeMatch(m.id)} className="text-[#1e3a5f] hover:text-red-400 transition-colors"><X size={12} /></button>
+                              <button onClick={() => removeMatch(m.id)} className="text-[rgba(45,74,45,0.15)] hover:text-red-400 transition-colors"><X size={12} /></button>
                             </div>
                           </div>
                           {/* Status + interview controls */}
                           <div className="flex gap-2 mb-2">
                             <select value={m.status} onChange={e => updateMatch(m.id, { status: e.target.value as CandidateVacancyMatch["status"] })}
-                              className="bg-[#112244] border border-[#1e3a5f] rounded px-2 py-1 text-white text-xs focus:outline-none">
+                              className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1 text-[#2D4A2D] text-xs focus:outline-none">
                               {(["active","on-hold","rejected","placed"] as const).map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                           </div>
                           {/* Interview section */}
-                          <div className="border-t border-[#1e3a5f] pt-3 mt-3 grid grid-cols-2 gap-2">
-                            <div><label className="text-[#4a6080] text-[10px] block mb-1">Interview Date</label>
+                          <div className="border-t border-[rgba(45,74,45,0.15)] pt-3 mt-3 grid grid-cols-2 gap-2">
+                            <div><label className="text-[#9CA3AF] text-[10px] block mb-1">Interview Date</label>
                               <input type="date" value={m.interviewDate ?? ""} onChange={e => updateMatch(m.id, { interviewDate: e.target.value })}
-                                className="w-full bg-[#112244] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs focus:outline-none" /></div>
-                            <div><label className="text-[#4a6080] text-[10px] block mb-1">Interview Type</label>
+                                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none" /></div>
+                            <div><label className="text-[#9CA3AF] text-[10px] block mb-1">Interview Type</label>
                               <select value={m.interviewType ?? ""} onChange={e => updateMatch(m.id, { interviewType: e.target.value as CandidateVacancyMatch["interviewType"] })}
-                                className="w-full bg-[#112244] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs focus:outline-none">
+                                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none">
                                 <option value="">—</option><option value="teams">Teams</option><option value="on-site">On-site</option><option value="phone">Phone</option>
                               </select></div>
-                            <div><label className="text-[#4a6080] text-[10px] block mb-1">Outcome</label>
+                            <div><label className="text-[#9CA3AF] text-[10px] block mb-1">Outcome</label>
                               <select value={m.interviewOutcome ?? ""} onChange={e => {
                                 const outcome = e.target.value as CandidateVacancyMatch["interviewOutcome"];
                                 updateMatch(m.id, { interviewOutcome: outcome });
@@ -734,20 +734,20 @@ export default function Vacancies() {
                                   handleStageChange(viewingVacancy, "offer", [...(viewingVacancy.stageLog ?? []), { id: uuidv4(), stage: "offer" as VacancyStage, changedAt: new Date().toISOString(), note: "Auto-advanced: positive interview outcome" }]);
                                 }
                               }}
-                                className="w-full bg-[#112244] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs focus:outline-none">
+                                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none">
                                 <option value="">—</option><option value="positive">Positive</option><option value="negative">Negative</option><option value="second-interview">Second Interview</option>
                               </select></div>
-                            <div><label className="text-[#4a6080] text-[10px] block mb-1">Notes</label>
+                            <div><label className="text-[#9CA3AF] text-[10px] block mb-1">Notes</label>
                               <input value={m.interviewNotes ?? ""} onChange={e => updateMatch(m.id, { interviewNotes: e.target.value })} placeholder="Interview notes..."
-                                className="w-full bg-[#112244] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs focus:outline-none placeholder-[#4a6080]" /></div>
+                                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none placeholder-[#9CA3AF]" /></div>
                           </div>
                         </div>
                       );
                     })}
                   {vacancyMatches(viewingVacancy.id).filter(m => matchFilter === "all" || m.status === matchFilter).length === 0 && !showAddMatch && (
                     <div className="text-center py-10">
-                      <UserCircle size={32} className="mx-auto mb-2 text-[#1e3a5f]" />
-                      <p className="text-[#4a6080] text-sm">No matches yet. Click &ldquo;Add Match&rdquo; to link candidates.</p>
+                      <UserCircle size={32} className="mx-auto mb-2 text-[rgba(45,74,45,0.15)]" />
+                      <p className="text-[#9CA3AF] text-sm">No matches yet. Click &ldquo;Add Match&rdquo; to link candidates.</p>
                     </div>
                   )}
                 </>
@@ -779,60 +779,60 @@ export default function Vacancies() {
                     };
 
                     return (
-                      <div key={m.candidateId} className="bg-[#0a1628] border border-[#1e3a5f] rounded-xl p-4">
+                      <div key={m.candidateId} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] text-xs font-bold">
+                            <div className="w-7 h-7 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] text-xs font-bold">
                               {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
                             </div>
-                            <div><p className="text-white text-sm font-medium">{profile.firstName} {profile.lastName}</p><p className="text-[#4a6080] text-[10px]">{profile.jobTitle}</p></div>
+                            <div><p className="text-[#2D4A2D] text-sm font-medium">{profile.firstName} {profile.lastName}</p><p className="text-[#9CA3AF] text-[10px]">{profile.jobTitle}</p></div>
                           </div>
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${FEEDBACK_STATUS_STYLES[fb?.status ?? "pending"]}`}>{fb?.status ?? "pending"}</span>
                         </div>
                         {/* Reaction */}
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-[#4a6080] text-xs">Reaction:</span>
+                          <span className="text-[#9CA3AF] text-xs">Reaction:</span>
                           {([
-                            { val: "positive" as const, icon: ThumbsUp, color: "text-[#10b981]", bg: "bg-[#10b981]/20 border-[#10b981]/40" },
+                            { val: "positive" as const, icon: ThumbsUp, color: "text-[#4CAF50]", bg: "bg-[#4CAF50]/20 border-[#4CAF50]/40" },
                             { val: "maybe" as const, icon: Minus, color: "text-[#f59e0b]", bg: "bg-[#f59e0b]/20 border-[#f59e0b]/40" },
                             { val: "negative" as const, icon: ThumbsDown, color: "text-[#ef4444]", bg: "bg-[#ef4444]/20 border-[#ef4444]/40" },
                           ].map(({ val, icon: Icon, color, bg }) => (
                             <button key={val} onClick={() => saveFeedback({ reaction: val })}
-                              className={`p-1.5 rounded-lg border transition-all ${fb?.reaction === val ? `${bg} ${color}` : "border-[#1e3a5f] text-[#4a6080] hover:border-[#2a4a7f]"}`}>
+                              className={`p-1.5 rounded-lg border transition-all ${fb?.reaction === val ? `${bg} ${color}` : "border-[rgba(45,74,45,0.15)] text-[#9CA3AF] hover:border-[#2a4a7f]"}`}>
                               <Icon size={13} />
                             </button>
                           )))}
                         </div>
                         {/* Status */}
                         <div className="grid grid-cols-2 gap-2 mb-2">
-                          <div><label className="text-[#4a6080] text-[10px] block mb-1">Status</label>
+                          <div><label className="text-[#9CA3AF] text-[10px] block mb-1">Status</label>
                             <select value={fb?.status ?? "pending"} onChange={e => saveFeedback({ status: e.target.value as ClientFeedback["status"] })}
-                              className="w-full bg-[#112244] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs focus:outline-none">
+                              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none">
                               <option value="pending">Pending</option><option value="interview">Interview</option><option value="rejected">Rejected</option><option value="offer">Offer</option>
                             </select></div>
                           <div className="flex items-end">
                             <button onClick={() => saveFeedback({ interviewRequested: !fb?.interviewRequested, status: !fb?.interviewRequested ? "interview" : fb.status })}
-                              className={`w-full py-1.5 px-3 rounded-lg text-xs font-medium border transition-all ${fb?.interviewRequested ? "bg-[#3b82f6]/20 border-[#3b82f6]/40 text-[#3b82f6]" : "border-[#1e3a5f] text-[#94a3b8] hover:border-[#2a4a7f]"}`}>
+                              className={`w-full py-1.5 px-3 rounded-lg text-xs font-medium border transition-all ${fb?.interviewRequested ? "bg-[#3b82f6]/20 border-[#3b82f6]/40 text-[#3b82f6]" : "border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2a4a7f]"}`}>
                               {fb?.interviewRequested ? "✓ Interview Requested" : "Request Interview"}
                             </button>
                           </div>
                         </div>
                         {/* Notes */}
                         <textarea value={fb?.notes ?? ""} onChange={e => saveFeedback({ notes: e.target.value })} placeholder="Client feedback notes..." rows={2}
-                          className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-xs placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] resize-none transition-colors" />
+                          className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-xs placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] resize-none transition-colors" />
                       </div>
                     );
                   })}
                   {vacancyMatches(viewingVacancy.id).length === 0 && (
-                    <div className="text-center py-10"><p className="text-[#4a6080] text-sm">Add candidates to matches first to track client feedback.</p></div>
+                    <div className="text-center py-10"><p className="text-[#9CA3AF] text-sm">Add candidates to matches first to track client feedback.</p></div>
                   )}
                 </>
               )}
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-3 border-t border-[#1e3a5f] flex-shrink-0">
-              <button onClick={() => openMatching(viewingVacancy)} className="w-full flex items-center justify-center gap-2 bg-[#7C3AED]/15 hover:bg-[#7C3AED]/30 text-[#7C3AED] border border-[#7C3AED]/30 hover:border-[#7C3AED]/60 py-2.5 rounded-lg text-sm font-medium transition-all">
+            <div className="px-5 py-3 border-t border-[rgba(45,74,45,0.15)] flex-shrink-0">
+              <button onClick={() => openMatching(viewingVacancy)} className="w-full flex items-center justify-center gap-2 bg-[#2D4A2D]/15 hover:bg-[#2D4A2D]/30 text-[#2D4A2D] border border-[#2D4A2D]/30 hover:border-[#2D4A2D]/60 py-2.5 rounded-lg text-sm font-medium transition-all">
                 <Sparkles size={14} /> Find Matching Candidates with AI
               </button>
             </div>
@@ -844,19 +844,19 @@ export default function Vacancies() {
       {matchingVacancy && (
         <div className="fixed inset-0 z-[60] flex">
           <div className="flex-1 bg-black/50" onClick={() => setMatchingVacancy(null)} />
-          <div className="w-[480px] bg-[#0d1f3c] border-l border-[#1e3a5f] h-full flex flex-col shadow-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#1e3a5f] flex items-start justify-between gap-3 flex-shrink-0">
+          <div className="w-[480px] bg-[#FFFFFF] border-l border-[rgba(45,74,45,0.15)] h-full flex flex-col shadow-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-[rgba(45,74,45,0.15)] flex items-start justify-between gap-3 flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/20 flex items-center justify-center"><Sparkles size={15} className="text-[#7C3AED]" /></div>
-                <div><h2 className="text-white font-semibold text-sm">AI Candidate Matching</h2><p className="text-[#94a3b8] text-xs mt-0.5 truncate max-w-[280px]">{matchingVacancy.title} at {matchingVacancy.company}</p></div>
+                <div className="w-8 h-8 rounded-lg bg-[#2D4A2D]/20 flex items-center justify-center"><Sparkles size={15} className="text-[#2D4A2D]" /></div>
+                <div><h2 className="text-[#2D4A2D] font-semibold text-sm">AI Candidate Matching</h2><p className="text-[#94a3b8] text-xs mt-0.5 truncate max-w-[280px]">{matchingVacancy.title} at {matchingVacancy.company}</p></div>
               </div>
-              <button onClick={() => setMatchingVacancy(null)} className="text-[#94a3b8] hover:text-white transition-colors mt-0.5"><X size={16} /></button>
+              <button onClick={() => setMatchingVacancy(null)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors mt-0.5"><X size={16} /></button>
             </div>
             <div className="flex-1 overflow-y-auto">
               {matchLoading && (
                 <div className="flex flex-col items-center justify-center h-64 gap-4">
-                  <Loader2 size={28} className="text-[#7C3AED] animate-spin" />
-                  <div className="text-center"><p className="text-white text-sm font-medium">Analysing {profiles.length} candidates...</p><p className="text-[#94a3b8] text-xs mt-1">Scoring against vacancy requirements</p></div>
+                  <Loader2 size={28} className="text-[#2D4A2D] animate-spin" />
+                  <div className="text-center"><p className="text-[#2D4A2D] text-sm font-medium">Analysing {profiles.length} candidates...</p><p className="text-[#94a3b8] text-xs mt-1">Scoring against vacancy requirements</p></div>
                 </div>
               )}
               {matchError && !matchLoading && <div className="m-5 bg-[#ef4444]/10 border border-[#ef4444]/30 rounded-lg p-4"><p className="text-[#ef4444] text-sm">{matchError}</p></div>}
@@ -875,21 +875,21 @@ export default function Vacancies() {
                     const cfg = FLAG_CONFIG[match.flag];
                     const isAdded = addedToPipeline.has(match.candidateId);
                     return (
-                      <div key={match.candidateId} className="bg-[#0a1628] border border-[#1e3a5f] rounded-xl overflow-hidden">
-                        <div className="h-1 bg-[#1e3a5f]"><div className={`h-full ${cfg.bar}`} style={{ width: `${match.score}%` }} /></div>
+                      <div key={match.candidateId} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
+                        <div className="h-1 bg-[rgba(45,74,45,0.15)]"><div className={`h-full ${cfg.bar}`} style={{ width: `${match.score}%` }} /></div>
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] text-xs font-bold">{profile.firstName.charAt(0)}{profile.lastName.charAt(0)}</div>
-                              <div><p className="text-white text-sm font-medium">{profile.firstName} {profile.lastName}</p><p className="text-[#94a3b8] text-xs">{profile.jobTitle} · {profile.location}</p></div>
+                              <div className="w-8 h-8 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] text-xs font-bold">{profile.firstName.charAt(0)}{profile.lastName.charAt(0)}</div>
+                              <div><p className="text-[#2D4A2D] text-sm font-medium">{profile.firstName} {profile.lastName}</p><p className="text-[#94a3b8] text-xs">{profile.jobTitle} · {profile.location}</p></div>
                             </div>
                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${cfg.badge}`}>{match.score}%</span>
                           </div>
                           <p className="text-[#94a3b8] text-xs mb-3">{match.headline}</p>
-                          {match.strengths.map((s, i) => <div key={i} className="flex gap-1.5 mb-1"><span className="text-[#10b981] text-xs">+</span><span className="text-[#94a3b8] text-xs">{s}</span></div>)}
+                          {match.strengths.map((s, i) => <div key={i} className="flex gap-1.5 mb-1"><span className="text-[#4CAF50] text-xs">+</span><span className="text-[#94a3b8] text-xs">{s}</span></div>)}
                           {match.concerns.map((c, i) => <div key={i} className="flex gap-1.5 mb-1"><span className="text-[#f59e0b] text-xs">–</span><span className="text-[#94a3b8] text-xs">{c}</span></div>)}
                           <button onClick={() => addCandidateToPipeline(match, matchingVacancy)} disabled={isAdded}
-                            className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium mt-2 transition-all ${isAdded ? "bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 cursor-default" : "bg-[#7C3AED]/15 hover:bg-[#7C3AED]/30 text-[#7C3AED] border border-[#7C3AED]/30"}`}>
+                            className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium mt-2 transition-all ${isAdded ? "bg-[#4CAF50]/15 text-[#4CAF50] border border-[#4CAF50]/30 cursor-default" : "bg-[#2D4A2D]/15 hover:bg-[#2D4A2D]/30 text-[#2D4A2D] border border-[#2D4A2D]/30"}`}>
                             {isAdded ? <><CheckCircle2 size={12} /> Added to Pipeline</> : <><GitPullRequest size={12} /> Add to Pipeline</>}
                           </button>
                         </div>
@@ -900,8 +900,8 @@ export default function Vacancies() {
               )}
             </div>
             {!matchLoading && aiMatches.length > 0 && (
-              <div className="px-5 py-3 border-t border-[#1e3a5f] flex-shrink-0">
-                <p className="text-[#4a6fa5] text-[10px] text-center">Scored {aiMatches.length} of {profiles.length} candidates · Powered by Claude</p>
+              <div className="px-5 py-3 border-t border-[rgba(45,74,45,0.15)] flex-shrink-0">
+                <p className="text-[#6B7280] text-[10px] text-center">Scored {aiMatches.length} of {profiles.length} candidates · Powered by Claude</p>
               </div>
             )}
           </div>

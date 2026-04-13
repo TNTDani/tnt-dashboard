@@ -58,7 +58,7 @@ export default function IntakePage() {
   return (
     <div
       style={{ fontFamily: "'Inter', sans-serif" }}
-      className="min-h-screen bg-[#0a1628] flex flex-col"
+      className="min-h-screen bg-[#FFFFFF] flex flex-col"
     >
       {/* Google Fonts: Inter */}
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');`}</style>
@@ -66,16 +66,16 @@ export default function IntakePage() {
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(circle, #2D4A2D 0%, transparent 70%)' }} />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-6"
-          style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(circle, #2D4A2D 0%, transparent 70%)' }} />
       </div>
 
       {/* Header */}
-      <header className="relative flex items-center justify-between px-8 py-5 border-b border-[#1e3a5f]">
+      <header className="relative flex items-center justify-between px-8 py-5 border-b border-[rgba(45,74,45,0.15)]">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#7C3AED] flex items-center justify-center flex-shrink-0"
-            style={{ boxShadow: '0 0 20px rgba(124,58,237,0.4)' }}>
+          <div className="w-9 h-9 rounded-lg bg-[#2D4A2D] flex items-center justify-center flex-shrink-0"
+            style={{ boxShadow: '0 0 20px rgba(45,74,45,0.4)' }}>
             <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
               <circle cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5"/>
               <circle cx="24" cy="24" r="2.5" fill="white"/>
@@ -88,8 +88,8 @@ export default function IntakePage() {
             </svg>
           </div>
           <div>
-            <p className="text-white font-bold text-sm leading-none">TrueNorth <span className="text-[#9d65f5]">Talent</span></p>
-            <p className="text-[#4a6fa5] text-[10px] font-semibold tracking-widest uppercase mt-0.5">Amsterdam</p>
+            <p className="text-[#2D4A2D] font-bold text-sm leading-none" style={{fontFamily: "var(--font-nunito),Nunito,sans-serif"}}>Orchard</p>
+            <p className="text-[#6B7280] text-[10px] font-semibold tracking-widest uppercase mt-0.5">Amsterdam</p>
           </div>
         </div>
         <p className="text-[#94a3b8] text-xs hidden sm:block">Specialist Tech &amp; Management Recruitment</p>
@@ -100,22 +100,22 @@ export default function IntakePage() {
         {submitted ? (
           /* ── Thank you state ── */
           <div className="w-full max-w-lg text-center py-16">
-            <div className="w-16 h-16 rounded-2xl bg-[#7C3AED20] border border-[#7C3AED40] flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 size={32} className="text-[#9d65f5]" />
+            <div className="w-16 h-16 rounded-2xl bg-[#2D4A2D20] border border-[#2D4A2D40] flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 size={32} className="text-[#a8e6cf]" />
             </div>
-            <h2 className="text-white text-2xl font-bold mb-3">Request received!</h2>
+            <h2 className="text-[#2D4A2D] text-2xl font-bold mb-3">Request received!</h2>
             <p className="text-[#94a3b8] text-base leading-relaxed">
               Thank you! Dani will be in touch within 24 hours.
             </p>
-            <p className="text-[#4a6fa5] text-sm mt-4">
-              Questions? Email <a href="mailto:dani@truenorthtalent.nl" className="text-[#9d65f5] hover:underline">dani@truenorthtalent.nl</a>
+            <p className="text-[#6B7280] text-sm mt-4">
+              Questions? Email <a href="mailto:dani@orchard.io" className="text-[#a8e6cf] hover:underline">dani@orchard.io</a>
             </p>
           </div>
         ) : (
           <div className="w-full max-w-xl">
             {/* Intro */}
             <div className="text-center mb-10">
-              <h1 className="text-white text-3xl font-extrabold mb-2 tracking-tight">
+              <h1 className="text-[#2D4A2D] text-3xl font-extrabold mb-2 tracking-tight">
                 Submit a Hiring Request
               </h1>
               <p className="text-[#94a3b8] text-base">
@@ -134,7 +134,7 @@ export default function IntakePage() {
                     value={form.companyName}
                     onChange={e => set('companyName', e.target.value)}
                     placeholder="Acme Technologies"
-                    className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors"
                   />
                 </div>
                 <div>
@@ -144,7 +144,7 @@ export default function IntakePage() {
                     value={form.contactName}
                     onChange={e => set('contactName', e.target.value)}
                     placeholder="Jan de Vries"
-                    className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors"
                   />
                 </div>
               </div>
@@ -158,7 +158,7 @@ export default function IntakePage() {
                   value={form.contactEmail}
                   onChange={e => set('contactEmail', e.target.value)}
                   placeholder="jan@company.com"
-                  className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors"
                 />
               </div>
 
@@ -170,7 +170,7 @@ export default function IntakePage() {
                   value={form.roleTitle}
                   onChange={e => set('roleTitle', e.target.value)}
                   placeholder="Senior Backend Engineer"
-                  className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors"
                 />
               </div>
 
@@ -185,8 +185,8 @@ export default function IntakePage() {
                       onClick={() => set('seniorityLevel', level)}
                       className={`py-2.5 px-3 rounded-lg text-sm font-medium border transition-all ${
                         form.seniorityLevel === level
-                          ? 'bg-[#7C3AED] border-[#7C3AED] text-white'
-                          : 'bg-[#0d1f3c] border-[#1e3a5f] text-[#94a3b8] hover:border-[#7C3AED40] hover:text-white'
+                          ? 'bg-[#2D4A2D] border-[#2D4A2D] text-white'
+                          : 'bg-[#FFFFFF] border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2D4A2D40] hover:text-[#2D4A2D]'
                       }`}
                     >
                       {level}
@@ -204,14 +204,14 @@ export default function IntakePage() {
                     value={form.salaryMin}
                     onChange={e => set('salaryMin', e.target.value)}
                     placeholder="Min — e.g. 70000"
-                    className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors"
                   />
                   <input
                     type="number"
                     value={form.salaryMax}
                     onChange={e => set('salaryMax', e.target.value)}
                     placeholder="Max — e.g. 90000"
-                    className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors"
                   />
                 </div>
               </div>
@@ -228,8 +228,8 @@ export default function IntakePage() {
                         onClick={() => set('workType', wt)}
                         className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border capitalize transition-all ${
                           form.workType === wt
-                            ? 'bg-[#7C3AED] border-[#7C3AED] text-white'
-                            : 'bg-[#0d1f3c] border-[#1e3a5f] text-[#94a3b8] hover:border-[#7C3AED40] hover:text-white'
+                            ? 'bg-[#2D4A2D] border-[#2D4A2D] text-white'
+                            : 'bg-[#FFFFFF] border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2D4A2D40] hover:text-[#2D4A2D]'
                         }`}
                       >
                         {wt}
@@ -243,7 +243,7 @@ export default function IntakePage() {
                     value={form.city}
                     onChange={e => set('city', e.target.value)}
                     placeholder="Amsterdam"
-                    className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors"
                   />
                 </div>
               </div>
@@ -257,20 +257,20 @@ export default function IntakePage() {
                   value={form.description}
                   onChange={e => set('description', e.target.value)}
                   placeholder="Tell us about the role, the team, must-haves and nice-to-haves..."
-                  className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors resize-none"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors resize-none"
                 />
               </div>
 
               {/* Source */}
               <div>
                 <label className="block text-xs font-semibold text-[#94a3b8] uppercase tracking-wider mb-1.5">
-                  How did you hear about us? <span className="normal-case font-normal text-[#4a6fa5]">(optional)</span>
+                  How did you hear about us? <span className="normal-case font-normal text-[#6B7280]">(optional)</span>
                 </label>
                 <input
                   value={form.source}
                   onChange={e => set('source', e.target.value)}
                   placeholder="LinkedIn, referral, cold email..."
-                  className="w-full bg-[#0d1f3c] border border-[#1e3a5f] text-white placeholder-[#3d5a80] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED40] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#2D4A2D] placeholder-[#9CA3AF] rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#2D4A2D] focus:ring-1 focus:ring-[#2D4A2D40] transition-colors"
                 />
               </div>
 
@@ -285,8 +285,8 @@ export default function IntakePage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm mt-2"
-                style={{ boxShadow: '0 0 24px rgba(124,58,237,0.3)' }}
+                className="w-full bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm mt-2"
+                style={{ boxShadow: '0 0 24px rgba(45,74,45,0.3)' }}
               >
                 {submitting ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : 'Submit Request'}
               </button>
@@ -297,11 +297,11 @@ export default function IntakePage() {
       </main>
 
       {/* Footer */}
-      <footer className="relative border-t border-[#1e3a5f] px-8 py-4 flex items-center justify-between">
-        <p className="text-[#4a6fa5] text-xs">TrueNorth Talent — Amsterdam</p>
-        <p className="text-[#4a6fa5] text-xs">
-          <a href="mailto:dani@truenorthtalent.nl" className="hover:text-[#94a3b8] transition-colors">
-            dani@truenorthtalent.nl
+      <footer className="relative border-t border-[rgba(45,74,45,0.15)] px-8 py-4 flex items-center justify-between">
+        <p className="text-[#6B7280] text-xs">Orchard — Amsterdam</p>
+        <p className="text-[#6B7280] text-xs">
+          <a href="mailto:dani@orchard.io" className="hover:text-[#94a3b8] transition-colors">
+            dani@orchard.io
           </a>
         </p>
       </footer>

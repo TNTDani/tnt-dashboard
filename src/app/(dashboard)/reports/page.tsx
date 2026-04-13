@@ -108,13 +108,13 @@ const CHART_STYLE = {
   fontSize: 11,
 };
 const tooltipStyle = {
-  backgroundColor: "#0d1f3c",
-  border: "1px solid #1e3a5f",
+  backgroundColor: "#FFFFFF",
+  border: "1px solid rgba(45,74,45,0.15)",
   borderRadius: 8,
   color: "#e2e8f0",
   fontSize: 12,
 };
-const axisColor = "#4a6fa5";
+const axisColor = "#6B7280";
 
 // ─── Metric row ───────────────────────────────────────────────────────────────
 function MetricRow({
@@ -135,7 +135,7 @@ function MetricRow({
   };
 
   return (
-    <div className="flex items-center justify-between py-2 border-b border-[#1e3a5f] last:border-0">
+    <div className="flex items-center justify-between py-2 border-b border-[rgba(45,74,45,0.15)] last:border-0">
       <span className="text-[#94a3b8] text-sm">{label}</span>
       <div className="flex items-center gap-2">
         {editing ? (
@@ -146,18 +146,18 @@ function MetricRow({
               value={draft}
               onChange={e => setDraft(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
-              className="w-20 bg-[#0a1628] border border-[#7C3AED] rounded px-2 py-0.5 text-white text-sm text-right focus:outline-none"
+              className="w-20 bg-[#FFFFFF] border border-[#2D4A2D] rounded px-2 py-0.5 text-[#2D4A2D] text-sm text-right focus:outline-none"
             />
             <button onClick={commit} className="text-green-400 hover:text-green-300"><Check size={13} /></button>
-            <button onClick={() => setEditing(false)} className="text-[#94a3b8] hover:text-white"><XIcon size={13} /></button>
+            <button onClick={() => setEditing(false)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><XIcon size={13} /></button>
           </>
         ) : (
           <>
-            <span className="text-white font-semibold text-sm">
+            <span className="text-[#2D4A2D] font-semibold text-sm">
               {prefix}{typeof value === "number" && value % 1 !== 0 ? value.toFixed(1) : value}{suffix}
             </span>
             {editable && onChange && (
-              <button onClick={() => { setDraft(String(value)); setEditing(true); }} className="text-[#4a6fa5] hover:text-[#7C3AED] transition-colors">
+              <button onClick={() => { setDraft(String(value)); setEditing(true); }} className="text-[#6B7280] hover:text-[#2D4A2D] transition-colors">
                 <Edit3 size={12} />
               </button>
             )}
@@ -172,31 +172,31 @@ function MetricRow({
 function exportReportPDF(r: WeeklyReport) {
   const m = r.metrics;
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>TrueNorth Talent — W${r.weekNumber} ${r.year} Report</title>
+<title>Orchard — W${r.weekNumber} ${r.year} Report</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; background: #fff; }
   @page { size: A4; margin: 0; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-  .header { background: #0d1f3c; color: white; padding: 28px 36px 22px; }
-  .header-logo { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #7C3AED; text-transform: uppercase; margin-bottom: 4px; }
+  .header { background: #FFFFFF; color: white; padding: 28px 36px 22px; }
+  .header-logo { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #2D4A2D; text-transform: uppercase; margin-bottom: 4px; }
   .header-title { font-size: 20px; font-weight: 700; }
   .header-sub { font-size: 12px; color: #94a3b8; margin-top: 3px; }
   .body { padding: 28px 36px; }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
   .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; }
   .card-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 4px; }
-  .card-value { font-size: 28px; font-weight: 800; color: #7C3AED; }
+  .card-value { font-size: 28px; font-weight: 800; color: #2D4A2D; }
   .card-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-  .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #7C3AED; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 12px; }
+  .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #2D4A2D; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 12px; }
   .row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
   .row span:first-child { color: #475569; }
   .row span:last-child { font-weight: 600; color: #1e293b; }
   .notes { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 13px; color: #475569; line-height: 1.6; margin-top: 20px; }
-  .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #0d1f3c; color: #94a3b8; font-size: 10px; padding: 9px 36px; display: flex; justify-content: space-between; }
+  .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #FFFFFF; color: #94a3b8; font-size: 10px; padding: 9px 36px; display: flex; justify-content: space-between; }
 </style></head><body>
 <div class="header">
-  <div class="header-logo">TrueNorth Talent</div>
+  <div class="header-logo">Orchard</div>
   <div class="header-title">Weekly Report — Week ${r.weekNumber}, ${r.year}</div>
   <div class="header-sub">${fmtDate(r.startDate)} – ${fmtDate(r.endDate)} · Generated ${fmtDate(r.generatedAt)}</div>
 </div>
@@ -218,7 +218,7 @@ function exportReportPDF(r: WeeklyReport) {
   ${r.notes ? `<div class="notes"><strong>Notes:</strong> ${r.notes}</div>` : ""}
 </div>
 <div class="footer">
-  <span>TrueNorth Talent — Confidential</span>
+  <span>Orchard — Confidential</span>
   <span>W${r.weekNumber} ${r.year}</span>
 </div>
 <script>window.onload = () => window.print();</script>
@@ -281,50 +281,50 @@ function ReportCard({
   const updateNotes = (notes: string) => onUpdate({ ...report, notes });
 
   return (
-    <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl overflow-hidden">
+    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#112244] transition-colors text-left"
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#FFFFFF] transition-colors text-left"
       >
         <div className="flex items-center gap-4">
-          <div className="w-9 h-9 rounded-lg bg-[#7C3AED20] flex items-center justify-center flex-shrink-0">
-            <FileText size={16} className="text-[#7C3AED]" />
+          <div className="w-9 h-9 rounded-lg bg-[#2D4A2D20] flex items-center justify-center flex-shrink-0">
+            <FileText size={16} className="text-[#2D4A2D]" />
           </div>
           <div>
-            <p className="text-white font-semibold text-sm">Week {report.weekNumber}, {report.year}</p>
-            <p className="text-[#4a6fa5] text-xs mt-0.5">{fmtDate(report.startDate)} – {fmtDate(report.endDate)}</p>
+            <p className="text-[#2D4A2D] font-semibold text-sm">Week {report.weekNumber}, {report.year}</p>
+            <p className="text-[#6B7280] text-xs mt-0.5">{fmtDate(report.startDate)} – {fmtDate(report.endDate)}</p>
           </div>
         </div>
         <div className="flex items-center gap-4 mr-2">
           <div className="text-right hidden sm:block">
             <p className="text-[#94a3b8] text-xs">Emails</p>
-            <p className="text-white text-sm font-semibold">{m.emailsSent}</p>
+            <p className="text-[#2D4A2D] text-sm font-semibold">{m.emailsSent}</p>
           </div>
           <div className="text-right hidden sm:block">
             <p className="text-[#94a3b8] text-xs">Placements</p>
-            <p className="text-white text-sm font-semibold">{m.placementsMade}</p>
+            <p className="text-[#2D4A2D] text-sm font-semibold">{m.placementsMade}</p>
           </div>
           <div className="text-right hidden sm:block">
             <p className="text-[#94a3b8] text-xs">Revenue</p>
-            <p className="text-[#10b981] text-sm font-semibold">{fmtMoney(m.feesReceived)}</p>
+            <p className="text-[#4CAF50] text-sm font-semibold">{fmtMoney(m.feesReceived)}</p>
           </div>
-          {expanded ? <ChevronUp size={16} className="text-[#4a6fa5]" /> : <ChevronDown size={16} className="text-[#4a6fa5]" />}
+          {expanded ? <ChevronUp size={16} className="text-[#6B7280]" /> : <ChevronDown size={16} className="text-[#6B7280]" />}
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t border-[#1e3a5f] px-5 py-4">
+        <div className="border-t border-[rgba(45,74,45,0.15)] px-5 py-4">
           <div className="grid grid-cols-2 gap-6 mb-4">
             {/* Outreach */}
             <div>
-              <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-widest mb-3">Outreach</p>
+              <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-widest mb-3">Outreach</p>
               <MetricRow label="Emails Sent"  value={m.emailsSent}  />
               <MetricRow label="Reply Rate"   value={m.replyRate}   editable suffix="%" onChange={v => updateMetric("replyRate",   v)} />
               <MetricRow label="Calls Booked" value={m.callsBooked} editable          onChange={v => updateMetric("callsBooked", v)} />
             </div>
             {/* Recruitment */}
             <div>
-              <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-widest mb-3">Recruitment</p>
+              <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-widest mb-3">Recruitment</p>
               <MetricRow label="New Prospects"    value={m.newProspects} />
               <MetricRow label="Sourced"          value={m.candidatesSourced} />
               <MetricRow label="Screened"         value={m.candidatesScreened} />
@@ -335,27 +335,27 @@ function ReportCard({
 
           {/* Revenue */}
           <div className="mb-4">
-            <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-widest mb-3">Revenue</p>
+            <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-widest mb-3">Revenue</p>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#0a1628] rounded-lg p-3">
+              <div className="bg-[#FFFFFF] rounded-lg p-3">
                 <p className="text-[#94a3b8] text-xs mb-1">Fees Invoiced</p>
-                <p className="text-white font-bold text-lg">{fmtMoney(m.feesInvoiced)}</p>
+                <p className="text-[#2D4A2D] font-bold text-lg">{fmtMoney(m.feesInvoiced)}</p>
               </div>
-              <div className="bg-[#0a1628] rounded-lg p-3">
+              <div className="bg-[#FFFFFF] rounded-lg p-3">
                 <p className="text-[#94a3b8] text-xs mb-1">Fees Received</p>
-                <p className="text-[#10b981] font-bold text-lg">{fmtMoney(m.feesReceived)}</p>
+                <p className="text-[#4CAF50] font-bold text-lg">{fmtMoney(m.feesReceived)}</p>
               </div>
             </div>
           </div>
 
           {/* Notes */}
           <div className="mb-4">
-            <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-widest mb-2">Notes</p>
+            <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-widest mb-2">Notes</p>
             <textarea
               value={report.notes}
               onChange={e => updateNotes(e.target.value)}
               rows={2}
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors resize-none"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors resize-none"
               placeholder="Add notes for this week…"
             />
           </div>
@@ -363,13 +363,13 @@ function ReportCard({
           <div className="flex items-center gap-2">
             <button
               onClick={() => exportReportPDF(report)}
-              className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
+              className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
             >
               <Download size={12} /> Download PDF
             </button>
             <button
               onClick={() => { if (confirm("Delete this report?")) onDelete(report.id); }}
-              className="flex items-center gap-1.5 text-[#4a6fa5] hover:text-red-400 px-3 py-1.5 rounded-md text-xs transition-colors"
+              className="flex items-center gap-1.5 text-[#6B7280] hover:text-red-400 px-3 py-1.5 rounded-md text-xs transition-colors"
             >
               Delete
             </button>
@@ -520,8 +520,8 @@ export default function ReportsPage() {
   }), { emails: 0, prospects: 0, sourced: 0, screened: 0, placements: 0, invoiced: 0, received: 0 });
 
   const ChartCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
-      <h3 className="text-white font-semibold text-sm mb-4">{title}</h3>
+    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
+      <h3 className="text-[#2D4A2D] font-semibold text-sm mb-4">{title}</h3>
       {children}
     </div>
   );
@@ -530,14 +530,14 @@ export default function ReportsPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Reports & Analytics</h1>
+          <h1 className="text-2xl font-bold text-[#2D4A2D]">Reports & Analytics</h1>
           <p className="text-[#94a3b8] mt-1">Weekly activity reports and performance charts</p>
         </div>
         <div className="flex items-center gap-2">
           {reports.length > 0 && activeTab === "analytics" && (
             <button
               onClick={() => exportCSV(reports)}
-              className="flex items-center gap-1.5 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-3 py-2 rounded-lg text-sm transition-colors"
+              className="flex items-center gap-1.5 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-3 py-2 rounded-lg text-sm transition-colors"
             >
               <Download size={14} /> Export CSV
             </button>
@@ -545,7 +545,7 @@ export default function ReportsPage() {
           <button
             onClick={() => generateReport(false)}
             disabled={generating}
-            className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={14} /> Generate This Week
           </button>
@@ -554,11 +554,11 @@ export default function ReportsPage() {
 
       {/* Auto-prompt banner (Monday) */}
       {autoPrompt && (
-        <div className="bg-[#7C3AED15] border border-[#7C3AED30] rounded-xl px-5 py-4 mb-6 flex items-center justify-between">
+        <div className="bg-[#2D4A2D15] border border-[#2D4A2D30] rounded-xl px-5 py-4 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Sparkles size={16} className="text-[#7C3AED]" />
+            <Sparkles size={16} className="text-[#2D4A2D]" />
             <div>
-              <p className="text-white text-sm font-medium">It's Monday — generate last week's report?</p>
+              <p className="text-[#2D4A2D] text-sm font-medium">It's Monday — generate last week's report?</p>
               <p className="text-[#94a3b8] text-xs mt-0.5">Auto-detected that last week's report is missing.</p>
             </div>
           </div>
@@ -566,11 +566,11 @@ export default function ReportsPage() {
             <button
               onClick={() => generateReport(true)}
               disabled={generating}
-              className="bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
+              className="bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
             >
               Generate
             </button>
-            <button onClick={() => setAutoPrompt(false)} className="text-[#4a6fa5] hover:text-white">
+            <button onClick={() => setAutoPrompt(false)} className="text-[#6B7280] hover:text-[#2D4A2D]">
               <XIcon size={16} />
             </button>
           </div>
@@ -578,15 +578,15 @@ export default function ReportsPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-[#0a1628] rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-[#FFFFFF] rounded-lg p-1 w-fit">
         {(["reports", "analytics"] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
               activeTab === tab
-                ? "bg-[#7C3AED] text-white"
-                : "text-[#94a3b8] hover:text-white"
+                ? "bg-[#2D4A2D] text-white"
+                : "text-[#94a3b8] hover:text-[#2D4A2D]"
             }`}
           >
             {tab === "reports" ? (
@@ -602,8 +602,8 @@ export default function ReportsPage() {
       {activeTab === "reports" && (
         <div className="space-y-3">
           {reports.length === 0 ? (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-12 text-center">
-              <AlertCircle size={32} className="text-[#1e3a5f] mx-auto mb-3" />
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-12 text-center">
+              <AlertCircle size={32} className="text-[rgba(45,74,45,0.15)] mx-auto mb-3" />
               <p className="text-[#94a3b8] text-sm">No reports yet. Generate your first weekly report above.</p>
             </div>
           ) : (
@@ -618,7 +618,7 @@ export default function ReportsPage() {
       {activeTab === "analytics" && (
         <div className="space-y-6">
           {reports.length === 0 && (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-10 text-center">
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-10 text-center">
               <p className="text-[#94a3b8] text-sm">Generate at least one report to see analytics.</p>
             </div>
           )}
@@ -628,12 +628,12 @@ export default function ReportsPage() {
               {/* All-time summary KPIs */}
               <div className="grid grid-cols-4 gap-4">
                 {[
-                  { label: "Total Emails",    value: totals.emails,     color: "text-[#7C3AED]" },
+                  { label: "Total Emails",    value: totals.emails,     color: "text-[#2D4A2D]" },
                   { label: "Sourced",          value: totals.sourced,    color: "text-[#3b82f6]" },
-                  { label: "Placements",       value: totals.placements, color: "text-[#10b981]" },
-                  { label: "Revenue Received", value: fmtMoney(totals.received), color: "text-[#10b981]" },
+                  { label: "Placements",       value: totals.placements, color: "text-[#4CAF50]" },
+                  { label: "Revenue Received", value: fmtMoney(totals.received), color: "text-[#4CAF50]" },
                 ].map(k => (
-                  <div key={k.label} className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
+                  <div key={k.label} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
                     <p className="text-[#94a3b8] text-xs mb-2">{k.label}</p>
                     <p className={`text-2xl font-bold ${k.color}`}>{k.value}</p>
                   </div>
@@ -645,11 +645,11 @@ export default function ReportsPage() {
                 <ChartCard title="Emails Sent per Week">
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={weeklyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
                       <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
                       <YAxis tick={{ fill: axisColor, fontSize: 10 }} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="emails" fill="#7C3AED" radius={[3, 3, 0, 0]} name="Emails" />
+                      <Bar dataKey="emails" fill="#2D4A2D" radius={[3, 3, 0, 0]} name="Emails" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
@@ -657,11 +657,11 @@ export default function ReportsPage() {
                 <ChartCard title="Reply Rate per Week (%)">
                   <ResponsiveContainer width="100%" height={180}>
                     <LineChart data={weeklyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
                       <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
                       <YAxis tick={{ fill: axisColor, fontSize: 10 }} domain={[0, 100]} />
                       <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v}%`, "Reply Rate"]} />
-                      <Line type="monotone" dataKey="replyRate" stroke="#a78bfa" strokeWidth={2} dot={{ fill: "#7C3AED", r: 3 }} name="Reply %" />
+                      <Line type="monotone" dataKey="replyRate" stroke="#3D6B3D" strokeWidth={2} dot={{ fill: "#2D4A2D", r: 3 }} name="Reply %" />
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartCard>
@@ -669,7 +669,7 @@ export default function ReportsPage() {
                 <ChartCard title="Candidates Sourced per Week">
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={weeklyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
                       <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
                       <YAxis tick={{ fill: axisColor, fontSize: 10 }} />
                       <Tooltip contentStyle={tooltipStyle} />
@@ -681,11 +681,11 @@ export default function ReportsPage() {
                 <ChartCard title="Placements per Month">
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={monthlyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
                       <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
                       <YAxis tick={{ fill: axisColor, fontSize: 10 }} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="placements" fill="#10b981" radius={[3, 3, 0, 0]} name="Placements" />
+                      <Bar dataKey="placements" fill="#4CAF50" radius={[3, 3, 0, 0]} name="Placements" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
@@ -693,13 +693,13 @@ export default function ReportsPage() {
                 <ChartCard title="Revenue per Month — Invoiced vs Received (€)">
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={monthlyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
                       <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
                       <YAxis tick={{ fill: axisColor, fontSize: 10 }} tickFormatter={v => `€${(v/1000).toFixed(0)}k`} />
                       <Tooltip contentStyle={tooltipStyle} formatter={(v) => [fmtMoney(Number(v))]} />
                       <Legend wrapperStyle={{ color: "#94a3b8", fontSize: 11 }} />
                       <Bar dataKey="invoiced" fill="#3b82f6" radius={[3, 3, 0, 0]} name="Invoiced" />
-                      <Bar dataKey="received" fill="#10b981" radius={[3, 3, 0, 0]} name="Received" />
+                      <Bar dataKey="received" fill="#4CAF50" radius={[3, 3, 0, 0]} name="Received" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
@@ -707,11 +707,11 @@ export default function ReportsPage() {
                 <ChartCard title="Pipeline Funnel (All Time)">
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={funnelData} layout="vertical" style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" horizontal={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" horizontal={false} />
                       <XAxis type="number" tick={{ fill: axisColor, fontSize: 10 }} />
                       <YAxis type="category" dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} width={80} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="count" fill="#7C3AED" radius={[0, 3, 3, 0]} name="Candidates" />
+                      <Bar dataKey="count" fill="#2D4A2D" radius={[0, 3, 3, 0]} name="Candidates" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>

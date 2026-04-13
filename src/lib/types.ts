@@ -343,11 +343,11 @@ export interface VacancyMonitorCache {
 export type CalendarEventType = 'interview' | 'client-call' | 'follow-up' | 'placement' | 'other';
 
 export const EVENT_COLORS: Record<CalendarEventType, { bg: string; text: string; border: string; solid: string; hex: string }> = {
-  interview:     { bg: 'bg-[#7C3AED]/20', text: 'text-[#7C3AED]', border: 'border-[#7C3AED]/50', solid: 'bg-[#7C3AED]',  hex: '#7C3AED' },
+  interview:     { bg: 'bg-[#2D4A2D]/20', text: 'text-[#2D4A2D]', border: 'border-[#2D4A2D]/50', solid: 'bg-[#2D4A2D]',  hex: '#2D4A2D' },
   'client-call': { bg: 'bg-blue-500/20',  text: 'text-blue-400',  border: 'border-blue-500/50',  solid: 'bg-blue-500',   hex: '#3b82f6' },
   'follow-up':   { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/50', solid: 'bg-amber-500',  hex: '#f59e0b' },
-  placement:     { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/50', solid: 'bg-green-500',  hex: '#10b981' },
-  other:         { bg: 'bg-[#1e3a5f]',   text: 'text-[#94a3b8]', border: 'border-[#1e3a5f]',    solid: 'bg-[#64748b]',  hex: '#64748b' },
+  placement:     { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/50', solid: 'bg-green-500',  hex: '#4CAF50' },
+  other:         { bg: 'bg-[rgba(45,74,45,0.15)]',   text: 'text-[#94a3b8]', border: 'border-[rgba(45,74,45,0.15)]',    solid: 'bg-[#64748b]',  hex: '#64748b' },
 };
 
 export interface CalendarEvent {

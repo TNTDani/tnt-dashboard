@@ -130,7 +130,7 @@ function AvatarBubble({ name, unread }: { name: string; unread: boolean }) {
   return (
     <div
       className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-        unread ? "bg-[#7C3AED] text-white" : "bg-[#1e3a5f] text-[#94a3b8]"
+        unread ? "bg-[#2D4A2D] text-white" : "bg-[rgba(45,74,45,0.15)] text-[#94a3b8]"
       }`}
     >
       {initials(name) || "?"}
@@ -148,7 +148,7 @@ function ProfileLink({
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1.5 text-xs bg-[#7C3AED]/20 text-[#a78bfa] hover:bg-[#7C3AED]/30 px-2.5 py-1 rounded-full transition-colors"
+      className="inline-flex items-center gap-1.5 text-xs bg-[#2D4A2D]/20 text-[#3D6B3D] hover:bg-[#2D4A2D]/30 px-2.5 py-1 rounded-full transition-colors"
     >
       <Icon size={11} />
       {profile.name}
@@ -299,13 +299,13 @@ function ComposeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl w-full max-w-2xl shadow-2xl">
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-2xl shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
-          <h2 className="text-white font-semibold text-sm">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
+          <h2 className="text-[#2D4A2D] font-semibold text-sm">
             {isReply ? "Reply" : "New Email"}
           </h2>
-          <button onClick={onClose} className="text-[#94a3b8] hover:text-white transition-colors">
+          <button onClick={onClose} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
             <X size={16} />
           </button>
         </div>
@@ -319,7 +319,7 @@ function ComposeModal({
                 <select
                   value={template}
                   onChange={(e) => applyTemplateLocal(e.target.value)}
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED]"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D]"
                 >
                   <option value="">— select a template —</option>
                   {EMAIL_TEMPLATES.map((t) => (
@@ -330,15 +330,15 @@ function ComposeModal({
 
               {/* Context variables — shown when a template is selected */}
               {template && (
-                <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg p-3 space-y-2">
-                  <p className="text-[#4a6fa5] text-[11px] font-medium uppercase tracking-wide mb-2">Template variables</p>
+                <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg p-3 space-y-2">
+                  <p className="text-[#6B7280] text-[11px] font-medium uppercase tracking-wide mb-2">Template variables</p>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
                       <label className="block text-[#94a3b8] text-[11px] mb-1">Candidate</label>
                       <select
                         value={selectedCandidateId}
                         onChange={(e) => handleContextChange("candidate", e.target.value)}
-                        className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-[#7C3AED]"
+                        className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none focus:border-[#2D4A2D]"
                       >
                         <option value="">— none —</option>
                         {candidates.map((c) => (
@@ -351,7 +351,7 @@ function ComposeModal({
                       <select
                         value={selectedClientId}
                         onChange={(e) => handleContextChange("client", e.target.value)}
-                        className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs focus:outline-none focus:border-[#7C3AED]"
+                        className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none focus:border-[#2D4A2D]"
                       >
                         <option value="">— none —</option>
                         {clients.map((c) => (
@@ -366,7 +366,7 @@ function ComposeModal({
                         value={selectedRole}
                         onChange={(e) => handleContextChange("role", e.target.value)}
                         placeholder="e.g. Developer"
-                        className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded px-2 py-1.5 text-white text-xs placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED]"
+                        className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded px-2 py-1.5 text-[#2D4A2D] text-xs placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D]"
                       />
                     </div>
                   </div>
@@ -393,7 +393,7 @@ function ComposeModal({
               value={to}
               onChange={(e) => setTo(e.target.value)}
               placeholder="recipient@email.com"
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED]"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D]"
             />
           </div>
 
@@ -404,7 +404,7 @@ function ComposeModal({
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Subject"
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED]"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D]"
             />
           </div>
 
@@ -415,7 +415,7 @@ function ComposeModal({
               onChange={(e) => setBody(e.target.value)}
               rows={10}
               placeholder="Write your message..."
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] resize-none font-mono leading-relaxed"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] resize-none font-mono leading-relaxed"
             />
           </div>
 
@@ -427,19 +427,19 @@ function ComposeModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-4 border-t border-[#1e3a5f]">
-          <p className="text-[#4a6fa5] text-xs">Sending from dani@truenorthtalent.nl</p>
+        <div className="flex items-center justify-between px-5 py-4 border-t border-[rgba(45,74,45,0.15)]">
+          <p className="text-[#6B7280] text-xs">Sending from dani@orchard.io</p>
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm bg-[#1e3a5f] text-[#94a3b8] hover:text-white hover:bg-[#2a4f7a] transition-colors"
+              className="px-4 py-2 rounded-lg text-sm bg-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[#6B7280] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSend}
               disabled={sending}
-              className="px-4 py-2 rounded-lg text-sm bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 rounded-lg text-sm bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               {sending && <Loader2 size={13} className="animate-spin" />}
               {sending ? "Sending…" : "Send"}
@@ -603,18 +603,18 @@ export default function EmailPage() {
     return (
       <>
         <div className="p-8 flex flex-col items-center justify-center min-h-[80vh]">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-10 text-center max-w-md w-full">
-            <div className="w-14 h-14 rounded-full bg-[#7C3AED]/20 flex items-center justify-center mx-auto mb-5">
-              <Mail size={24} className="text-[#7C3AED]" />
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-10 text-center max-w-md w-full">
+            <div className="w-14 h-14 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center mx-auto mb-5">
+              <Mail size={24} className="text-[#2D4A2D]" />
             </div>
-            <h2 className="text-white font-bold text-lg mb-2">Connect Gmail</h2>
+            <h2 className="text-[#2D4A2D] font-bold text-lg mb-2">Connect Gmail</h2>
             <p className="text-[#94a3b8] text-sm mb-8 leading-relaxed">
               Connect your Gmail account to view your inbox, send emails and
               track communication directly from the dashboard.
             </p>
             <button
               onClick={openConnectModal}
-              className="w-full bg-[#7C3AED] hover:bg-[#6d28d9] text-white py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
               <Mail size={15} />
               Connect Gmail Account
@@ -625,18 +625,18 @@ export default function EmailPage() {
         {/* Pre-OAuth email modal */}
         {showConnectModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl w-full max-w-sm shadow-2xl">
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-sm shadow-2xl">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-[#7C3AED]/20 flex items-center justify-center">
-                    <Mail size={13} className="text-[#7C3AED]" />
+                  <div className="w-7 h-7 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center">
+                    <Mail size={13} className="text-[#2D4A2D]" />
                   </div>
-                  <h2 className="text-white font-semibold text-sm">Connect your Gmail</h2>
+                  <h2 className="text-[#2D4A2D] font-semibold text-sm">Connect your Gmail</h2>
                 </div>
                 <button
                   onClick={() => setShowConnectModal(false)}
-                  className="text-[#94a3b8] hover:text-white transition-colors"
+                  className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors"
                 >
                   <X size={15} />
                 </button>
@@ -657,11 +657,11 @@ export default function EmailPage() {
                     value={connectEmail}
                     onChange={(e) => setConnectEmail(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && connectEmail.trim() && startOAuth()}
-                    placeholder="dani@truenorthtalent.nl"
+                    placeholder="dani@orchard.io"
                     autoFocus
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED]"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D]"
                   />
-                  <p className="text-[#4a6fa5] text-[11px] mt-1.5">
+                  <p className="text-[#6B7280] text-[11px] mt-1.5">
                     Google will always show the account picker so you can confirm
                     the right account is selected.
                   </p>
@@ -669,17 +669,17 @@ export default function EmailPage() {
               </div>
 
               {/* Footer */}
-              <div className="flex gap-2 px-5 py-4 border-t border-[#1e3a5f]">
+              <div className="flex gap-2 px-5 py-4 border-t border-[rgba(45,74,45,0.15)]">
                 <button
                   onClick={() => setShowConnectModal(false)}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm bg-[#1e3a5f] text-[#94a3b8] hover:text-white hover:bg-[#2a4f7a] transition-colors"
+                  className="flex-1 px-4 py-2 rounded-lg text-sm bg-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[#6B7280] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={startOAuth}
                   disabled={!connectEmail.trim()}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-medium transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 rounded-lg text-sm bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-medium transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
                 >
                   <Mail size={13} />
                   Connect
@@ -706,22 +706,22 @@ export default function EmailPage() {
   return (
     <div className="flex flex-col -m-8 h-screen overflow-hidden">
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e3a5f] flex-shrink-0">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(45,74,45,0.15)] flex-shrink-0">
         <div className="flex items-center gap-6">
           <div>
-            <h1 className="text-xl font-bold text-white leading-none">Inbox</h1>
-            <p className="text-[#94a3b8] text-xs mt-0.5">dani@truenorthtalent.nl</p>
+            <h1 className="text-xl font-bold text-[#2D4A2D] leading-none">Inbox</h1>
+            <p className="text-[#94a3b8] text-xs mt-0.5">dani@orchard.io</p>
           </div>
           {/* Tabs */}
-          <div className="flex gap-1 bg-[#0a1628] border border-[#1e3a5f] rounded-lg p-1">
+          <div className="flex gap-1 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg p-1">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all ${
                   tab === t.key
-                    ? "bg-[#7C3AED] text-white"
-                    : "text-[#94a3b8] hover:text-white"
+                    ? "bg-[#2D4A2D] text-white"
+                    : "text-[#94a3b8] hover:text-[#2D4A2D]"
                 }`}
               >
                 {t.icon}
@@ -733,28 +733,28 @@ export default function EmailPage() {
 
         <div className="flex items-center gap-2">
           {lastRefresh && (
-            <span className="text-[#4a6fa5] text-xs hidden lg:block">
+            <span className="text-[#6B7280] text-xs hidden lg:block">
               Updated {lastRefresh.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
           <button
             onClick={() => tokens && fetchList(tokens, tab)}
             disabled={loadingList}
-            className="p-2 rounded-lg text-[#94a3b8] hover:text-white hover:bg-[#1e3a5f] transition-colors"
+            className="p-2 rounded-lg text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[rgba(45,74,45,0.15)] transition-colors"
             title="Refresh"
           >
             <RefreshCw size={14} className={loadingList ? "animate-spin" : ""} />
           </button>
           <button
             onClick={() => setCompose(true)}
-            className="flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Pencil size={13} />
             Compose
           </button>
           <button
             onClick={disconnectGmail}
-            className="px-3 py-2 rounded-lg text-xs text-[#94a3b8] hover:text-white bg-[#1e3a5f] hover:bg-[#2a4f7a] transition-colors"
+            className="px-3 py-2 rounded-lg text-xs text-[#94a3b8] hover:text-[#2D4A2D] bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] transition-colors"
           >
             Disconnect
           </button>
@@ -765,7 +765,7 @@ export default function EmailPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Email list */}
         <div
-          className={`flex-shrink-0 border-r border-[#1e3a5f] overflow-y-auto ${
+          className={`flex-shrink-0 border-r border-[rgba(45,74,45,0.15)] overflow-y-auto ${
             selectedEmail ? "w-80 xl:w-96" : "flex-1"
           }`}
         >
@@ -777,12 +777,12 @@ export default function EmailPage() {
 
           {loadingList && emails.length === 0 && (
             <div className="flex items-center justify-center py-20">
-              <Loader2 size={20} className="animate-spin text-[#7C3AED]" />
+              <Loader2 size={20} className="animate-spin text-[#2D4A2D]" />
             </div>
           )}
 
           {!loadingList && emails.length === 0 && !error && (
-            <div className="flex flex-col items-center justify-center py-20 text-[#4a6fa5]">
+            <div className="flex flex-col items-center justify-center py-20 text-[#6B7280]">
               <Inbox size={32} className="mb-3 opacity-50" />
               <p className="text-sm">No emails in {tab}</p>
             </div>
@@ -797,10 +797,10 @@ export default function EmailPage() {
               <button
                 key={email.id}
                 onClick={() => setSelectedId(email.id)}
-                className={`w-full text-left px-4 py-3.5 border-b border-[#1e3a5f]/50 transition-colors ${
+                className={`w-full text-left px-4 py-3.5 border-b border-[rgba(45,74,45,0.15)]/50 transition-colors ${
                   isSelected
-                    ? "bg-[#7C3AED]/10 border-l-2 border-l-[#7C3AED]"
-                    : "hover:bg-[#1e3a5f]/40"
+                    ? "bg-[#2D4A2D]/10 border-l-2 border-l-[#2D4A2D]"
+                    : "hover:bg-[rgba(45,74,45,0.15)]/40"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -810,32 +810,32 @@ export default function EmailPage() {
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span
                           className={`text-sm truncate ${
-                            email.unread ? "font-semibold text-white" : "text-[#94a3b8]"
+                            email.unread ? "font-semibold text-[#2D4A2D]" : "text-[#94a3b8]"
                           }`}
                         >
                           {sender.name || sender.email}
                         </span>
                         {profile && (
-                          <span className="text-[10px] bg-[#7C3AED]/20 text-[#a78bfa] px-1.5 py-0.5 rounded flex-shrink-0">
+                          <span className="text-[10px] bg-[#2D4A2D]/20 text-[#3D6B3D] px-1.5 py-0.5 rounded flex-shrink-0">
                             {profile.type === "candidate" ? "Candidate" : "Client"}
                           </span>
                         )}
                       </div>
-                      <span className="text-[#4a6fa5] text-[11px] flex-shrink-0">
+                      <span className="text-[#6B7280] text-[11px] flex-shrink-0">
                         {formatDate(email.date)}
                       </span>
                     </div>
                     <p
                       className={`text-xs mb-1 truncate ${
-                        email.unread ? "text-white" : "text-[#94a3b8]"
+                        email.unread ? "text-[#2D4A2D]" : "text-[#94a3b8]"
                       }`}
                     >
                       {email.subject || "(no subject)"}
                     </p>
-                    <p className="text-[11px] text-[#4a6fa5] truncate">{email.snippet}</p>
+                    <p className="text-[11px] text-[#6B7280] truncate">{email.snippet}</p>
                   </div>
                   {email.unread && (
-                    <div className="w-2 h-2 rounded-full bg-[#7C3AED] mt-1.5 flex-shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-[#2D4A2D] mt-1.5 flex-shrink-0" />
                   )}
                 </div>
               </button>
@@ -848,19 +848,19 @@ export default function EmailPage() {
           <div className="flex-1 overflow-y-auto flex flex-col">
             {loadingEmail ? (
               <div className="flex items-center justify-center flex-1">
-                <Loader2 size={20} className="animate-spin text-[#7C3AED]" />
+                <Loader2 size={20} className="animate-spin text-[#2D4A2D]" />
               </div>
             ) : selectedEmail ? (
               <>
                 {/* Email header */}
-                <div className="px-6 py-5 border-b border-[#1e3a5f] flex-shrink-0">
+                <div className="px-6 py-5 border-b border-[rgba(45,74,45,0.15)] flex-shrink-0">
                   <div className="flex items-start justify-between gap-4 mb-4">
-                    <h2 className="text-white font-bold text-lg leading-snug">
+                    <h2 className="text-[#2D4A2D] font-bold text-lg leading-snug">
                       {selectedEmail.subject || "(no subject)"}
                     </h2>
                     <button
                       onClick={() => { setSelectedId(null); setSelectedEmail(null); }}
-                      className="text-[#94a3b8] hover:text-white transition-colors flex-shrink-0"
+                      className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors flex-shrink-0"
                     >
                       <X size={16} />
                     </button>
@@ -873,18 +873,18 @@ export default function EmailPage() {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-white text-sm font-medium">
+                        <span className="text-[#2D4A2D] text-sm font-medium">
                           {parseAddress(selectedEmail.from).name || parseAddress(selectedEmail.from).email}
                         </span>
-                        <span className="text-[#4a6fa5] text-xs">
+                        <span className="text-[#6B7280] text-xs">
                           &lt;{parseAddress(selectedEmail.from).email}&gt;
                         </span>
                         {senderProfile && <ProfileLink profile={senderProfile} />}
                       </div>
-                      <p className="text-[#4a6fa5] text-xs mt-0.5">
+                      <p className="text-[#6B7280] text-xs mt-0.5">
                         To: {selectedEmail.to}
                       </p>
-                      <p className="text-[#4a6fa5] text-xs mt-0.5">
+                      <p className="text-[#6B7280] text-xs mt-0.5">
                         {formatFullDate(selectedEmail.date)}
                       </p>
                     </div>
@@ -916,7 +916,7 @@ export default function EmailPage() {
 
                 {/* Attachments */}
                 {selectedEmail.attachments?.length > 0 && (
-                  <div className="px-6 py-4 border-t border-[#1e3a5f] flex-shrink-0">
+                  <div className="px-6 py-4 border-t border-[rgba(45,74,45,0.15)] flex-shrink-0">
                     <div className="flex items-center gap-2 mb-3">
                       <Paperclip size={13} className="text-[#94a3b8]" />
                       <span className="text-[#94a3b8] text-xs font-medium">
@@ -928,14 +928,14 @@ export default function EmailPage() {
                         <button
                           key={att.id}
                           onClick={() => tokens && downloadAttachment(tokens, att)}
-                          className="flex items-center gap-2.5 bg-[#0a1628] hover:bg-[#1e3a5f] border border-[#1e3a5f] hover:border-[#7C3AED] rounded-lg px-3 py-2 transition-colors group"
+                          className="flex items-center gap-2.5 bg-[#FFFFFF] hover:bg-[rgba(45,74,45,0.15)] border border-[rgba(45,74,45,0.15)] hover:border-[#2D4A2D] rounded-lg px-3 py-2 transition-colors group"
                         >
                           <AttachmentIcon mimeType={att.mimeType} />
                           <div className="text-left">
-                            <p className="text-white text-xs font-medium truncate max-w-[180px]">{att.filename}</p>
-                            <p className="text-[#4a6fa5] text-[10px]">{formatBytes(att.size)}</p>
+                            <p className="text-[#2D4A2D] text-xs font-medium truncate max-w-[180px]">{att.filename}</p>
+                            <p className="text-[#6B7280] text-[10px]">{formatBytes(att.size)}</p>
                           </div>
-                          <Download size={12} className="text-[#4a6fa5] group-hover:text-[#7C3AED] transition-colors ml-1" />
+                          <Download size={12} className="text-[#6B7280] group-hover:text-[#2D4A2D] transition-colors ml-1" />
                         </button>
                       ))}
                     </div>
@@ -943,10 +943,10 @@ export default function EmailPage() {
                 )}
 
                 {/* Reply bar */}
-                <div className="px-6 py-4 border-t border-[#1e3a5f] flex-shrink-0">
+                <div className="px-6 py-4 border-t border-[rgba(45,74,45,0.15)] flex-shrink-0">
                   <button
                     onClick={() => setReplying(true)}
-                    className="flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
                     <Reply size={14} />
                     Reply
@@ -959,7 +959,7 @@ export default function EmailPage() {
 
         {/* Empty state when nothing selected */}
         {!selectedId && !loadingList && emails.length > 0 && (
-          <div className="hidden xl:flex flex-1 items-center justify-center text-[#4a6fa5]">
+          <div className="hidden xl:flex flex-1 items-center justify-center text-[#6B7280]">
             <div className="text-center">
               <Mail size={36} className="mx-auto mb-3 opacity-30" />
               <p className="text-sm">Select an email to read</p>

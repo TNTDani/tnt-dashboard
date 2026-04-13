@@ -4,9 +4,9 @@
  */
 
 const COMPASS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44" style="display:block;">
-  <circle cx="22" cy="22" r="21" fill="#0d1b2a"/>
-  <circle cx="22" cy="22" r="21" fill="none" stroke="#7C3AED" stroke-width="1.5"/>
-  <path d="M22 7 L25.5 22 L22 19.5 L18.5 22 Z" fill="#7C3AED"/>
+  <circle cx="22" cy="22" r="21" fill="#EDEDEB"/>
+  <circle cx="22" cy="22" r="21" fill="none" stroke="#2D4A2D" stroke-width="1.5"/>
+  <path d="M22 7 L25.5 22 L22 19.5 L18.5 22 Z" fill="#2D4A2D"/>
   <path d="M22 37 L18.5 22 L22 24.5 L25.5 22 Z" fill="#334155"/>
   <line x1="5" y1="22" x2="8" y2="22" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
   <line x1="36" y1="22" x2="39" y2="22" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
@@ -48,7 +48,7 @@ export function buildHtmlEmail(plainBody: string): string {
 
           <!-- Top accent bar -->
           <tr>
-            <td style="background:#7C3AED;height:4px;font-size:0;line-height:0;">&nbsp;</td>
+            <td style="background:#2D4A2D;height:4px;font-size:0;line-height:0;">&nbsp;</td>
           </tr>
 
           <!-- Body -->
@@ -63,20 +63,20 @@ export function buildHtmlEmail(plainBody: string): string {
           <!-- Signature -->
           <tr>
             <td style="padding:0 48px 40px 48px;">
-              <div style="border-top:2px solid #7C3AED;margin-bottom:20px;opacity:0.35;"></div>
+              <div style="border-top:2px solid #2D4A2D;margin-bottom:20px;opacity:0.35;"></div>
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td style="vertical-align:middle;padding-right:14px;">
                     ${COMPASS_SVG}
                   </td>
                   <td style="vertical-align:middle;">
-                    <div style="font-weight:700;color:#0d1b2a;font-size:15px;letter-spacing:-0.2px;line-height:1.2;">Dani Leeflang</div>
-                    <div style="color:#64748b;font-size:13px;margin-top:4px;">Founder &middot; TrueNorth Talent</div>
+                    <div style="font-weight:700;color:#EDEDEB;font-size:15px;letter-spacing:-0.2px;line-height:1.2;">Dani Leeflang</div>
+                    <div style="color:#64748b;font-size:13px;margin-top:4px;">Founder &middot; Orchard</div>
                     <div style="margin-top:10px;">
-                      <a href="mailto:dani@truenorthtalent.nl" style="color:#7C3AED;text-decoration:none;font-size:13px;">dani@truenorthtalent.nl</a>
+                      <a href="mailto:dani@orchard.io" style="color:#2D4A2D;text-decoration:none;font-size:13px;">dani@orchard.io</a>
                     </div>
                     <div style="color:#64748b;font-size:13px;margin-top:4px;">+31 6 40 20 99 66</div>
-                    <div style="color:#94a3b8;font-size:12px;margin-top:4px;">truenorthtalent.nl <span style="color:#d1d5db;font-size:11px;">(coming soon)</span></div>
+                    <div style="color:#94a3b8;font-size:12px;margin-top:4px;">orchard.io <span style="color:#d1d5db;font-size:11px;">(coming soon)</span></div>
                   </td>
                 </tr>
               </table>

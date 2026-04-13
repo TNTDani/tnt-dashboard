@@ -142,19 +142,19 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Clients</h1>
+          <h1 className="text-2xl font-bold text-[#2D4A2D] mb-1">Clients</h1>
           <p className="text-[#94a3b8] text-sm">{filtered.length} of {clients.length} clients</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowImport(true)}
-            className="flex items-center gap-2 bg-[#0d1f3c] hover:bg-[#1e3a5f] border border-[#1e3a5f] hover:border-[#7C3AED40] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-[#FFFFFF] hover:bg-[rgba(45,74,45,0.15)] border border-[rgba(45,74,45,0.15)] hover:border-[#2D4A2D40] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Upload size={16} /> Import CSV
           </button>
           <button
             onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={16} /> Add Client
           </button>
@@ -164,9 +164,9 @@ export default function ClientsPage() {
       {/* Search + filter toggle */}
       <div className="flex gap-3 mb-6">
         <div className="flex-1 relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
           <input
-            className="w-full bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg pl-9 pr-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+            className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg pl-9 pr-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
             placeholder="Search by company, contact, sector, location..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -174,7 +174,7 @@ export default function ClientsPage() {
         </div>
         <button
           onClick={() => setShowFilters(f => !f)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors border ${showFilters ? 'bg-[#7C3AED20] border-[#7C3AED] text-[#7C3AED]' : 'bg-[#0d1f3c] border-[#1e3a5f] text-[#94a3b8] hover:text-white'}`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors border ${showFilters ? 'bg-[#2D4A2D20] border-[#2D4A2D] text-[#2D4A2D]' : 'bg-[#FFFFFF] border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D]'}`}
         >
           <SlidersHorizontal size={15} />
           Filters
@@ -183,16 +183,16 @@ export default function ClientsPage() {
 
       {/* Filter panel */}
       {showFilters && (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 mb-6">
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-white font-semibold text-sm">Filter Clients</p>
-            <button onClick={clearFilters} className="text-[#94a3b8] text-xs hover:text-white transition-colors">Clear all</button>
+            <p className="text-[#2D4A2D] font-semibold text-sm">Filter Clients</p>
+            <button onClick={clearFilters} className="text-[#94a3b8] text-xs hover:text-[#2D4A2D] transition-colors">Clear all</button>
           </div>
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
             <div>
               <label className="block text-[#94a3b8] text-xs font-medium mb-1">Type</label>
               <select
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 value={filterType}
                 onChange={e => setFilterType(e.target.value as typeof filterType)}
               >
@@ -205,7 +205,7 @@ export default function ClientsPage() {
             <div>
               <label className="block text-[#94a3b8] text-xs font-medium mb-1">Sector</label>
               <select
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 value={filterSector}
                 onChange={e => setFilterSector(e.target.value)}
               >
@@ -216,7 +216,7 @@ export default function ClientsPage() {
             <div>
               <label className="block text-[#94a3b8] text-xs font-medium mb-1">Company Size</label>
               <select
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 value={filterSize}
                 onChange={e => setFilterSize(e.target.value as typeof filterSize)}
               >
@@ -227,7 +227,7 @@ export default function ClientsPage() {
             <div>
               <label className="block text-[#94a3b8] text-xs font-medium mb-1">Location</label>
               <input
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 placeholder="e.g. Amsterdam"
                 value={filterLocation}
                 onChange={e => setFilterLocation(e.target.value)}
@@ -239,20 +239,20 @@ export default function ClientsPage() {
 
       {/* Results grid */}
       {clients.length === 0 ? (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-16 text-center">
-          <Building2 size={40} className="mx-auto mb-3 text-[#1e3a5f]" />
-          <p className="text-white font-semibold mb-1">No clients yet</p>
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-16 text-center">
+          <Building2 size={40} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
+          <p className="text-[#2D4A2D] font-semibold mb-1">No clients yet</p>
           <p className="text-[#94a3b8] text-sm mb-4">Add your first client to get started.</p>
           <button
             onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={16} /> Add Client
           </button>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-16 text-center">
-          <Search size={32} className="mx-auto mb-3 text-[#1e3a5f]" />
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-16 text-center">
+          <Search size={32} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
           <p className="text-[#94a3b8] text-sm">No clients match your filters.</p>
         </div>
       ) : (
@@ -261,15 +261,15 @@ export default function ClientsPage() {
             <div
               key={c.id}
               onClick={() => router.push(`/clients/${c.id}`)}
-              className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5 cursor-pointer hover:border-[#7C3AED40] transition-all duration-200 group"
+              className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5 cursor-pointer hover:border-[#2D4A2D40] transition-all duration-200 group"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#7C3AED20] flex items-center justify-center flex-shrink-0">
-                    <Building2 size={18} className="text-[#7C3AED]" />
+                  <div className="w-10 h-10 rounded-lg bg-[#2D4A2D20] flex items-center justify-center flex-shrink-0">
+                    <Building2 size={18} className="text-[#2D4A2D]" />
                   </div>
                   <div>
-                    <p className="text-white font-semibold text-sm group-hover:text-[#7C3AED] transition-colors">
+                    <p className="text-[#2D4A2D] font-semibold text-sm group-hover:text-[#2D4A2D] transition-colors">
                       {c.companyName}
                     </p>
                     <p className="text-[#94a3b8] text-xs">{c.sector}</p>
@@ -315,22 +315,22 @@ export default function ClientsPage() {
       {/* Add Client Modal */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-white font-semibold">Add New Client</h2>
-              <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-white transition-colors">
+              <h2 className="text-[#2D4A2D] font-semibold">Add New Client</h2>
+              <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
                 <X size={18} />
               </button>
             </div>
 
             <div className="space-y-4">
               {/* Company info */}
-              <p className="text-[#7C3AED] text-xs font-semibold uppercase tracking-wider">Company</p>
+              <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider">Company</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Company Name *</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="Acme Corp"
                     value={form.companyName}
                     onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))}
@@ -339,7 +339,7 @@ export default function ClientsPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Website</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="https://acme.com"
                     value={form.website}
                     onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
@@ -351,7 +351,7 @@ export default function ClientsPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Sector</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={form.sector}
                     onChange={e => setForm(f => ({ ...f, sector: e.target.value }))}
                   >
@@ -361,7 +361,7 @@ export default function ClientsPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Size</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={form.size}
                     onChange={e => setForm(f => ({ ...f, size: e.target.value as Client['size'] }))}
                   >
@@ -371,7 +371,7 @@ export default function ClientsPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Type</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={form.type}
                     onChange={e => setForm(f => ({ ...f, type: e.target.value as Client['type'] }))}
                   >
@@ -385,7 +385,7 @@ export default function ClientsPage() {
               <div>
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1">Location</label>
                 <input
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                   placeholder="Amsterdam"
                   value={form.location}
                   onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
@@ -393,12 +393,12 @@ export default function ClientsPage() {
               </div>
 
               {/* Contact */}
-              <p className="text-[#7C3AED] text-xs font-semibold uppercase tracking-wider pt-1">Primary Contact</p>
+              <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider pt-1">Primary Contact</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Contact Name *</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="Jane Smith"
                     value={form.contactName}
                     onChange={e => setForm(f => ({ ...f, contactName: e.target.value }))}
@@ -407,7 +407,7 @@ export default function ClientsPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Role</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="HR Manager"
                     value={form.contactRole}
                     onChange={e => setForm(f => ({ ...f, contactRole: e.target.value }))}
@@ -419,7 +419,7 @@ export default function ClientsPage() {
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Email</label>
                   <input
                     type="email"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="jane@acme.com"
                     value={form.contactEmail}
                     onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))}
@@ -428,7 +428,7 @@ export default function ClientsPage() {
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Phone</label>
                   <input
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="+31 20 123 4567"
                     value={form.contactPhone}
                     onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))}
@@ -437,12 +437,12 @@ export default function ClientsPage() {
               </div>
 
               {/* Fee Agreement */}
-              <p className="text-[#7C3AED] text-xs font-semibold uppercase tracking-wider pt-1">Fee Agreement</p>
+              <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider pt-1">Fee Agreement</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Fee Type</label>
                   <select
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     value={form.feeType}
                     onChange={e => setForm(f => ({ ...f, feeType: e.target.value as FeeAgreement['type'] }))}
                   >
@@ -455,7 +455,7 @@ export default function ClientsPage() {
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Guarantee Period (months)</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="3"
                     value={form.guaranteePeriod}
                     onChange={e => setForm(f => ({ ...f, guaranteePeriod: e.target.value }))}
@@ -468,7 +468,7 @@ export default function ClientsPage() {
                   <label className="block text-[#94a3b8] text-xs font-medium mb-1">Custom Percentage (%)</label>
                   <input
                     type="number"
-                    className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                     placeholder="20"
                     value={form.customPercentage}
                     onChange={e => setForm(f => ({ ...f, customPercentage: e.target.value }))}
@@ -482,7 +482,7 @@ export default function ClientsPage() {
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">Upfront Retainer (€)</label>
                     <input
                       type="number"
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       placeholder="5000"
                       value={form.retainerAmount}
                       onChange={e => setForm(f => ({ ...f, retainerAmount: e.target.value }))}
@@ -492,7 +492,7 @@ export default function ClientsPage() {
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">On Placement (%)</label>
                     <input
                       type="number"
-                      className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       placeholder="12"
                       value={form.retainerPercentage}
                       onChange={e => setForm(f => ({ ...f, retainerPercentage: e.target.value }))}
@@ -506,13 +506,13 @@ export default function ClientsPage() {
               <button
                 onClick={addClient}
                 disabled={!form.companyName.trim() || !form.contactName.trim()}
-                className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
+                className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
               >
                 Add Client
               </button>
               <button
                 onClick={() => setShowAdd(false)}
-                className="flex-1 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white py-2.5 rounded-lg transition-colors text-sm"
+                className="flex-1 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
               >
                 Cancel
               </button>

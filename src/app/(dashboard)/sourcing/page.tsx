@@ -55,13 +55,13 @@ function TagInput({
   };
 
   return (
-    <div className="min-h-[42px] w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 flex flex-wrap gap-1.5 cursor-text focus-within:border-[#7C3AED] transition-colors"
+    <div className="min-h-[42px] w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 flex flex-wrap gap-1.5 cursor-text focus-within:border-[#2D4A2D] transition-colors"
       onClick={() => document.getElementById('tag-input')?.focus()}
     >
       {tags.map((tag, i) => (
-        <span key={i} className="flex items-center gap-1 bg-[#7C3AED30] text-[#a78bfa] text-xs px-2 py-0.5 rounded-md">
+        <span key={i} className="flex items-center gap-1 bg-[#2D4A2D30] text-[#3D6B3D] text-xs px-2 py-0.5 rounded-md">
           {tag}
-          <button type="button" onClick={() => removeTag(i)} className="hover:text-white transition-colors">
+          <button type="button" onClick={() => removeTag(i)} className="hover:text-[#2D4A2D] transition-colors">
             <X size={10} />
           </button>
         </span>
@@ -69,7 +69,7 @@ function TagInput({
       <input
         id="tag-input"
         type="text"
-        className="flex-1 min-w-[120px] bg-transparent text-white text-sm placeholder-[#4a6fa5] outline-none"
+        className="flex-1 min-w-[120px] bg-transparent text-[#2D4A2D] text-sm placeholder-[#6B7280] outline-none"
         placeholder={tags.length === 0 ? placeholder : ''}
         value={input}
         onChange={e => setInput(e.target.value)}
@@ -91,25 +91,25 @@ function ProfileCard({ profile, index }: { profile: SourcingProfileDescription; 
   };
 
   return (
-    <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-xl overflow-hidden">
+    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-[#0d1f3c] transition-colors"
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-[#FFFFFF] transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#7C3AED20] flex items-center justify-center text-[#7C3AED] text-sm font-bold flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#2D4A2D20] flex items-center justify-center text-[#2D4A2D] text-sm font-bold flex-shrink-0">
             {index + 1}
           </div>
           <div>
-            <p className="text-white font-semibold text-sm">{profile.title}</p>
+            <p className="text-[#2D4A2D] font-semibold text-sm">{profile.title}</p>
             <div className="flex flex-wrap gap-1 mt-1">
               {profile.keySkills.slice(0, 3).map((skill, i) => (
-                <span key={i} className="text-[10px] bg-[#1e3a5f] text-[#94a3b8] px-1.5 py-0.5 rounded">
+                <span key={i} className="text-[10px] bg-[rgba(45,74,45,0.15)] text-[#94a3b8] px-1.5 py-0.5 rounded">
                   {skill}
                 </span>
               ))}
               {profile.keySkills.length > 3 && (
-                <span className="text-[10px] text-[#4a6fa5]">+{profile.keySkills.length - 3} more</span>
+                <span className="text-[10px] text-[#6B7280]">+{profile.keySkills.length - 3} more</span>
               )}
             </div>
           </div>
@@ -118,7 +118,7 @@ function ProfileCard({ profile, index }: { profile: SourcingProfileDescription; 
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-4 border-t border-[#1e3a5f] pt-4">
+        <div className="px-4 pb-4 space-y-4 border-t border-[rgba(45,74,45,0.15)] pt-4">
           {/* Background */}
           <div>
             <p className="text-[#94a3b8] text-xs font-semibold uppercase tracking-wider mb-1.5">Ideal Background</p>
@@ -130,7 +130,7 @@ function ProfileCard({ profile, index }: { profile: SourcingProfileDescription; 
             <p className="text-[#94a3b8] text-xs font-semibold uppercase tracking-wider mb-1.5">Key Skills to Look For</p>
             <div className="flex flex-wrap gap-1.5">
               {profile.keySkills.map((skill, i) => (
-                <span key={i} className="text-xs bg-[#7C3AED20] text-[#a78bfa] border border-[#7C3AED30] px-2 py-0.5 rounded-md">
+                <span key={i} className="text-xs bg-[#2D4A2D20] text-[#3D6B3D] border border-[#2D4A2D30] px-2 py-0.5 rounded-md">
                   {skill}
                 </span>
               ))}
@@ -146,10 +146,10 @@ function ProfileCard({ profile, index }: { profile: SourcingProfileDescription; 
                   href={profile.whereToFind.linkedinSearchUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2 hover:border-[#7C3AED] transition-colors group"
+                  className="flex items-center gap-2 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 hover:border-[#2D4A2D] transition-colors group"
                 >
                   <Users size={14} className="text-[#0077b5] flex-shrink-0" />
-                  <span className="text-[#94a3b8] text-xs group-hover:text-white transition-colors truncate">LinkedIn Search →</span>
+                  <span className="text-[#94a3b8] text-xs group-hover:text-[#2D4A2D] transition-colors truncate">LinkedIn Search →</span>
                 </a>
               )}
               {profile.whereToFind.githubSearch && (
@@ -157,21 +157,21 @@ function ProfileCard({ profile, index }: { profile: SourcingProfileDescription; 
                   href={profile.whereToFind.githubSearch}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2 hover:border-[#7C3AED] transition-colors group"
+                  className="flex items-center gap-2 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 hover:border-[#2D4A2D] transition-colors group"
                 >
                   <Code size={14} className="text-[#94a3b8] flex-shrink-0" />
-                  <span className="text-[#94a3b8] text-xs group-hover:text-white transition-colors">GitHub Search →</span>
+                  <span className="text-[#94a3b8] text-xs group-hover:text-[#2D4A2D] transition-colors">GitHub Search →</span>
                 </a>
               )}
               {profile.whereToFind.communities.length > 0 && (
-                <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg px-3 py-2">
+                <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2">
                   <div className="flex items-center gap-2 mb-1.5">
                     <Globe size={14} className="text-[#94a3b8]" />
                     <span className="text-[#94a3b8] text-xs font-medium">Communities & Platforms</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {profile.whereToFind.communities.map((c, i) => (
-                      <span key={i} className="text-xs bg-[#1e3a5f] text-[#94a3b8] px-2 py-0.5 rounded">
+                      <span key={i} className="text-xs bg-[rgba(45,74,45,0.15)] text-[#94a3b8] px-2 py-0.5 rounded">
                         {c}
                       </span>
                     ))}
@@ -187,13 +187,13 @@ function ProfileCard({ profile, index }: { profile: SourcingProfileDescription; 
               <p className="text-[#94a3b8] text-xs font-semibold uppercase tracking-wider">Suggested Outreach Message</p>
               <button
                 onClick={copyOutreach}
-                className="flex items-center gap-1 text-[#94a3b8] hover:text-white text-xs transition-colors"
+                className="flex items-center gap-1 text-[#94a3b8] hover:text-[#2D4A2D] text-xs transition-colors"
               >
                 {copiedOutreach ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
                 {copiedOutreach ? 'Copied!' : 'Copy'}
               </button>
             </div>
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg p-3">
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg p-3">
               <p className="text-[#94a3b8] text-xs leading-relaxed whitespace-pre-wrap">{profile.outreachMessage}</p>
             </div>
           </div>
@@ -213,21 +213,21 @@ function SearchStringCard({ title, value, icon: Icon }: { title: string; value: 
   };
 
   return (
-    <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
+    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Icon size={16} className="text-[#7C3AED]" />
-          <p className="text-white font-semibold text-sm">{title}</p>
+          <Icon size={16} className="text-[#2D4A2D]" />
+          <p className="text-[#2D4A2D] font-semibold text-sm">{title}</p>
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-3 py-1.5 rounded-md text-xs transition-colors"
+          className="flex items-center gap-1.5 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-3 py-1.5 rounded-md text-xs transition-colors"
         >
           {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg p-3">
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg p-3">
         <p className="text-[#94a3b8] text-xs font-mono leading-relaxed break-all">{value}</p>
       </div>
     </div>
@@ -238,7 +238,7 @@ type AutoFilledField = 'jobTitle' | 'skills' | 'location' | 'seniorityLevel' | '
 
 function AutoFilledBadge() {
   return (
-    <span className="inline-flex items-center gap-1 bg-[#7C3AED20] text-[#a78bfa] text-[10px] px-1.5 py-0.5 rounded ml-1.5 align-middle">
+    <span className="inline-flex items-center gap-1 bg-[#2D4A2D20] text-[#3D6B3D] text-[10px] px-1.5 py-0.5 rounded ml-1.5 align-middle">
       <Sparkles size={9} />
       Auto-filled
     </span>
@@ -433,26 +433,26 @@ export default function SourcingPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Source Candidates</h1>
+        <h1 className="text-2xl font-bold text-[#2D4A2D]">Source Candidates</h1>
         <p className="text-[#94a3b8] mt-1">AI-powered sourcing strategy generator</p>
       </div>
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 mb-6">
-        <h2 className="text-white font-semibold mb-5">Role Requirements</h2>
+      <form onSubmit={handleSubmit} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 mb-6">
+        <h2 className="text-[#2D4A2D] font-semibold mb-5">Role Requirements</h2>
 
         {/* Vacancy Link — placed first so auto-fill populates the fields below */}
         <div className="mb-4">
           <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">
             <LinkIcon size={12} className="inline mr-1" />
             Link to Vacancy
-            <span className="text-[#4a6fa5] ml-1">(optional — paste to auto-fill)</span>
+            <span className="text-[#6B7280] ml-1">(optional — paste to auto-fill)</span>
           </label>
           <div className="relative">
             <input
               type="url"
-              className={`w-full bg-[#0a1628] border rounded-lg px-3 py-2 pr-10 text-white text-sm placeholder-[#4a6fa5] focus:outline-none transition-colors ${
-                scanning ? 'border-[#7C3AED]/60 animate-pulse' : 'border-[#1e3a5f] focus:border-[#7C3AED]'
+              className={`w-full bg-[#FFFFFF] border rounded-lg px-3 py-2 pr-10 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none transition-colors ${
+                scanning ? 'border-[#2D4A2D]/60 animate-pulse' : 'border-[rgba(45,74,45,0.15)] focus:border-[#2D4A2D]'
               }`}
               placeholder="Paste vacancy URL to auto-fill fields below..."
               value={form.vacancyLink}
@@ -462,13 +462,13 @@ export default function SourcingPage() {
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
               {scanning
-                ? <Loader2 size={14} className="text-[#7C3AED] animate-spin" />
-                : form.vacancyLink && <ScanLine size={14} className="text-[#4a6fa5]" />
+                ? <Loader2 size={14} className="text-[#2D4A2D] animate-spin" />
+                : form.vacancyLink && <ScanLine size={14} className="text-[#6B7280]" />
               }
             </div>
           </div>
           {scanning && (
-            <p className="text-[#7C3AED] text-xs mt-1.5 flex items-center gap-1">
+            <p className="text-[#2D4A2D] text-xs mt-1.5 flex items-center gap-1">
               <Loader2 size={11} className="animate-spin" /> Scanning vacancy...
             </p>
           )}
@@ -478,7 +478,7 @@ export default function SourcingPage() {
             </p>
           )}
           {!scanning && !scanError && autoFilled.size > 0 && (
-            <p className="text-[#a78bfa] text-xs mt-1.5 flex items-center gap-1">
+            <p className="text-[#3D6B3D] text-xs mt-1.5 flex items-center gap-1">
               <Sparkles size={11} /> {autoFilled.size} field{autoFilled.size !== 1 ? 's' : ''} auto-filled from vacancy
             </p>
           )}
@@ -494,8 +494,8 @@ export default function SourcingPage() {
             </label>
             <input
               type="text"
-              className={`w-full bg-[#0a1628] border rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors ${
-                autoFilled.has('jobTitle') ? 'border-[#7C3AED]/40' : 'border-[#1e3a5f]'
+              className={`w-full bg-[#FFFFFF] border rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors ${
+                autoFilled.has('jobTitle') ? 'border-[#2D4A2D]/40' : 'border-[rgba(45,74,45,0.15)]'
               }`}
               placeholder="e.g. Senior Frontend Engineer"
               value={form.jobTitle}
@@ -508,9 +508,9 @@ export default function SourcingPage() {
             <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">
               Required Skills
               {autoFilled.has('skills') && <AutoFilledBadge />}
-              {!autoFilled.has('skills') && <span className="text-[#4a6fa5] ml-1">(press Enter or comma to add)</span>}
+              {!autoFilled.has('skills') && <span className="text-[#6B7280] ml-1">(press Enter or comma to add)</span>}
             </label>
-            <div className={autoFilled.has('skills') ? 'ring-1 ring-[#7C3AED]/30 rounded-lg' : ''}>
+            <div className={autoFilled.has('skills') ? 'ring-1 ring-[#2D4A2D]/30 rounded-lg' : ''}>
               <TagInput
                 tags={form.skills}
                 onChange={skills => { clearAutoFilled('skills'); setForm(f => ({ ...f, skills })); }}
@@ -528,8 +528,8 @@ export default function SourcingPage() {
             </label>
             <input
               type="text"
-              className={`w-full bg-[#0a1628] border rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors ${
-                autoFilled.has('location') ? 'border-[#7C3AED]/40' : 'border-[#1e3a5f]'
+              className={`w-full bg-[#FFFFFF] border rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors ${
+                autoFilled.has('location') ? 'border-[#2D4A2D]/40' : 'border-[rgba(45,74,45,0.15)]'
               }`}
               placeholder="Amsterdam"
               value={form.location}
@@ -544,8 +544,8 @@ export default function SourcingPage() {
               {autoFilled.has('seniorityLevel') && <AutoFilledBadge />}
             </label>
             <select
-              className={`w-full bg-[#0a1628] border rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors ${
-                autoFilled.has('seniorityLevel') ? 'border-[#7C3AED]/40' : 'border-[#1e3a5f]'
+              className={`w-full bg-[#FFFFFF] border rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors ${
+                autoFilled.has('seniorityLevel') ? 'border-[#2D4A2D]/40' : 'border-[rgba(45,74,45,0.15)]'
               }`}
               value={form.seniorityLevel}
               onChange={e => { clearAutoFilled('seniorityLevel'); setForm(f => ({ ...f, seniorityLevel: e.target.value })); }}
@@ -564,8 +564,8 @@ export default function SourcingPage() {
             </label>
             <input
               type="number"
-              className={`w-full bg-[#0a1628] border rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors ${
-                autoFilled.has('salaryMin') ? 'border-[#7C3AED]/40' : 'border-[#1e3a5f]'
+              className={`w-full bg-[#FFFFFF] border rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors ${
+                autoFilled.has('salaryMin') ? 'border-[#2D4A2D]/40' : 'border-[rgba(45,74,45,0.15)]'
               }`}
               placeholder="60000"
               value={form.salaryMin}
@@ -579,8 +579,8 @@ export default function SourcingPage() {
             </label>
             <input
               type="number"
-              className={`w-full bg-[#0a1628] border rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] transition-colors ${
-                autoFilled.has('salaryMax') ? 'border-[#7C3AED]/40' : 'border-[#1e3a5f]'
+              className={`w-full bg-[#FFFFFF] border rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors ${
+                autoFilled.has('salaryMax') ? 'border-[#2D4A2D]/40' : 'border-[rgba(45,74,45,0.15)]'
               }`}
               placeholder="90000"
               value={form.salaryMax}
@@ -598,7 +598,7 @@ export default function SourcingPage() {
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#6d28d9] hover:from-[#6d28d9] hover:to-[#5b21b6] disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-all shadow-lg shadow-[#7C3AED]/20"
+          className="flex items-center gap-2 bg-gradient-to-r from-[#2D4A2D] to-[#3D6B3D] hover:from-[#3D6B3D] hover:to-[#5b21b6] disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-all shadow-lg shadow-[#2D4A2D]/20"
         >
           {loading ? (
             <>
@@ -620,7 +620,7 @@ export default function SourcingPage() {
           {/* Results Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-white font-semibold text-lg">
+              <h2 className="text-[#2D4A2D] font-semibold text-lg">
                 Sourcing Strategy — {result.jobTitle}
               </h2>
               <p className="text-[#94a3b8] text-sm mt-0.5">
@@ -633,7 +633,7 @@ export default function SourcingPage() {
                 savingToVacancy ? (
                   <div className="flex items-center gap-2">
                     <select
-                      className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       value={selectedVacancyId}
                       onChange={e => setSelectedVacancyId(e.target.value)}
                     >
@@ -645,13 +645,13 @@ export default function SourcingPage() {
                     <button
                       onClick={handleSaveToVacancy}
                       disabled={!selectedVacancyId}
-                      className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                      className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-50 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                     >
                       <Save size={14} /> Save
                     </button>
                     <button
                       onClick={() => setSavingToVacancy(false)}
-                      className="text-[#94a3b8] hover:text-white px-2 py-2 transition-colors"
+                      className="text-[#94a3b8] hover:text-[#2D4A2D] px-2 py-2 transition-colors"
                     >
                       <X size={14} />
                     </button>
@@ -659,7 +659,7 @@ export default function SourcingPage() {
                 ) : (
                   <button
                     onClick={() => setSavingToVacancy(true)}
-                    className="flex items-center gap-2 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                    className="flex items-center gap-2 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
                   >
                     <Save size={14} /> Save to Vacancy
                   </button>
@@ -672,7 +672,7 @@ export default function SourcingPage() {
               )}
               <button
                 onClick={handleDownloadHTML}
-                className="flex items-center gap-2 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                className="flex items-center gap-2 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
               >
                 <Download size={14} /> Download PDF
               </button>
@@ -680,10 +680,10 @@ export default function SourcingPage() {
           </div>
 
           {/* Candidate Profiles */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Users size={16} className="text-[#7C3AED]" />
-              <h3 className="text-white font-semibold">Candidate Profiles ({result.profiles.length})</h3>
+              <Users size={16} className="text-[#2D4A2D]" />
+              <h3 className="text-[#2D4A2D] font-semibold">Candidate Profiles ({result.profiles.length})</h3>
             </div>
             <div className="space-y-3">
               {result.profiles.map((profile, i) => (
@@ -758,9 +758,9 @@ function generateTextReport(result: SourcingStrategy, date: string): string {
 function generateHTMLReport(result: SourcingStrategy, date: string): string {
   const profilesHTML = result.profiles.map((profile, i) => `
     <div style="margin-bottom:32px;padding:20px;border:1px solid #e2e8f0;border-radius:8px;">
-      <h3 style="color:#7C3AED;margin:0 0 8px;">${i + 1}. ${profile.title}</h3>
+      <h3 style="color:#2D4A2D;margin:0 0 8px;">${i + 1}. ${profile.title}</h3>
       <p style="color:#475569;margin:0 0 12px;">${profile.backgroundDescription}</p>
-      <p><strong>Key Skills:</strong> <span style="color:#6d28d9;">${profile.keySkills.join(', ')}</span></p>
+      <p><strong>Key Skills:</strong> <span style="color:#3D6B3D;">${profile.keySkills.join(', ')}</span></p>
       <p><strong>Where to Find:</strong></p>
       <ul>
         ${profile.whereToFind.linkedinSearchUrl ? `<li><a href="${profile.whereToFind.linkedinSearchUrl}">LinkedIn Search</a></li>` : ''}
@@ -768,7 +768,7 @@ function generateHTMLReport(result: SourcingStrategy, date: string): string {
         ${profile.whereToFind.communities.map(c => `<li>${c}</li>`).join('')}
       </ul>
       <p><strong>Outreach Message:</strong></p>
-      <blockquote style="background:#f8fafc;border-left:4px solid #7C3AED;padding:12px;margin:0;white-space:pre-wrap;">${profile.outreachMessage}</blockquote>
+      <blockquote style="background:#f8fafc;border-left:4px solid #2D4A2D;padding:12px;margin:0;white-space:pre-wrap;">${profile.outreachMessage}</blockquote>
     </div>
   `).join('');
 
@@ -779,7 +779,7 @@ function generateHTMLReport(result: SourcingStrategy, date: string): string {
 <title>Sourcing Strategy — ${result.jobTitle}</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; color: #1e293b; }
-  h1 { color: #7C3AED; }
+  h1 { color: #2D4A2D; }
   h2 { color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
   .meta { color: #64748b; margin-bottom: 32px; }
   .search-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 13px; word-break: break-all; }

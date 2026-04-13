@@ -60,11 +60,11 @@ export default function CalendarWidget() {
   const totalEvents = events.length;
 
   return (
-    <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
+    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#7C3AED]/20 flex items-center justify-center">
-            <CalendarDays size={15} className="text-[#7C3AED]" />
+          <div className="w-8 h-8 rounded-lg bg-[#2D4A2D]/20 flex items-center justify-center">
+            <CalendarDays size={15} className="text-[#2D4A2D]" />
           </div>
           <div>
             <h2 className="text-white font-semibold text-sm">Schedule</h2>
@@ -73,7 +73,7 @@ export default function CalendarWidget() {
         </div>
         <button
           onClick={() => router.push('/calendar')}
-          className="flex items-center gap-1 text-[#7C3AED] hover:text-[#6d28d9] text-xs font-medium transition-colors"
+          className="flex items-center gap-1 text-[#2D4A2D] hover:text-[#3D6B3D] text-xs font-medium transition-colors"
         >
           View all <ChevronRight size={13} />
         </button>
@@ -81,11 +81,11 @@ export default function CalendarWidget() {
 
       {totalEvents === 0 ? (
         <div className="text-center py-6">
-          <CalendarDays size={28} className="mx-auto mb-2 text-[#1e3a5f]" />
-          <p className="text-[#4a6fa5] text-sm">No upcoming events</p>
+          <CalendarDays size={28} className="mx-auto mb-2 text-[rgba(45,74,45,0.15)]" />
+          <p className="text-[#6B7280] text-sm">No upcoming events</p>
           <button
             onClick={() => router.push('/calendar?new=1')}
-            className="mt-2 text-[#7C3AED] hover:text-[#6d28d9] text-xs transition-colors"
+            className="mt-2 text-[#2D4A2D] hover:text-[#3D6B3D] text-xs transition-colors"
           >
             + Schedule something
           </button>
@@ -97,7 +97,7 @@ export default function CalendarWidget() {
             const isToday = isSameDay(date, new Date());
             return (
               <div key={date.toISOString()}>
-                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-2 ${isToday ? 'text-[#7C3AED]' : 'text-[#4a6fa5]'}`}>
+                <p className={`text-[10px] font-semibold uppercase tracking-wider mb-2 ${isToday ? 'text-[#2D4A2D]' : 'text-[#6B7280]'}`}>
                   {formatDayLabel(date)}
                 </p>
                 <div className="space-y-1.5">
@@ -113,7 +113,7 @@ export default function CalendarWidget() {
                         <div className="min-w-0 flex-1">
                           <p className="text-white text-xs font-medium truncate">{event.title}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="flex items-center gap-1 text-[#4a6fa5] text-[11px]">
+                            <span className="flex items-center gap-1 text-[#6B7280] text-[11px]">
                               <Clock size={9} />
                               {formatTime(event.startTime)}–{formatTime(event.endTime)}
                             </span>
@@ -136,7 +136,7 @@ export default function CalendarWidget() {
 
       <button
         onClick={() => router.push('/calendar?new=1')}
-        className="mt-4 w-full py-2 rounded-lg border border-dashed border-[#1e3a5f] text-[#4a6fa5] hover:text-white hover:border-[#7C3AED]/50 text-xs transition-all"
+        className="mt-4 w-full py-2 rounded-lg border border-dashed border-[rgba(45,74,45,0.15)] text-[#6B7280] hover:text-[#2D4A2D] hover:border-[#2D4A2D]/50 text-xs transition-all"
       >
         + New event
       </button>

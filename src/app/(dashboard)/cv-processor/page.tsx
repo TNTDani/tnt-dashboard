@@ -115,7 +115,7 @@ export default function CVProcessor() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">CV Processor</h1>
+        <h1 className="text-2xl font-bold text-[#2D4A2D]">CV Processor</h1>
         <p className="text-[#94a3b8] mt-1">Upload a candidate CV — Claude AI extracts, anonymises and reformats it.</p>
       </div>
 
@@ -128,7 +128,7 @@ export default function CVProcessor() {
             onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
             onClick={() => inputRef.current?.click()}
             className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200 ${
-              dragOver ? "border-[#7C3AED] bg-[#7C3AED10]" : "border-[#1e3a5f] hover:border-[#7C3AED] hover:bg-[#7C3AED08]"
+              dragOver ? "border-[#2D4A2D] bg-[#2D4A2D10]" : "border-[rgba(45,74,45,0.15)] hover:border-[#2D4A2D] hover:bg-[#2D4A2D08]"
             }`}
           >
             <input
@@ -138,8 +138,8 @@ export default function CVProcessor() {
               accept=".pdf,.doc,.docx"
               onChange={(e) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
             />
-            <Upload size={40} className="mx-auto mb-4 text-[#7C3AED]" />
-            <p className="text-white font-medium mb-1">
+            <Upload size={40} className="mx-auto mb-4 text-[#2D4A2D]" />
+            <p className="text-[#2D4A2D] font-medium mb-1">
               {file ? file.name : "Drop a CV here or click to browse"}
             </p>
             <p className="text-[#94a3b8] text-sm">PDF or Word (.docx) — max 10MB</p>
@@ -153,11 +153,11 @@ export default function CVProcessor() {
           )}
 
           {file && !error && (
-            <div className="mt-4 flex items-center justify-between bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl px-4 py-3">
+            <div className="mt-4 flex items-center justify-between bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl px-4 py-3">
               <div className="flex items-center gap-3">
-                <FileText size={20} className="text-[#7C3AED]" />
+                <FileText size={20} className="text-[#2D4A2D]" />
                 <div>
-                  <p className="text-white text-sm font-medium">{file.name}</p>
+                  <p className="text-[#2D4A2D] text-sm font-medium">{file.name}</p>
                   <p className="text-[#94a3b8] text-xs">{(file.size / 1024).toFixed(0)} KB</p>
                 </div>
               </div>
@@ -170,7 +170,7 @@ export default function CVProcessor() {
           <button
             onClick={processCV}
             disabled={!file}
-            className="mt-4 w-full bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200"
+            className="mt-4 w-full bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200"
           >
             Process CV with Claude AI
           </button>
@@ -180,9 +180,9 @@ export default function CVProcessor() {
       {/* Processing */}
       {step === "processing" && (
         <div className="max-w-2xl">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-12 text-center">
-            <Loader2 size={40} className="mx-auto mb-4 text-[#7C3AED] animate-spin" />
-            <p className="text-white font-medium mb-1">Reading the CV…</p>
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-12 text-center">
+            <Loader2 size={40} className="mx-auto mb-4 text-[#2D4A2D] animate-spin" />
+            <p className="text-[#2D4A2D] font-medium mb-1">Reading the CV…</p>
             <p className="text-[#94a3b8] text-sm">Extracting information and anonymising candidate data</p>
           </div>
         </div>
@@ -192,36 +192,36 @@ export default function CVProcessor() {
       {step === "result" && result && (
         <div className="grid grid-cols-3 gap-6">
           {/* CV Preview */}
-          <div className="col-span-2 bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl overflow-hidden">
+          <div className="col-span-2 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
             {/* CV Header */}
-            <div className="bg-[#7C3AED] px-6 py-4">
-              <p className="text-white/70 text-xs tracking-widest uppercase font-semibold">TrueNorth Talent</p>
-              <h2 className="text-white text-2xl font-bold mt-1">{result.firstName}</h2>
-              <p className="text-white/80 text-sm mt-0.5">{result.currentRole} · {result.currentCompany}</p>
+            <div className="bg-[#2D4A2D] px-6 py-4">
+              <p className="text-[#2D4A2D]/70 text-xs tracking-widest uppercase font-semibold">Orchard</p>
+              <h2 className="text-[#2D4A2D] text-2xl font-bold mt-1">{result.firstName}</h2>
+              <p className="text-[#2D4A2D]/80 text-sm mt-0.5">{result.currentRole} · {result.currentCompany}</p>
             </div>
 
             <div className="p-6 space-y-5 overflow-y-auto max-h-[600px]">
               {/* Summary */}
               <div>
-                <h3 className="text-[#7C3AED] text-xs font-bold tracking-widest uppercase mb-2 pb-1 border-b border-[#1e3a5f]">Professional Summary</h3>
+                <h3 className="text-[#2D4A2D] text-xs font-bold tracking-widest uppercase mb-2 pb-1 border-b border-[rgba(45,74,45,0.15)]">Professional Summary</h3>
                 <p className="text-[#94a3b8] text-sm leading-relaxed">{result.professionalSummary}</p>
               </div>
 
               {/* Experience */}
               {result.experience.length > 0 && (
                 <div>
-                  <h3 className="text-[#7C3AED] text-xs font-bold tracking-widest uppercase mb-3 pb-1 border-b border-[#1e3a5f]">Experience</h3>
+                  <h3 className="text-[#2D4A2D] text-xs font-bold tracking-widest uppercase mb-3 pb-1 border-b border-[rgba(45,74,45,0.15)]">Experience</h3>
                   <div className="space-y-4">
                     {result.experience.map((e, i) => (
                       <div key={i}>
                         <div className="flex items-baseline justify-between">
-                          <p className="text-white text-sm font-semibold">{e.title} <span className="text-[#94a3b8] font-normal">· {e.company}</span></p>
+                          <p className="text-[#2D4A2D] text-sm font-semibold">{e.title} <span className="text-[#94a3b8] font-normal">· {e.company}</span></p>
                           <p className="text-[#94a3b8] text-xs flex-shrink-0 ml-2">{e.startDate} – {e.endDate}</p>
                         </div>
                         <ul className="mt-1.5 space-y-1">
                           {e.responsibilities.map((r, j) => (
                             <li key={j} className="text-[#94a3b8] text-xs flex gap-2">
-                              <span className="text-[#7C3AED] mt-0.5 flex-shrink-0">·</span>{r}
+                              <span className="text-[#2D4A2D] mt-0.5 flex-shrink-0">·</span>{r}
                             </li>
                           ))}
                         </ul>
@@ -234,7 +234,7 @@ export default function CVProcessor() {
               {/* Education */}
               {result.education.length > 0 && (
                 <div>
-                  <h3 className="text-[#7C3AED] text-xs font-bold tracking-widest uppercase mb-2 pb-1 border-b border-[#1e3a5f]">Education</h3>
+                  <h3 className="text-[#2D4A2D] text-xs font-bold tracking-widest uppercase mb-2 pb-1 border-b border-[rgba(45,74,45,0.15)]">Education</h3>
                   {result.education.map((edu, i) => (
                     <p key={i} className="text-[#e2e8f0] text-sm"><span className="font-medium">{edu.degree}</span> <span className="text-[#94a3b8]">· {edu.institution} · {edu.year}</span></p>
                   ))}
@@ -244,10 +244,10 @@ export default function CVProcessor() {
               {/* Skills */}
               {result.skills.length > 0 && (
                 <div>
-                  <h3 className="text-[#7C3AED] text-xs font-bold tracking-widest uppercase mb-2 pb-1 border-b border-[#1e3a5f]">Skills</h3>
+                  <h3 className="text-[#2D4A2D] text-xs font-bold tracking-widest uppercase mb-2 pb-1 border-b border-[rgba(45,74,45,0.15)]">Skills</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {result.skills.map((s, i) => (
-                      <span key={i} className="bg-[#7C3AED20] text-[#a78bfa] text-xs px-2.5 py-1 rounded-full">{s}</span>
+                      <span key={i} className="bg-[#2D4A2D20] text-[#3D6B3D] text-xs px-2.5 py-1 rounded-full">{s}</span>
                     ))}
                   </div>
                 </div>
@@ -257,14 +257,14 @@ export default function CVProcessor() {
 
           {/* Actions panel */}
           <div className="space-y-4">
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
-              <h3 className="text-white font-semibold mb-4">Actions</h3>
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
+              <h3 className="text-[#2D4A2D] font-semibold mb-4">Actions</h3>
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={downloadDocx}
                     disabled={downloading}
-                    className="flex items-center justify-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-60 text-white font-semibold py-2.5 px-3 rounded-lg transition-all duration-200 text-sm"
+                    className="flex items-center justify-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-60 text-white font-semibold py-2.5 px-3 rounded-lg transition-all duration-200 text-sm"
                   >
                     {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                     .docx
@@ -272,7 +272,7 @@ export default function CVProcessor() {
                   <button
                     onClick={downloadPdf}
                     disabled={downloadingPdf}
-                    className="flex items-center justify-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-60 text-white font-semibold py-2.5 px-3 rounded-lg transition-all duration-200 text-sm"
+                    className="flex items-center justify-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-60 text-white font-semibold py-2.5 px-3 rounded-lg transition-all duration-200 text-sm"
                   >
                     {downloadingPdf ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                     PDF
@@ -281,14 +281,14 @@ export default function CVProcessor() {
                 <button
                   onClick={saveToDatabase}
                   disabled={saved}
-                  className="w-full flex items-center justify-center gap-2 bg-[#10b98120] hover:bg-[#10b98130] disabled:opacity-60 text-[#10b981] font-semibold py-2.5 px-4 rounded-lg border border-[#10b98140] transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2 bg-[#4CAF5020] hover:bg-[#4CAF5030] disabled:opacity-60 text-[#4CAF50] font-semibold py-2.5 px-4 rounded-lg border border-[#4CAF5040] transition-all duration-200"
                 >
                   {saved ? <Check size={16} /> : <User size={16} />}
                   {saved ? "Saved to Pipeline" : "Save to Pipeline"}
                 </button>
                 <button
                   onClick={reset}
-                  className="w-full flex items-center justify-center gap-2 text-[#94a3b8] hover:text-white py-2.5 px-4 rounded-lg border border-[#1e3a5f] hover:border-[#94a3b8] transition-all duration-200 text-sm"
+                  className="w-full flex items-center justify-center gap-2 text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 px-4 rounded-lg border border-[rgba(45,74,45,0.15)] hover:border-[#94a3b8] transition-all duration-200 text-sm"
                 >
                   Process another CV
                 </button>
@@ -296,8 +296,8 @@ export default function CVProcessor() {
             </div>
 
             {/* Quick stats */}
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
-              <h3 className="text-white font-semibold mb-3 text-sm">Extracted</h3>
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
+              <h3 className="text-[#2D4A2D] font-semibold mb-3 text-sm">Extracted</h3>
               <div className="space-y-2">
                 {[
                   { icon: Briefcase, label: "Roles", value: result.experience.length },
@@ -309,15 +309,15 @@ export default function CVProcessor() {
                       <s.icon size={14} />
                       {s.label}
                     </div>
-                    <span className="text-white font-medium">{s.value}</span>
+                    <span className="text-[#2D4A2D] font-medium">{s.value}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-3 pt-3 border-t border-[#1e3a5f]">
-                <p className="text-[#10b981] text-xs flex items-center gap-1.5">
+              <div className="mt-3 pt-3 border-t border-[rgba(45,74,45,0.15)]">
+                <p className="text-[#4CAF50] text-xs flex items-center gap-1.5">
                   <Check size={12} /> Contact details removed
                 </p>
-                <p className="text-[#10b981] text-xs flex items-center gap-1.5 mt-1">
+                <p className="text-[#4CAF50] text-xs flex items-center gap-1.5 mt-1">
                   <Check size={12} /> First name only retained
                 </p>
               </div>

@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter, Nunito } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito", weight: ["600", "700"] });
 
 export const metadata: Metadata = {
-  title: "TNT Dashboard",
-  description: "TrueNorth Talent — Internal Recruitment Dashboard",
+  title: "Orchard",
+  description: "Orchard — Recruitment Pipeline Dashboard",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} antialiased`}>
+      <body className={`${inter.variable} ${nunito.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -29,11 +29,11 @@ interface SendModalState {
 
 function TimelineItem({ entry }: { entry: { type: string; content: string; createdAt: string } }) {
   const dot: Record<string, string> = {
-    note: "bg-[#7C3AED]",
+    note: "bg-[#2D4A2D]",
     email_sent: "bg-[#3b82f6]",
     status_change: "bg-[#f59e0b]",
-    cv_upload: "bg-[#10b981]",
-    motivation_upload: "bg-[#10b981]",
+    cv_upload: "bg-[#4CAF50]",
+    motivation_upload: "bg-[#4CAF50]",
     created: "bg-[#94a3b8]",
   };
   return (
@@ -41,7 +41,7 @@ function TimelineItem({ entry }: { entry: { type: string; content: string; creat
       <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${dot[entry.type] ?? "bg-[#94a3b8]"}`} />
       <div className="flex-1 min-w-0">
         <p className="text-[#94a3b8] text-xs leading-relaxed">{entry.content}</p>
-        <p className="text-[#4a6fa5] text-[10px] mt-0.5">
+        <p className="text-[#6B7280] text-[10px] mt-0.5">
           {new Date(entry.createdAt).toLocaleDateString("nl-NL", { day: "2-digit", month: "short", year: "numeric" })}
         </p>
       </div>
@@ -247,7 +247,7 @@ export default function ShortlistPage() {
         });
         if (!res.ok) continue;
         zipEntries.push({
-          filename: `${candidate.firstName} - TrueNorth Talent.docx`,
+          filename: `${candidate.firstName} - Orchard.docx`,
           data: new Uint8Array(await res.arrayBuffer()),
         });
       }
@@ -288,8 +288,8 @@ export default function ShortlistPage() {
     const body = [
       `Dear ${company} team,`, "",
       `Please find attached the shortlist of ${candidateCount} candidate${candidateCount !== 1 ? "s" : ""} for the ${vacancyTitle} role.`, "",
-      "Each profile has been carefully reviewed and presented in our TrueNorth Talent format. Please see the attached ZIP file.", "",
-      "We look forward to your feedback.", "", "Best regards,", "TrueNorth Talent",
+      "Each profile has been carefully reviewed and presented in our Orchard format. Please see the attached ZIP file.", "",
+      "We look forward to your feedback.", "", "Best regards,", "Orchard",
     ].join("\n");
     try {
       const tokens = JSON.parse(gmailTokens);
@@ -297,7 +297,7 @@ export default function ShortlistPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tokens, to: clientEmail,
-          subject: `Shortlist — ${vacancyTitle} — TrueNorth Talent`, body }),
+          subject: `Shortlist — ${vacancyTitle} — Orchard`, body }),
       });
       setSendDone(true);
     } catch { /* silent */ } finally { setSending(false); }
@@ -309,15 +309,15 @@ export default function ShortlistPage() {
     return (
       <div>
         <div className="flex items-center gap-3 mb-8">
-          <ListChecks size={22} className="text-[#7C3AED]" />
+          <ListChecks size={22} className="text-[#2D4A2D]" />
           <div>
-            <h1 className="text-2xl font-bold text-white">Shortlist</h1>
+            <h1 className="text-2xl font-bold text-[#2D4A2D]">Shortlist</h1>
             <p className="text-[#94a3b8] text-sm mt-0.5">Candidates moved to the Shortlisted stage</p>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <ListChecks size={40} className="text-[#1e3a5f] mb-4" />
-          <p className="text-white font-medium mb-1">No shortlisted candidates yet</p>
+          <ListChecks size={40} className="text-[rgba(45,74,45,0.15)] mb-4" />
+          <p className="text-[#2D4A2D] font-medium mb-1">No shortlisted candidates yet</p>
           <p className="text-[#94a3b8] text-sm">Move candidates to the "Shortlisted" stage in the Pipeline to see them here.</p>
         </div>
       </div>
@@ -331,9 +331,9 @@ export default function ShortlistPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <ListChecks size={22} className="text-[#7C3AED]" />
+          <ListChecks size={22} className="text-[#2D4A2D]" />
           <div>
-            <h1 className="text-2xl font-bold text-white">Shortlist</h1>
+            <h1 className="text-2xl font-bold text-[#2D4A2D]">Shortlist</h1>
             <p className="text-[#94a3b8] text-sm mt-0.5">
               {candidates.length} candidate{candidates.length !== 1 ? "s" : ""} across {groups.size} group{groups.size !== 1 ? "s" : ""}
             </p>
@@ -354,20 +354,20 @@ export default function ShortlistPage() {
           const isDownloaded = downloaded.has(vacancyKey);
 
           return (
-            <div key={vacancyKey} className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl overflow-hidden">
+            <div key={vacancyKey} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
               {/* Group header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
                 <div className="flex items-center gap-3">
                   <input type="checkbox" checked={allGroupSelected}
                     onChange={() => toggleGroupSelect(groupIds)}
-                    className="w-4 h-4 accent-[#7C3AED] cursor-pointer" />
+                    className="w-4 h-4 accent-[#2D4A2D] cursor-pointer" />
                   <div>
                     {vacancy ? (
                       <>
-                        <p className="text-white font-semibold text-sm">{vacancy.title}</p>
+                        <p className="text-[#2D4A2D] font-semibold text-sm">{vacancy.title}</p>
                         <p className="text-[#94a3b8] text-xs flex items-center gap-1">
                           <Briefcase size={11} /> {vacancy.company}
-                          {client && <span className="text-[#4a6fa5]"> · {client.contactName}</span>}
+                          {client && <span className="text-[#6B7280]"> · {client.contactName}</span>}
                         </p>
                       </>
                     ) : (
@@ -376,7 +376,7 @@ export default function ShortlistPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[#4a6fa5] text-xs">{groupCandidates.length} candidate{groupCandidates.length !== 1 ? "s" : ""}</span>
+                  <span className="text-[#6B7280] text-xs">{groupCandidates.length} candidate{groupCandidates.length !== 1 ? "s" : ""}</span>
                   {vacancy && (
                     <>
                       <button
@@ -384,10 +384,10 @@ export default function ShortlistPage() {
                         disabled={isConverting || convertableInGroup.length === 0}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                           convertableInGroup.length === 0
-                            ? "bg-[#0a1628] text-[#4a6fa5] cursor-not-allowed"
+                            ? "bg-[#FFFFFF] text-[#6B7280] cursor-not-allowed"
                             : isConverting
-                            ? "bg-[#7C3AED]/50 text-white cursor-wait"
-                            : "bg-[#7C3AED] hover:bg-[#6d28d9] text-white"
+                            ? "bg-[#2D4A2D]/50 text-white cursor-wait"
+                            : "bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white"
                         }`}
                       >
                         {isConverting
@@ -397,7 +397,7 @@ export default function ShortlistPage() {
                       {isDownloaded && (
                         <button
                           onClick={() => openSendModal(vacancyKey)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#10b981]/20 hover:bg-[#10b981]/30 text-[#10b981] transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#4CAF50]/20 hover:bg-[#4CAF50]/30 text-[#4CAF50] transition-colors"
                         >
                           <Send size={12} /> Send to {client?.contactName ?? vacancy.company}
                         </button>
@@ -408,7 +408,7 @@ export default function ShortlistPage() {
               </div>
 
               {/* Candidate rows */}
-              <div className="divide-y divide-[#1e3a5f]">
+              <div className="divide-y divide-[rgba(45,74,45,0.15)]">
                 {groupCandidates.map(candidate => {
                   const isSelected = selected.has(candidate.id);
                   const hasCV = !!candidate.processedCV;
@@ -416,12 +416,12 @@ export default function ShortlistPage() {
                   return (
                     <div
                       key={candidate.id}
-                      className={`flex items-center gap-4 px-5 py-3.5 transition-colors ${isSelected ? "bg-[#7C3AED]/5" : "hover:bg-[#0a1628]"}`}
+                      className={`flex items-center gap-4 px-5 py-3.5 transition-colors ${isSelected ? "bg-[#2D4A2D]/5" : "hover:bg-[#FFFFFF]"}`}
                     >
                       <input type="checkbox" checked={isSelected} onChange={() => toggleSelect(candidate.id)}
-                        className="w-4 h-4 accent-[#7C3AED] cursor-pointer flex-shrink-0" />
+                        className="w-4 h-4 accent-[#2D4A2D] cursor-pointer flex-shrink-0" />
 
-                      <div className="w-8 h-8 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] text-xs font-bold flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] text-xs font-bold flex-shrink-0">
                         {candidate.firstName.charAt(0)}
                       </div>
 
@@ -429,10 +429,10 @@ export default function ShortlistPage() {
                       <div className="flex-1 min-w-0">
                         <button
                           onClick={() => openPanel(candidate)}
-                          className="text-white text-sm font-medium hover:text-[#a78bfa] transition-colors flex items-center gap-1 group/name"
+                          className="text-[#2D4A2D] text-sm font-medium hover:text-[#3D6B3D] transition-colors flex items-center gap-1 group/name"
                         >
                           {candidate.firstName}
-                          <ChevronRight size={12} className="opacity-0 group-hover/name:opacity-100 transition-opacity text-[#7C3AED]" />
+                          <ChevronRight size={12} className="opacity-0 group-hover/name:opacity-100 transition-opacity text-[#2D4A2D]" />
                         </button>
                         {candidate.currentRole && (
                           <p className="text-[#94a3b8] text-xs truncate">{candidate.currentRole}</p>
@@ -442,7 +442,7 @@ export default function ShortlistPage() {
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {/* CV badge — "No CV data" is clickable */}
                         {hasCV ? (
-                          <span className="flex items-center gap-1 text-[#10b981] text-[10px] bg-[#10b981]/10 px-2 py-0.5 rounded-full">
+                          <span className="flex items-center gap-1 text-[#4CAF50] text-[10px] bg-[#4CAF50]/10 px-2 py-0.5 rounded-full">
                             <Check size={10} /> CV ready
                           </span>
                         ) : (
@@ -456,11 +456,11 @@ export default function ShortlistPage() {
                         )}
 
                         {candidate.skills.slice(0, 2).map((s, i) => (
-                          <span key={i} className="text-[#94a3b8] text-[10px] bg-[#112244] px-1.5 py-0.5 rounded hidden sm:inline">{s}</span>
+                          <span key={i} className="text-[#94a3b8] text-[10px] bg-[#FFFFFF] px-1.5 py-0.5 rounded hidden sm:inline">{s}</span>
                         ))}
 
                         <button onClick={() => removeFromShortlist(candidate.id)} title="Remove from shortlist"
-                          className="text-[#1e3a5f] hover:text-red-400 transition-colors p-1 rounded">
+                          className="text-[rgba(45,74,45,0.15)] hover:text-red-400 transition-colors p-1 rounded">
                           <X size={14} />
                         </button>
                       </div>
@@ -471,7 +471,7 @@ export default function ShortlistPage() {
 
               {/* Warning strip */}
               {selectedInGroup.length > 0 && convertableInGroup.length < selectedInGroup.length && (
-                <div className="px-5 py-3 border-t border-[#1e3a5f] flex items-center gap-2 text-[#f59e0b] text-xs bg-[#f59e0b]/5">
+                <div className="px-5 py-3 border-t border-[rgba(45,74,45,0.15)] flex items-center gap-2 text-[#f59e0b] text-xs bg-[#f59e0b]/5">
                   <AlertCircle size={13} />
                   {selectedInGroup.length - convertableInGroup.length} selected candidate
                   {selectedInGroup.length - convertableInGroup.length !== 1 ? "s have" : " has"} no CV —
@@ -486,18 +486,18 @@ export default function ShortlistPage() {
       {/* ── Quick CV upload modal (from badge) ─────────────────────────────── */}
       {uploadTarget && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl w-full max-w-sm shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-sm shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-[#7C3AED]/20 flex items-center justify-center">
-                  <Upload size={13} className="text-[#7C3AED]" />
+                <div className="w-7 h-7 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center">
+                  <Upload size={13} className="text-[#2D4A2D]" />
                 </div>
                 <div>
-                  <p className="text-white font-semibold text-sm leading-none">Upload CV</p>
+                  <p className="text-[#2D4A2D] font-semibold text-sm leading-none">Upload CV</p>
                   <p className="text-[#94a3b8] text-xs mt-0.5">{uploadTarget.firstName}</p>
                 </div>
               </div>
-              <button onClick={() => setUploadTarget(null)} className="text-[#94a3b8] hover:text-white transition-colors">
+              <button onClick={() => setUploadTarget(null)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
                 <X size={15} />
               </button>
             </div>
@@ -510,19 +510,19 @@ export default function ShortlistPage() {
                 onClick={() => !uploading && fileInputRef.current?.click()}
                 className={`border border-dashed rounded-xl p-8 text-center transition-all ${
                   uploading
-                    ? "border-[#7C3AED]/40 cursor-wait"
-                    : "border-[#1e3a5f] hover:border-[#7C3AED] cursor-pointer"
+                    ? "border-[#2D4A2D]/40 cursor-wait"
+                    : "border-[rgba(45,74,45,0.15)] hover:border-[#2D4A2D] cursor-pointer"
                 }`}
               >
                 {uploading ? (
-                  <div className="flex flex-col items-center gap-2 text-[#7C3AED]">
+                  <div className="flex flex-col items-center gap-2 text-[#2D4A2D]">
                     <Loader2 size={24} className="animate-spin" />
                     <p className="text-sm">Processing CV…</p>
                     <p className="text-xs text-[#94a3b8]">Extracting candidate data</p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-[#94a3b8]">
-                    <FileText size={24} className="text-[#1e3a5f]" />
+                    <FileText size={24} className="text-[rgba(45,74,45,0.15)]" />
                     <p className="text-sm font-medium">Drop CV here or click to browse</p>
                     <p className="text-xs">PDF, DOC or DOCX</p>
                   </div>
@@ -548,20 +548,20 @@ export default function ShortlistPage() {
       )}
 
       {/* ── Slide-over panel ────────────────────────────────────────────────── */}
-      <div className={`fixed inset-y-0 right-0 z-50 w-[460px] bg-[#0a1628] border-l border-[#1e3a5f] shadow-2xl flex flex-col transform transition-transform duration-300 ${
+      <div className={`fixed inset-y-0 right-0 z-50 w-[460px] bg-[#FFFFFF] border-l border-[rgba(45,74,45,0.15)] shadow-2xl flex flex-col transform transition-transform duration-300 ${
         panelCandidate ? "translate-x-0" : "translate-x-full"
       }`}>
         {panelCandidate && (
           <>
             {/* Panel header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f] flex-shrink-0">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)] flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] font-bold flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] font-bold flex-shrink-0">
                   {panelCandidate.firstName.charAt(0)}
                   {panelProfile ? panelProfile.lastName.charAt(0) : ""}
                 </div>
                 <div>
-                  <p className="text-white font-semibold">
+                  <p className="text-[#2D4A2D] font-semibold">
                     {panelProfile
                       ? `${panelProfile.firstName} ${panelProfile.lastName}`
                       : panelCandidate.firstName}
@@ -571,7 +571,7 @@ export default function ShortlistPage() {
                   </p>
                 </div>
               </div>
-              <button onClick={closePanel} className="p-1.5 rounded-lg bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white transition-colors">
+              <button onClick={closePanel} className="p-1.5 rounded-lg bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
                 <X size={16} />
               </button>
             </div>
@@ -581,25 +581,25 @@ export default function ShortlistPage() {
 
               {/* Contact info (from profile) */}
               {panelProfile && (panelProfile.email || panelProfile.phone || panelProfile.location) && (
-                <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4 space-y-2.5">
-                  <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-wider">Contact</p>
+                <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4 space-y-2.5">
+                  <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-wider">Contact</p>
                   {panelProfile.email && (
                     <div className="flex items-center gap-2.5">
-                      <Mail size={13} className="text-[#7C3AED] flex-shrink-0" />
-                      <a href={`mailto:${panelProfile.email}`} className="text-[#94a3b8] text-sm hover:text-white transition-colors truncate">
+                      <Mail size={13} className="text-[#2D4A2D] flex-shrink-0" />
+                      <a href={`mailto:${panelProfile.email}`} className="text-[#94a3b8] text-sm hover:text-[#2D4A2D] transition-colors truncate">
                         {panelProfile.email}
                       </a>
                     </div>
                   )}
                   {panelProfile.phone && (
                     <div className="flex items-center gap-2.5">
-                      <Phone size={13} className="text-[#7C3AED] flex-shrink-0" />
+                      <Phone size={13} className="text-[#2D4A2D] flex-shrink-0" />
                       <span className="text-[#94a3b8] text-sm">{panelProfile.phone}</span>
                     </div>
                   )}
                   {panelProfile.location && (
                     <div className="flex items-center gap-2.5">
-                      <MapPin size={13} className="text-[#7C3AED] flex-shrink-0" />
+                      <MapPin size={13} className="text-[#2D4A2D] flex-shrink-0" />
                       <span className="text-[#94a3b8] text-sm">{panelProfile.location}</span>
                     </div>
                   )}
@@ -608,18 +608,18 @@ export default function ShortlistPage() {
 
               {/* Professional details */}
               {(panelProfile?.branch || panelProfile?.salaryExpectation || panelCandidate.skills.length > 0) && (
-                <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4 space-y-2.5">
-                  <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-wider">Professional</p>
+                <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4 space-y-2.5">
+                  <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-wider">Professional</p>
                   {panelProfile?.branch && (
                     <div className="flex items-center justify-between">
                       <span className="text-[#94a3b8] text-xs">Branch</span>
-                      <span className="text-white text-sm">{panelProfile.branch}</span>
+                      <span className="text-[#2D4A2D] text-sm">{panelProfile.branch}</span>
                     </div>
                   )}
                   {panelProfile?.salaryExpectation && (
                     <div className="flex items-center justify-between">
                       <span className="text-[#94a3b8] text-xs">Salary expectation</span>
-                      <span className="text-white text-sm">€{panelProfile.salaryExpectation.toLocaleString("nl-NL")}</span>
+                      <span className="text-[#2D4A2D] text-sm">€{panelProfile.salaryExpectation.toLocaleString("nl-NL")}</span>
                     </div>
                   )}
                   {panelCandidate.skills.length > 0 && (
@@ -627,7 +627,7 @@ export default function ShortlistPage() {
                       <span className="text-[#94a3b8] text-xs block mb-1.5">Skills</span>
                       <div className="flex flex-wrap gap-1">
                         {panelCandidate.skills.map((s, i) => (
-                          <span key={i} className="text-[#94a3b8] text-[10px] bg-[#112244] px-2 py-0.5 rounded border border-[#1e3a5f]">{s}</span>
+                          <span key={i} className="text-[#94a3b8] text-[10px] bg-[#FFFFFF] px-2 py-0.5 rounded border border-[rgba(45,74,45,0.15)]">{s}</span>
                         ))}
                       </div>
                     </div>
@@ -636,13 +636,13 @@ export default function ShortlistPage() {
               )}
 
               {/* CV section */}
-              <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
-                <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-wider mb-3">CV / Document</p>
+              <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
+                <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-wider mb-3">CV / Document</p>
                 {panelCandidate.processedCV ? (
-                  <div className="flex items-center gap-3 p-3 bg-[#10b981]/10 border border-[#10b981]/30 rounded-lg">
-                    <Check size={16} className="text-[#10b981] flex-shrink-0" />
+                  <div className="flex items-center gap-3 p-3 bg-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-lg">
+                    <Check size={16} className="text-[#4CAF50] flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[#10b981] text-sm font-medium">CV Ready</p>
+                      <p className="text-[#4CAF50] text-sm font-medium">CV Ready</p>
                       <p className="text-[#94a3b8] text-xs">
                         {panelCandidate.processedCV.currentRole} · {panelCandidate.processedCV.skills.slice(0, 3).join(", ")}
                       </p>
@@ -656,18 +656,18 @@ export default function ShortlistPage() {
                       onClick={() => !panelUploading && panelFileRef.current?.click()}
                       className={`border border-dashed rounded-lg p-5 text-center transition-all ${
                         panelUploading
-                          ? "border-[#7C3AED]/40 cursor-wait"
-                          : "border-[#1e3a5f] hover:border-[#7C3AED] cursor-pointer"
+                          ? "border-[#2D4A2D]/40 cursor-wait"
+                          : "border-[rgba(45,74,45,0.15)] hover:border-[#2D4A2D] cursor-pointer"
                       }`}
                     >
                       {panelUploading ? (
-                        <div className="flex items-center justify-center gap-2 text-[#7C3AED]">
+                        <div className="flex items-center justify-center gap-2 text-[#2D4A2D]">
                           <Loader2 size={16} className="animate-spin" />
                           <span className="text-sm">Processing…</span>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center gap-1.5 text-[#94a3b8]">
-                          <Upload size={18} className="text-[#4a6fa5]" />
+                          <Upload size={18} className="text-[#6B7280]" />
                           <p className="text-xs font-medium">Upload CV (PDF or Word)</p>
                         </div>
                       )}
@@ -682,17 +682,17 @@ export default function ShortlistPage() {
               </div>
 
               {/* Notes */}
-              <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
+              <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-wider">Notes</p>
+                  <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-wider">Notes</p>
                   {panelNotesSaved && (
-                    <span className="flex items-center gap-1 text-[#10b981] text-[10px]">
+                    <span className="flex items-center gap-1 text-[#4CAF50] text-[10px]">
                       <Check size={10} /> Saved
                     </span>
                   )}
                 </div>
                 <textarea
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6fa5] focus:outline-none focus:border-[#7C3AED] resize-none transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] resize-none transition-colors"
                   rows={4}
                   placeholder="Internal notes about this candidate…"
                   value={panelNotes}
@@ -700,7 +700,7 @@ export default function ShortlistPage() {
                 />
                 <button
                   onClick={savePanelNotes}
-                  className="mt-2 text-xs text-[#7C3AED] hover:text-[#a78bfa] transition-colors"
+                  className="mt-2 text-xs text-[#2D4A2D] hover:text-[#3D6B3D] transition-colors"
                 >
                   Save notes
                 </button>
@@ -708,8 +708,8 @@ export default function ShortlistPage() {
 
               {/* Timeline (from profile) */}
               {panelProfile && panelProfile.timeline.length > 0 && (
-                <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
-                  <p className="text-[#4a6fa5] text-[10px] font-semibold uppercase tracking-wider mb-3">
+                <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
+                  <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-wider mb-3">
                     Timeline
                   </p>
                   <div className="space-y-3 max-h-48 overflow-y-auto">
@@ -724,20 +724,20 @@ export default function ShortlistPage() {
 
               {/* No profile note */}
               {!panelProfile && (
-                <div className="flex items-center gap-2 text-[#4a6fa5] text-xs bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl px-4 py-3">
+                <div className="flex items-center gap-2 text-[#6B7280] text-xs bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl px-4 py-3">
                   <UserCircle size={13} />
                   <span>
-                    This candidate was added manually. <a href="/candidates" className="text-[#7C3AED] hover:underline">View all candidate profiles →</a>
+                    This candidate was added manually. <a href="/candidates" className="text-[#2D4A2D] hover:underline">View all candidate profiles →</a>
                   </span>
                 </div>
               )}
             </div>
 
             {/* Panel footer */}
-            <div className="flex-shrink-0 px-5 py-4 border-t border-[#1e3a5f]">
+            <div className="flex-shrink-0 px-5 py-4 border-t border-[rgba(45,74,45,0.15)]">
               <button
                 onClick={closePanel}
-                className="w-full px-4 py-2.5 rounded-lg text-sm bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white transition-colors"
+                className="w-full px-4 py-2.5 rounded-lg text-sm bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] transition-colors"
               >
                 Back to Shortlist
               </button>
@@ -749,13 +749,13 @@ export default function ShortlistPage() {
       {/* ── Send to Client modal ──────────────────────────────────────────────── */}
       {sendModal && (
         <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl w-full max-w-md shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
               <div className="flex items-center gap-2">
-                <Mail size={16} className="text-[#7C3AED]" />
-                <h2 className="text-white font-semibold text-sm">Send Shortlist to Client</h2>
+                <Mail size={16} className="text-[#2D4A2D]" />
+                <h2 className="text-[#2D4A2D] font-semibold text-sm">Send Shortlist to Client</h2>
               </div>
-              <button onClick={() => setSendModal(null)} className="text-[#94a3b8] hover:text-white transition-colors">
+              <button onClick={() => setSendModal(null)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
                 <X size={15} />
               </button>
             </div>
@@ -764,7 +764,7 @@ export default function ShortlistPage() {
               <div>
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">To</label>
                 <input
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED]"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D]"
                   value={sendModal.clientEmail}
                   onChange={e => setSendModal(m => m ? { ...m, clientEmail: e.target.value } : null)}
                   placeholder="client@company.com"
@@ -778,37 +778,37 @@ export default function ShortlistPage() {
               <div>
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">Subject</label>
                 <input readOnly
-                  className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none"
-                  value={`Shortlist — ${sendModal.vacancyTitle} — TrueNorth Talent`}
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none"
+                  value={`Shortlist — ${sendModal.vacancyTitle} — Orchard`}
                 />
               </div>
               <div>
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">Body preview</label>
-                <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-[#94a3b8] text-xs leading-relaxed whitespace-pre-line">
-                  {`Dear ${sendModal.company} team,\n\nPlease find attached the shortlist of ${sendModal.candidateCount} candidate${sendModal.candidateCount !== 1 ? "s" : ""} for the ${sendModal.vacancyTitle} role.\n\nEach profile has been carefully reviewed and presented in our TrueNorth Talent format. Please see the attached ZIP file.\n\nWe look forward to your feedback.\n\nBest regards,\nTrueNorth Talent`}
+                <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#94a3b8] text-xs leading-relaxed whitespace-pre-line">
+                  {`Dear ${sendModal.company} team,\n\nPlease find attached the shortlist of ${sendModal.candidateCount} candidate${sendModal.candidateCount !== 1 ? "s" : ""} for the ${sendModal.vacancyTitle} role.\n\nEach profile has been carefully reviewed and presented in our Orchard format. Please see the attached ZIP file.\n\nWe look forward to your feedback.\n\nBest regards,\nOrchard`}
                 </div>
-                <p className="text-[#4a6fa5] text-[11px] mt-1.5">Remember to attach the ZIP file you downloaded.</p>
+                <p className="text-[#6B7280] text-[11px] mt-1.5">Remember to attach the ZIP file you downloaded.</p>
               </div>
             </div>
 
-            <div className="flex gap-2 px-5 py-4 border-t border-[#1e3a5f]">
+            <div className="flex gap-2 px-5 py-4 border-t border-[rgba(45,74,45,0.15)]">
               <button onClick={() => setSendModal(null)}
-                className="flex-1 px-4 py-2 rounded-lg text-sm bg-[#1e3a5f] text-[#94a3b8] hover:text-white hover:bg-[#2a4f7a] transition-colors">
+                className="flex-1 px-4 py-2 rounded-lg text-sm bg-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[#6B7280] transition-colors">
                 Cancel
               </button>
               {sendDone ? (
-                <div className="flex-1 flex items-center justify-center gap-2 bg-[#10b981]/20 text-[#10b981] rounded-lg text-sm">
+                <div className="flex-1 flex items-center justify-center gap-2 bg-[#4CAF50]/20 text-[#4CAF50] rounded-lg text-sm">
                   <Check size={14} /> Sent!
                 </div>
               ) : gmailTokens ? (
                 <button onClick={sendEmail} disabled={sending || !sendModal.clientEmail}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                   {sending ? "Sending…" : "Send via Gmail"}
                 </button>
               ) : (
-                <a href={`mailto:${sendModal.clientEmail}?subject=${encodeURIComponent(`Shortlist — ${sendModal.vacancyTitle} — TrueNorth Talent`)}`}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-medium transition-colors"
+                <a href={`mailto:${sendModal.clientEmail}?subject=${encodeURIComponent(`Shortlist — ${sendModal.vacancyTitle} — Orchard`)}`}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-medium transition-colors"
                   onClick={() => setSendModal(null)}>
                   <Mail size={14} /> Open in Mail
                 </a>

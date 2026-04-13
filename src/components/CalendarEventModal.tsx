@@ -144,15 +144,15 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
         exit={{ opacity: 0, y: 16, scale: 0.97 }}
         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
         className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl shadow-black/60"
-        style={{ background: '#111e2d', border: '1px solid rgba(124,58,237,0.2)' }}
+        style={{ background: '#FFFFFF', border: '1px solid rgba(45,74,45,0.2)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(124,58,237,0.12)' }}>
+        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(45,74,45,0.12)' }}>
           <div className="flex items-center gap-2">
             <div className={`w-2.5 h-2.5 rounded-full ${colors.solid}`} />
-            <h2 className="text-[#F5F5F5] font-semibold text-sm">{event ? 'Edit Event' : 'New Event'}</h2>
+            <h2 className="text-[#2D4A2D] font-semibold text-sm">{event ? 'Edit Event' : 'New Event'}</h2>
           </div>
-          <button onClick={onClose} className="text-[#4B5563] hover:text-[#F5F5F5] transition-colors"><X size={16} /></button>
+          <button onClick={onClose} className="text-[#6B7280] hover:text-[#2D4A2D] transition-colors"><X size={16} /></button>
         </div>
 
         <div className="px-6 py-5 space-y-4">
@@ -165,7 +165,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
                   key={t}
                   onClick={() => patch({ type: t })}
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                    form.type === t ? `${c.bg} ${c.text} ${c.border}` : 'bg-[#0a1628] text-[#4a6fa5] border-[#1e3a5f] hover:border-[#2a4a7f]'
+                    form.type === t ? `${c.bg} ${c.text} ${c.border}` : 'bg-[#FFFFFF] text-[#6B7280] border-[rgba(45,74,45,0.15)] hover:border-[#2a4a7f]'
                   }`}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${c.solid}`} />
@@ -180,7 +180,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
             <label className="block text-[#94a3b8] text-xs font-medium mb-1">Title *</label>
             <input
               autoFocus
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
               placeholder={`e.g. Interview with John Doe`}
               value={form.title}
               onChange={e => patch({ title: e.target.value })}
@@ -193,7 +193,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
               <label className="block text-[#94a3b8] text-xs font-medium mb-1">Start</label>
               <input
                 type="datetime-local"
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 value={toLocalDateTimeValue(form.startTime)}
                 onChange={e => {
                   const start = fromLocalDateTimeValue(e.target.value);
@@ -208,7 +208,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
               <label className="block text-[#94a3b8] text-xs font-medium mb-1">End</label>
               <input
                 type="datetime-local"
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 value={toLocalDateTimeValue(form.endTime)}
                 onChange={e => patch({ endTime: fromLocalDateTimeValue(e.target.value) })}
               />
@@ -219,9 +219,9 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
           <div className="relative">
             <label className="block text-[#94a3b8] text-xs font-medium mb-1">Link Candidate</label>
             <div className="relative">
-              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
               <input
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg pl-8 pr-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg pl-8 pr-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 placeholder="Search candidates..."
                 value={candidateSearch}
                 onChange={e => { setCandidateSearch(e.target.value); setShowCandidateDrop(true); }}
@@ -230,14 +230,14 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
               {form.candidateId && (
                 <button
                   onClick={() => { patch({ candidateId: undefined, candidateName: undefined }); setCandidateSearch(''); }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#4a6fa5] hover:text-red-400"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-red-400"
                 >
                   <X size={12} />
                 </button>
               )}
             </div>
             {showCandidateDrop && candidateSearch && filteredCandidates.length > 0 && (
-              <div className="absolute top-full mt-1 left-0 right-0 bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg overflow-hidden z-30 max-h-40 overflow-y-auto">
+              <div className="absolute top-full mt-1 left-0 right-0 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg overflow-hidden z-30 max-h-40 overflow-y-auto">
                 {filteredCandidates.map(c => (
                   <button
                     key={c.id}
@@ -246,10 +246,10 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
                       setCandidateSearch(`${c.firstName} ${c.lastName}`);
                       setShowCandidateDrop(false);
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-[#1e3a5f] transition-colors"
+                    className="w-full text-left px-3 py-2 hover:bg-[rgba(45,74,45,0.15)] transition-colors"
                   >
                     <p className="text-white text-xs font-medium">{c.firstName} {c.lastName}</p>
-                    <p className="text-[#4a6fa5] text-[11px]">{c.jobTitle}</p>
+                    <p className="text-[#6B7280] text-[11px]">{c.jobTitle}</p>
                   </button>
                 ))}
               </div>
@@ -260,9 +260,9 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
           <div className="relative">
             <label className="block text-[#94a3b8] text-xs font-medium mb-1">Link Vacancy</label>
             <div className="relative">
-              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
               <input
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg pl-8 pr-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg pl-8 pr-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 placeholder="Search vacancies..."
                 value={vacancySearch}
                 onChange={e => { setVacancySearch(e.target.value); setShowVacancyDrop(true); }}
@@ -271,14 +271,14 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
               {form.vacancyId && (
                 <button
                   onClick={() => { patch({ vacancyId: undefined, vacancyTitle: undefined }); setVacancySearch(''); }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#4a6fa5] hover:text-red-400"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-red-400"
                 >
                   <X size={12} />
                 </button>
               )}
             </div>
             {showVacancyDrop && vacancySearch && filteredVacancies.length > 0 && (
-              <div className="absolute top-full mt-1 left-0 right-0 bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg overflow-hidden z-30 max-h-40 overflow-y-auto">
+              <div className="absolute top-full mt-1 left-0 right-0 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg overflow-hidden z-30 max-h-40 overflow-y-auto">
                 {filteredVacancies.map(v => (
                   <button
                     key={v.id}
@@ -287,10 +287,10 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
                       setVacancySearch(v.title);
                       setShowVacancyDrop(false);
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-[#1e3a5f] transition-colors"
+                    className="w-full text-left px-3 py-2 hover:bg-[rgba(45,74,45,0.15)] transition-colors"
                   >
                     <p className="text-white text-xs font-medium">{v.title}</p>
-                    <p className="text-[#4a6fa5] text-[11px]">{v.company}</p>
+                    <p className="text-[#6B7280] text-[11px]">{v.company}</p>
                   </button>
                 ))}
               </div>
@@ -301,9 +301,9 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
           <div className="relative">
             <label className="block text-[#94a3b8] text-xs font-medium mb-1">Link Client</label>
             <div className="relative">
-              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4a6fa5]" />
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
               <input
-                className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg pl-8 pr-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg pl-8 pr-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 placeholder="Search clients..."
                 value={clientSearch}
                 onChange={e => { setClientSearch(e.target.value); setShowClientDrop(true); }}
@@ -312,14 +312,14 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
               {form.clientId && (
                 <button
                   onClick={() => { patch({ clientId: undefined, clientName: undefined }); setClientSearch(''); }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#4a6fa5] hover:text-red-400"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-red-400"
                 >
                   <X size={12} />
                 </button>
               )}
             </div>
             {showClientDrop && clientSearch && filteredClients.length > 0 && (
-              <div className="absolute top-full mt-1 left-0 right-0 bg-[#0d1f3c] border border-[#1e3a5f] rounded-lg overflow-hidden z-30 max-h-40 overflow-y-auto">
+              <div className="absolute top-full mt-1 left-0 right-0 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg overflow-hidden z-30 max-h-40 overflow-y-auto">
                 {filteredClients.map(c => (
                   <button
                     key={c.id}
@@ -328,10 +328,10 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
                       setClientSearch(c.companyName);
                       setShowClientDrop(false);
                     }}
-                    className="w-full text-left px-3 py-2 hover:bg-[#1e3a5f] transition-colors"
+                    className="w-full text-left px-3 py-2 hover:bg-[rgba(45,74,45,0.15)] transition-colors"
                   >
                     <p className="text-white text-xs font-medium">{c.companyName}</p>
-                    <p className="text-[#4a6fa5] text-[11px]">{c.contactName}</p>
+                    <p className="text-[#6B7280] text-[11px]">{c.contactName}</p>
                   </button>
                 ))}
               </div>
@@ -344,7 +344,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
               <MapPin size={11} className="inline mr-1" />Location / Meeting Link
             </label>
             <input
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
               placeholder="Office address or Teams/Zoom link..."
               value={form.location || ''}
               onChange={e => patch({ location: e.target.value || undefined })}
@@ -357,7 +357,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
               <FileText size={11} className="inline mr-1" />Notes
             </label>
             <textarea
-              className="w-full bg-[#0a1628] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] resize-none transition-colors"
+              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] resize-none transition-colors"
               rows={2}
               placeholder="Agenda, preparation notes..."
               value={form.notes || ''}
@@ -377,8 +377,8 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
                   onClick={() => patch({ reminder: v })}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     form.reminder === v
-                      ? 'bg-[#7C3AED]/20 text-[#7C3AED] border-[#7C3AED]/50'
-                      : 'bg-[#0a1628] text-[#4a6fa5] border-[#1e3a5f] hover:border-[#2a4a7f]'
+                      ? 'bg-[#2D4A2D]/20 text-[#2D4A2D] border-[#2D4A2D]/50'
+                      : 'bg-[#FFFFFF] text-[#6B7280] border-[rgba(45,74,45,0.15)] hover:border-[#2a4a7f]'
                   }`}
                 >
                   {v === undefined ? 'None' : v === 30 ? '30 min' : v === 60 ? '1 hour' : '1 day'}
@@ -389,20 +389,20 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-3 px-6 py-4" style={{ borderTop: '1px solid rgba(124,58,237,0.12)' }}>
+        <div className="flex items-center gap-3 px-6 py-4" style={{ borderTop: '1px solid rgba(45,74,45,0.12)' }}>
           {event && onDelete && (
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="flex items-center gap-1.5 text-[#4B5563] hover:text-[#EF4444] text-xs transition-colors mr-auto"
+              className="flex items-center gap-1.5 text-[#6B7280] hover:text-[#EF4444] text-xs transition-colors mr-auto"
             >
               <Trash2 size={13} /> {deleting ? 'Deleting...' : 'Delete'}
             </button>
           )}
           <button
             onClick={onClose}
-            className="flex-1 text-[#A0A0A0] hover:text-[#F5F5F5] py-2.5 rounded-lg text-sm transition-colors"
-            style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.15)' }}
+            className="flex-1 text-[#6B7280] hover:text-[#2D4A2D] py-2.5 rounded-lg text-sm transition-colors"
+            style={{ background: 'rgba(45,74,45,0.08)', border: '1px solid rgba(45,74,45,0.15)' }}
           >
             Cancel
           </button>
@@ -410,7 +410,7 @@ export default function CalendarEventModal({ isOpen, onClose, event, prefill, ca
             whileTap={{ scale: 0.97 }}
             onClick={handleSave}
             disabled={saving || !form.title.trim()}
-            className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors"
+            className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors"
           >
             {saving ? 'Saving...' : event ? 'Save Changes' : 'Create Event'}
           </motion.button>

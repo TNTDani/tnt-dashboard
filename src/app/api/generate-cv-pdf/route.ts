@@ -4,20 +4,20 @@ import { ProcessedCV } from "@/lib/types";
 
 // ─── Colour palette ───────────────────────────────────────────────────────────
 const C = {
-  purple:    rgb(0.486, 0.227, 0.929),  // #7C3AED
+  purple:    rgb(0.486, 0.227, 0.929),  // #2D4A2D
   purpleDk:  rgb(0.380, 0.150, 0.780),  // darker purple for header bg
-  navy:      rgb(0.051, 0.122, 0.235),  // #0d1f3c
-  navyDeep:  rgb(0.051, 0.106, 0.165),  // #0d1b2a sidebar bg
+  navy:      rgb(0.051, 0.122, 0.235),  // #FFFFFF
+  navyDeep:  rgb(0.051, 0.106, 0.165),  // #EDEDEB sidebar bg
   white:     rgb(1,     1,     1    ),
   lavender:  rgb(0.655, 0.545, 0.980),  // #a78bfa
   darkText:  rgb(0.067, 0.094, 0.153),  // #111827
   bodyText:  rgb(0.216, 0.255, 0.318),  // #374151
-  midGray:   rgb(0.400, 0.440, 0.490),  // #4b5563
+  midGray:   rgb(0.400, 0.440, 0.490),  // #6B7280
   lightGray: rgb(0.612, 0.639, 0.686),  // #9ca3af
   sideText:  rgb(0.796, 0.835, 0.882),  // #cbd5e1
   sideDim:   rgb(0.490, 0.550, 0.620),  // muted grey for "presented by"
   skillBg:   rgb(0.082, 0.180, 0.325),  // skill tag background
-  divider:   rgb(0.118, 0.259, 0.435),  // #1e3a5f
+  divider:   rgb(0.118, 0.259, 0.435),  // rgba(45,74,45,0.15)
   mainBg:    rgb(1,     1,     1    ),  // white main content background
 };
 
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       if (fDone) return;
       fDone = true;
       page.drawRectangle({ x: 0, y: 0, width: PW, height: FOOT_H, color: C.navyDeep });
-      const txt = "TrueNorth Talent  ·  Confidential  ·  Not to be shared without written consent";
+      const txt = "Orchard  ·  Confidential  ·  Not to be shared without written consent";
       const tw  = R.widthOfTextAtSize(txt, 7.5);
       page.drawText(txt, { x: (PW - tw) / 2, y: 8.5, size: 7.5, font: R, color: C.sideDim });
       if (pageN > 1) {
@@ -213,8 +213,8 @@ export async function POST(req: NextRequest) {
 
         sideY -= 6;
 
-        // "Presented by TrueNorth Talent" — small grey italic
-        const pby = "Presented by TrueNorth Talent";
+        // "Presented by Orchard" — small grey italic
+        const pby = "Presented by Orchard";
         const pbyW = I.widthOfTextAtSize(pby, 7.5);
         page.drawText(pby, {
           x: SB_PL + Math.max(0, (SB_CW - pbyW) / 2),

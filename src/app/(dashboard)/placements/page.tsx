@@ -13,7 +13,7 @@ import {
 const STATUS_CONFIG = {
   pending:  { label: "Pending",  bg: "bg-[#94a3b8]/15", text: "text-[#94a3b8]",  dot: "bg-[#94a3b8]"  },
   invoiced: { label: "Invoiced", bg: "bg-[#3b82f6]/15", text: "text-[#3b82f6]",  dot: "bg-[#3b82f6]"  },
-  paid:     { label: "Paid",     bg: "bg-[#10b981]/15", text: "text-[#10b981]",  dot: "bg-[#10b981]"  },
+  paid:     { label: "Paid",     bg: "bg-[#4CAF50]/15", text: "text-[#4CAF50]",  dot: "bg-[#4CAF50]"  },
 };
 
 const FEE_PRESETS = ["18", "20", "22"] as const;
@@ -112,15 +112,15 @@ export default function PlacementsPage() {
     return (
       <div>
         <div className="flex items-center gap-3 mb-8">
-          <Trophy size={22} className="text-[#10b981]" />
+          <Trophy size={22} className="text-[#4CAF50]" />
           <div>
-            <h1 className="text-2xl font-bold text-white">Placements</h1>
+            <h1 className="text-2xl font-bold text-[#2D4A2D]">Placements</h1>
             <p className="text-[#94a3b8] text-sm mt-0.5">Track fees and payment status for every confirmed placement</p>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <Trophy size={40} className="text-[#1e3a5f] mb-4" />
-          <p className="text-white font-medium mb-1">No placements yet</p>
+          <Trophy size={40} className="text-[rgba(45,74,45,0.15)] mb-4" />
+          <p className="text-[#2D4A2D] font-medium mb-1">No placements yet</p>
           <p className="text-[#94a3b8] text-sm">Move a candidate to the "Placed" stage in the Pipeline to record a placement.</p>
         </div>
       </div>
@@ -131,37 +131,37 @@ export default function PlacementsPage() {
     <div>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 mb-6">
-        <Trophy size={22} className="text-[#10b981]" />
+        <Trophy size={22} className="text-[#4CAF50]" />
         <div>
-          <h1 className="text-2xl font-bold text-white">Placements</h1>
+          <h1 className="text-2xl font-bold text-[#2D4A2D]">Placements</h1>
           <p className="text-[#94a3b8] text-sm mt-0.5">Track fees and payment status for every confirmed placement</p>
         </div>
       </div>
 
       {/* ── Totals bar ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-4 gap-4 mb-8">
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#94a3b8] text-xs">Total Placements</span>
-            <Trophy size={14} className="text-[#10b981]" />
+            <Trophy size={14} className="text-[#4CAF50]" />
           </div>
-          <p className="text-2xl font-bold text-white">{totalPlacements}</p>
+          <p className="text-2xl font-bold text-[#2D4A2D]">{totalPlacements}</p>
         </div>
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#94a3b8] text-xs">Total Invoiced</span>
             <FileText size={14} className="text-[#3b82f6]" />
           </div>
           <p className="text-2xl font-bold text-[#3b82f6]">{fmt(totalInvoiced)}</p>
         </div>
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#94a3b8] text-xs">Total Received</span>
-            <Banknote size={14} className="text-[#10b981]" />
+            <Banknote size={14} className="text-[#4CAF50]" />
           </div>
-          <p className="text-2xl font-bold text-[#10b981]">{fmt(totalReceived)}</p>
+          <p className="text-2xl font-bold text-[#4CAF50]">{fmt(totalReceived)}</p>
         </div>
-        <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
+        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[#94a3b8] text-xs">Outstanding</span>
             <Clock size={14} className="text-[#f59e0b]" />
@@ -171,9 +171,9 @@ export default function PlacementsPage() {
       </div>
 
       {/* ── Placements list ─────────────────────────────────────────────────── */}
-      <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl overflow-hidden">
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
         {/* Table header */}
-        <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[#1e3a5f] text-[#4a6fa5] text-xs font-semibold uppercase tracking-wider">
+        <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[rgba(45,74,45,0.15)] text-[#6B7280] text-xs font-semibold uppercase tracking-wider">
           <span>Candidate</span>
           <span>Vacancy / Company</span>
           <span>Date</span>
@@ -184,28 +184,28 @@ export default function PlacementsPage() {
         </div>
 
         {/* Rows */}
-        <div className="divide-y divide-[#1e3a5f]">
+        <div className="divide-y divide-[rgba(45,74,45,0.15)]">
           {placements.map(p => {
             const sc = STATUS_CONFIG[p.paymentStatus];
             return (
               <div
                 key={p.id}
-                className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-5 py-4 hover:bg-[#0a1628] transition-colors group"
+                className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-5 py-4 hover:bg-[#FFFFFF] transition-colors group"
               >
                 {/* Candidate */}
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] text-xs font-bold flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] text-xs font-bold flex-shrink-0">
                     {p.candidateName.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{p.candidateName}</p>
+                    <p className="text-[#2D4A2D] text-sm font-medium truncate">{p.candidateName}</p>
                     <p className="text-[#94a3b8] text-xs truncate">{p.jobTitle || "—"}</p>
                   </div>
                 </div>
 
                 {/* Vacancy / Company */}
                 <div className="min-w-0">
-                  <p className="text-white text-sm truncate">{p.vacancyTitle || "—"}</p>
+                  <p className="text-[#2D4A2D] text-sm truncate">{p.vacancyTitle || "—"}</p>
                   <p className="text-[#94a3b8] text-xs truncate">{p.company || "—"}</p>
                 </div>
 
@@ -214,21 +214,21 @@ export default function PlacementsPage() {
 
                 {/* Salary */}
                 <div>
-                  <p className="text-white text-sm font-medium">
+                  <p className="text-[#2D4A2D] text-sm font-medium">
                     {p.grossAnnualSalary > 0 ? fmt(p.grossAnnualSalary) : "—"}
                   </p>
                   {p.grossAnnualSalary > 0 && (
-                    <p className="text-[#4a6fa5] text-xs">per year</p>
+                    <p className="text-[#6B7280] text-xs">per year</p>
                   )}
                 </div>
 
                 {/* Fee */}
                 <div>
-                  <p className="text-[#10b981] text-sm font-semibold">
+                  <p className="text-[#4CAF50] text-sm font-semibold">
                     {p.feeAmount > 0 ? fmt(p.feeAmount) : "—"}
                   </p>
                   {p.feePercentage > 0 && (
-                    <p className="text-[#4a6fa5] text-xs">{p.feePercentage}%</p>
+                    <p className="text-[#6B7280] text-xs">{p.feePercentage}%</p>
                   )}
                 </div>
 
@@ -239,7 +239,7 @@ export default function PlacementsPage() {
                     {sc.label}
                   </span>
                   {p.notes && (
-                    <p className="text-[#4a6fa5] text-[10px] mt-0.5 truncate max-w-[120px]" title={p.notes}>
+                    <p className="text-[#6B7280] text-[10px] mt-0.5 truncate max-w-[120px]" title={p.notes}>
                       {p.notes}
                     </p>
                   )}
@@ -248,7 +248,7 @@ export default function PlacementsPage() {
                 {/* Edit */}
                 <button
                   onClick={() => openEdit(p)}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] transition-all"
                   title="Edit placement"
                 >
                   <Pencil size={13} />
@@ -262,19 +262,19 @@ export default function PlacementsPage() {
       {/* ── Edit modal ──────────────────────────────────────────────────────── */}
       {editing && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl w-full max-w-md shadow-2xl">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl w-full max-w-md shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-[#10b981]/20 flex items-center justify-center">
-                  <Pencil size={12} className="text-[#10b981]" />
+                <div className="w-7 h-7 rounded-full bg-[#4CAF50]/20 flex items-center justify-center">
+                  <Pencil size={12} className="text-[#4CAF50]" />
                 </div>
                 <div>
-                  <h2 className="text-white font-semibold text-sm leading-none">Edit Placement</h2>
+                  <h2 className="text-[#2D4A2D] font-semibold text-sm leading-none">Edit Placement</h2>
                   <p className="text-[#94a3b8] text-xs mt-0.5">{editing.candidateName} — {editing.vacancyTitle || editing.company}</p>
                 </div>
               </div>
-              <button onClick={() => setEditing(null)} className="text-[#94a3b8] hover:text-white transition-colors">
+              <button onClick={() => setEditing(null)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
                 <X size={15} />
               </button>
             </div>
@@ -286,7 +286,7 @@ export default function PlacementsPage() {
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">Gross Annual Salary (€)</label>
                 <input
                   type="number"
-                  className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                   value={form.salary}
                   onChange={e => setForm(f => ({ ...f, salary: e.target.value }))}
                 />
@@ -302,8 +302,8 @@ export default function PlacementsPage() {
                       onClick={() => setForm(f => ({ ...f, feePreset: p }))}
                       className={`py-2 rounded-lg text-sm font-medium transition-all ${
                         form.feePreset === p
-                          ? "bg-[#7C3AED] text-white"
-                          : "bg-[#112244] border border-[#1e3a5f] text-[#94a3b8] hover:border-[#7C3AED] hover:text-white"
+                          ? "bg-[#2D4A2D] text-white"
+                          : "bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2D4A2D] hover:text-[#2D4A2D]"
                       }`}
                     >
                       {p === "custom" ? "Custom" : `${p}%`}
@@ -314,7 +314,7 @@ export default function PlacementsPage() {
                   <div className="mt-2 flex items-center gap-2">
                     <input
                       type="number"
-                      className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       placeholder="e.g. 21.5"
                       value={form.customFee}
                       onChange={e => setForm(f => ({ ...f, customFee: e.target.value }))}
@@ -326,12 +326,12 @@ export default function PlacementsPage() {
 
               {/* Live fee calculation */}
               <div className={`rounded-lg px-4 py-3 border ${
-                modalSalary > 0 ? "bg-[#10b981]/10 border-[#10b981]/30" : "bg-[#112244] border-[#1e3a5f]"
+                modalSalary > 0 ? "bg-[#4CAF50]/10 border-[#4CAF50]/30" : "bg-[#FFFFFF] border-[rgba(45,74,45,0.15)]"
               }`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[#94a3b8] text-xs mb-0.5">Calculated Fee</p>
-                    <p className={`text-xl font-bold ${modalSalary > 0 ? "text-[#10b981]" : "text-[#4a6fa5]"}`}>
+                    <p className={`text-xl font-bold ${modalSalary > 0 ? "text-[#4CAF50]" : "text-[#6B7280]"}`}>
                       {modalSalary > 0 ? fmt(modalFee) : "—"}
                     </p>
                   </div>
@@ -357,7 +357,7 @@ export default function PlacementsPage() {
                         className={`py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${
                           form.paymentStatus === s
                             ? `${sc.bg} ${sc.text} border border-current`
-                            : "bg-[#112244] border border-[#1e3a5f] text-[#94a3b8] hover:border-[#7C3AED] hover:text-white"
+                            : "bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2D4A2D] hover:text-[#2D4A2D]"
                         }`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${form.paymentStatus === s ? sc.dot : "bg-[#94a3b8]"}`} />
@@ -372,7 +372,7 @@ export default function PlacementsPage() {
               <div>
                 <label className="block text-[#94a3b8] text-xs font-medium mb-1.5">Notes</label>
                 <textarea
-                  className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm placeholder-[#4a6080] focus:outline-none focus:border-[#7C3AED] transition-colors resize-none"
+                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors resize-none"
                   rows={2}
                   placeholder="e.g. invoice sent 01-04-2026, payment due 30 days"
                   value={form.notes}
@@ -385,13 +385,13 @@ export default function PlacementsPage() {
             <div className="flex gap-2 px-5 pb-5">
               <button
                 onClick={() => setEditing(null)}
-                className="flex-1 px-4 py-2.5 rounded-lg text-sm bg-[#1e3a5f] text-[#94a3b8] hover:text-white hover:bg-[#2a4f7a] transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-lg text-sm bg-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[#6B7280] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={saveEdit}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-semibold transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold transition-colors"
               >
                 <Check size={14} /> Save Changes
               </button>

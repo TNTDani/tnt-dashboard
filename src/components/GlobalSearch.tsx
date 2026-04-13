@@ -28,15 +28,15 @@ const TYPE_LABEL: Record<Result["type"], string> = {
 };
 
 const TYPE_COLOR: Record<Result["type"], string> = {
-  candidate: "text-[#A855F7]",
+  candidate: "text-[#3D6B3D]",
   vacancy: "text-blue-400",
-  client: "text-[#10B981]",
+  client: "text-[#4CAF50]",
 };
 
 const TYPE_BG: Record<Result["type"], string> = {
-  candidate: "bg-[rgba(124,58,237,0.15)]",
+  candidate: "bg-[rgba(45,74,45,0.15)]",
   vacancy: "bg-blue-500/10",
-  client: "bg-[#10B981]/10",
+  client: "bg-[#4CAF50]/10",
 };
 
 function getInitials(name: string) {
@@ -164,26 +164,26 @@ export default function GlobalSearch() {
     <>
       {/* Trigger button */}
       <motion.button
-        whileHover={{ borderColor: "rgba(124,58,237,0.3)" }}
+        whileHover={{ borderColor: "rgba(45,74,45,0.3)" }}
         whileTap={{ scale: 0.98 }}
         onClick={() => {
           setOpen(true);
           loadData();
         }}
-        className="flex items-center gap-2 rounded-lg px-3 py-2 text-[#4B5563] hover:text-[#A0A0A0] text-sm transition-colors w-64"
+        className="flex items-center gap-2 rounded-lg px-3 py-2 text-[#6B7280] hover:text-[#2D4A2D] text-sm transition-colors w-64"
         style={{
-          background: "#162032",
-          border: "1px solid rgba(124,58,237,0.15)",
+          background: "#FFFFFF",
+          border: "1px solid rgba(45,74,45,0.15)",
         }}
       >
-        <Search size={14} className="text-[#A855F7] flex-shrink-0" />
+        <Search size={14} className="text-[#3D6B3D] flex-shrink-0" />
         <span className="flex-1 text-left">Search everything...</span>
         <span
           className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded font-mono"
           style={{
-            background: "#0d1b2a",
-            border: "1px solid rgba(124,58,237,0.15)",
-            color: "#4B5563",
+            background: "#EDEDEB",
+            border: "1px solid rgba(45,74,45,0.15)",
+            color: "#6B7280",
           }}
         >
           <Command size={9} />K
@@ -212,27 +212,27 @@ export default function GlobalSearch() {
               transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
               className="relative w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl shadow-black/60"
               style={{
-                background: "#111e2d",
-                border: "1px solid rgba(124,58,237,0.2)",
+                background: "#FFFFFF",
+                border: "1px solid rgba(45,74,45,0.2)",
               }}
             >
               {/* Input */}
               <div
                 className="flex items-center gap-3 px-4 py-3.5"
-                style={{ borderBottom: "1px solid rgba(124,58,237,0.12)" }}
+                style={{ borderBottom: "1px solid rgba(45,74,45,0.12)" }}
               >
-                <Search size={16} className="text-[#7C3AED] flex-shrink-0" />
+                <Search size={16} className="text-[#2D4A2D] flex-shrink-0" />
                 <input
                   ref={inputRef}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Search candidates, vacancies, clients..."
-                  className="flex-1 bg-transparent text-[#F5F5F5] placeholder-[#4B5563] text-sm focus:outline-none"
+                  className="flex-1 bg-transparent text-[#2D4A2D] placeholder-[#6B7280] text-sm focus:outline-none"
                 />
                 <button
                   onClick={() => setOpen(false)}
-                  className="text-[#4B5563] hover:text-[#F5F5F5] transition-colors"
+                  className="text-[#6B7280] hover:text-[#2D4A2D] transition-colors"
                 >
                   <X size={14} />
                 </button>
@@ -260,7 +260,7 @@ export default function GlobalSearch() {
                           onClick={() => navigate(r.href)}
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
                           style={{
-                            background: isHighlighted ? "rgba(124,58,237,0.1)" : undefined,
+                            background: isHighlighted ? "rgba(45,74,45,0.1)" : undefined,
                           }}
                           onMouseEnter={() => setHighlighted(i)}
                         >
@@ -275,8 +275,8 @@ export default function GlobalSearch() {
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[#F5F5F5] text-sm font-medium truncate">{r.name}</p>
-                            <p className="text-[#4B5563] text-xs truncate">{r.sub}</p>
+                            <p className="text-[#2D4A2D] text-sm font-medium truncate">{r.name}</p>
+                            <p className="text-[#6B7280] text-xs truncate">{r.sub}</p>
                           </div>
                           <span
                             className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${TYPE_BG[r.type]} ${TYPE_COLOR[r.type]}`}
@@ -294,7 +294,7 @@ export default function GlobalSearch() {
                     animate={{ opacity: 1 }}
                     className="py-12 text-center"
                   >
-                    <p className="text-[#4B5563] text-sm">No results for &ldquo;{query}&rdquo;</p>
+                    <p className="text-[#6B7280] text-sm">No results for &ldquo;{query}&rdquo;</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -303,7 +303,7 @@ export default function GlobalSearch() {
                     animate={{ opacity: 1 }}
                     className="py-6 px-4"
                   >
-                    <p className="text-[#4B5563] text-[10px] uppercase tracking-widest font-semibold mb-3">
+                    <p className="text-[#6B7280] text-[10px] uppercase tracking-widest font-semibold mb-3">
                       Search across
                     </p>
                     <div className="flex gap-4">
@@ -312,7 +312,7 @@ export default function GlobalSearch() {
                         return (
                           <div key={t} className={`flex items-center gap-1.5 text-xs ${TYPE_COLOR[t]}`}>
                             <Icon size={12} />
-                            <span className="text-[#A0A0A0]">{TYPE_LABEL[t]}s</span>
+                            <span className="text-[#6B7280]">{TYPE_LABEL[t]}s</span>
                           </div>
                         );
                       })}
@@ -324,8 +324,8 @@ export default function GlobalSearch() {
               {/* Keyboard hint */}
               {results.length > 0 && (
                 <div
-                  className="px-4 py-2 flex items-center gap-4 text-[10px] text-[#4B5563]"
-                  style={{ borderTop: "1px solid rgba(124,58,237,0.12)" }}
+                  className="px-4 py-2 flex items-center gap-4 text-[10px] text-[#6B7280]"
+                  style={{ borderTop: "1px solid rgba(45,74,45,0.12)" }}
                 >
                   <span>↑↓ navigate</span>
                   <span>↵ open</span>

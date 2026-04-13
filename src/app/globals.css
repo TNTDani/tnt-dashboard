@@ -1,49 +1,57 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Brand palette */
-  --color-bg: #0d1b2a;
-  --color-surface: #111e2d;
-  --color-card: #162032;
-  --color-purple: #7C3AED;
-  --color-purple-light: #A855F7;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
+  /* Orchard brand palette */
+  --color-brand:          #2D4A2D;
+  --color-brand-hover:    #3D6B3D;
+  --color-body-text:      #3A5C3A;
+  --color-bg:             #EDEDEB;
+  --color-surface:        #F7F7F5;
+  --color-card:           #FFFFFF;
+  --color-border:         rgba(45, 74, 45, 0.12);
+  --color-mint:           #a8e6cf;
+  --color-muted:          #6B7280;
+  --color-success:        #4CAF50;
+  --color-warning:        #F59E0B;
+  --color-danger:         #EF4444;
+  --color-sidebar:        #2D4A2D;
 
-  /* Legacy aliases — keep so existing hardcoded classes don't break */
-  --color-navy: #0d1b2a;
-  --color-navy-light: #111e2d;
-  --color-navy-card: #162032;
-  --color-navy-border: rgba(124, 58, 237, 0.15);
-  --color-purple-hover: #6d28d9;
-  --color-purple-dim: rgba(124, 58, 237, 0.1);
-  --color-ink: #F5F5F5;
-  --color-muted: #A0A0A0;
+  /* Legacy aliases — prevents hardcoded class breakage */
+  --color-navy:           #EDEDEB;
+  --color-navy-light:     #F7F7F5;
+  --color-navy-card:      #FFFFFF;
+  --color-navy-border:    rgba(45, 74, 45, 0.12);
+  --color-purple:         #2D4A2D;
+  --color-purple-light:   #3D6B3D;
+  --color-purple-hover:   #3D6B3D;
+  --color-purple-dim:     rgba(45, 74, 45, 0.08);
+  --color-ink:            #2D4A2D;
 }
 
 * { box-sizing: border-box; }
 
 body {
-  background: #0d1b2a;
-  color: #F5F5F5;
-  font-family: var(--font-geist-sans), Inter, system-ui, sans-serif;
+  background: #EDEDEB;
+  color: #3A5C3A;
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Scrollbars */
-::selection { background: #7C3AED; color: white; }
+::selection { background: #2D4A2D; color: white; }
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.25); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #7C3AED; }
+::-webkit-scrollbar-thumb { background: rgba(45, 74, 45, 0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #2D4A2D; }
 
 /* Focus rings */
-:focus-visible { outline: 2px solid rgba(124, 58, 237, 0.6); outline-offset: 2px; }
+:focus-visible { outline: 2px solid rgba(45, 74, 45, 0.5); outline-offset: 2px; }
 
-/* Datetime-local input calendar icon colour */
+/* Datetime-local input calendar icon */
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.4) sepia(1) saturate(4) hue-rotate(230deg);
+  filter: invert(0.3) sepia(1) saturate(2) hue-rotate(90deg);
   cursor: pointer;
 }

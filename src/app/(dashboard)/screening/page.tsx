@@ -19,7 +19,7 @@ import type { InterviewQuestion } from "@/app/api/generate-questions/route";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const FLAG_STYLES = {
-  green: { bg: "bg-[#10b98120]", border: "border-[#10b98150]", text: "text-[#10b981]", dot: "bg-[#10b981]" },
+  green: { bg: "bg-[#4CAF5020]", border: "border-[#4CAF5050]", text: "text-[#4CAF50]", dot: "bg-[#4CAF50]" },
   amber: { bg: "bg-[#f59e0b20]", border: "border-[#f59e0b50]", text: "text-[#f59e0b]", dot: "bg-[#f59e0b]" },
   red:   { bg: "bg-[#ef444420]", border: "border-[#ef444450]", text: "text-[#ef4444]", dot: "bg-[#ef4444]" },
 };
@@ -379,7 +379,7 @@ export default function Screening() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">AI Screening Agent</h1>
+        <h1 className="text-2xl font-bold text-[#2D4A2D]">AI Screening Agent</h1>
         <p className="text-[#94a3b8] mt-1">Score candidates against open vacancies with Claude AI.</p>
       </div>
 
@@ -388,9 +388,9 @@ export default function Screening() {
         <div className="space-y-5">
 
           {/* ── Step 1: Candidate ──────────────────────────────────────────── */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-white font-semibold">Step 1 — Candidate CV</h2>
+              <h2 className="text-[#2D4A2D] font-semibold">Step 1 — Candidate CV</h2>
               {/* Mode toggle */}
               <button
                 onClick={() => {
@@ -401,11 +401,11 @@ export default function Screening() {
                   setSearch("");
                   setError("");
                 }}
-                className="flex items-center gap-1.5 text-xs text-[#94a3b8] hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-xs text-[#94a3b8] hover:text-[#2D4A2D] transition-colors"
               >
                 {mode === "existing"
-                  ? <><ToggleLeft size={16} className="text-[#7C3AED]" /> Upload new CV</>
-                  : <><ToggleRight size={16} className="text-[#7C3AED]" /> Select existing</>
+                  ? <><ToggleLeft size={16} className="text-[#2D4A2D]" /> Upload new CV</>
+                  : <><ToggleRight size={16} className="text-[#2D4A2D]" /> Select existing</>
                 }
               </button>
             </div>
@@ -414,18 +414,18 @@ export default function Screening() {
             {mode === "existing" && (
               <div className="space-y-3">
                 <div className="relative" ref={dropdownRef}>
-                  <div className={`flex items-center gap-2 bg-[#112244] border rounded-lg px-3 py-2.5 transition-colors ${
-                    dropdownOpen ? "border-[#7C3AED]" : "border-[#1e3a5f]"
+                  <div className={`flex items-center gap-2 bg-[#FFFFFF] border rounded-lg px-3 py-2.5 transition-colors ${
+                    dropdownOpen ? "border-[#2D4A2D]" : "border-[rgba(45,74,45,0.15)]"
                   }`}>
                     {selectedProfile ? (
-                      <div className="w-5 h-5 rounded-full bg-[#7C3AED]/30 flex items-center justify-center text-[#7C3AED] text-[10px] font-bold flex-shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-[#2D4A2D]/30 flex items-center justify-center text-[#2D4A2D] text-[10px] font-bold flex-shrink-0">
                         {selectedProfile.firstName.charAt(0)}
                       </div>
                     ) : (
-                      <Search size={14} className="text-[#4a6080] flex-shrink-0" />
+                      <Search size={14} className="text-[#9CA3AF] flex-shrink-0" />
                     )}
                     <input
-                      className="flex-1 bg-transparent text-white text-sm placeholder-[#4a6080] outline-none"
+                      className="flex-1 bg-transparent text-[#2D4A2D] text-sm placeholder-[#9CA3AF] outline-none"
                       placeholder="Search candidates by name or role…"
                       value={search}
                       onChange={e => {
@@ -439,7 +439,7 @@ export default function Screening() {
                       onFocus={() => setDropdownOpen(true)}
                     />
                     {(search || selectedProfile) && (
-                      <button onClick={clearProfile} className="text-[#4a6080] hover:text-white transition-colors flex-shrink-0">
+                      <button onClick={clearProfile} className="text-[#9CA3AF] hover:text-[#2D4A2D] transition-colors flex-shrink-0">
                         <X size={14} />
                       </button>
                     )}
@@ -447,30 +447,30 @@ export default function Screening() {
 
                   {/* Dropdown list */}
                   {dropdownOpen && filteredProfiles.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl overflow-hidden z-20 shadow-xl max-h-64 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden z-20 shadow-xl max-h-64 overflow-y-auto">
                       {filteredProfiles.slice(0, 20).map(p => (
                         <button
                           key={p.id}
                           onMouseDown={() => selectProfile(p)}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#112244] transition-colors text-left"
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#FFFFFF] transition-colors text-left"
                         >
-                          <div className="w-8 h-8 rounded-full bg-[#7C3AED]/20 flex items-center justify-center text-[#7C3AED] text-xs font-bold flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] text-xs font-bold flex-shrink-0">
                             {p.firstName.charAt(0)}{p.lastName.charAt(0)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm font-medium leading-none mb-0.5">
+                            <p className="text-[#2D4A2D] text-sm font-medium leading-none mb-0.5">
                               {p.firstName} {p.lastName}
                             </p>
                             <p className="text-[#94a3b8] text-xs truncate">{p.jobTitle || p.branch || "—"}</p>
                           </div>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${STATUS_COLORS[p.status] ?? "bg-[#1e3a5f] text-[#94a3b8]"}`}>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${STATUS_COLORS[p.status] ?? "bg-[rgba(45,74,45,0.15)] text-[#94a3b8]"}`}>
                             {p.status}
                           </span>
                         </button>
                       ))}
                       {profiles.length === 0 && (
                         <div className="px-4 py-6 text-center text-[#94a3b8] text-sm">
-                          <UserCircle size={24} className="mx-auto mb-2 text-[#1e3a5f]" />
+                          <UserCircle size={24} className="mx-auto mb-2 text-[rgba(45,74,45,0.15)]" />
                           No candidates in your database yet
                         </div>
                       )}
@@ -478,11 +478,11 @@ export default function Screening() {
                   )}
 
                   {dropdownOpen && filteredProfiles.length === 0 && search.trim() && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl px-4 py-4 text-center z-20 shadow-xl">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl px-4 py-4 text-center z-20 shadow-xl">
                       <p className="text-[#94a3b8] text-sm">No candidates match &ldquo;{search}&rdquo;</p>
                       <button
                         onMouseDown={() => { setMode("upload"); setDropdownOpen(false); setSearch(""); }}
-                        className="mt-2 text-[#7C3AED] text-xs hover:underline"
+                        className="mt-2 text-[#2D4A2D] text-xs hover:underline"
                       >
                         Upload a new CV instead →
                       </button>
@@ -491,9 +491,9 @@ export default function Screening() {
                 </div>
 
                 {profiles.length === 0 && !dropdownOpen && (
-                  <p className="text-[#4a6fa5] text-xs">
+                  <p className="text-[#6B7280] text-xs">
                     No candidates in your database yet.{" "}
-                    <button onClick={() => setMode("upload")} className="text-[#7C3AED] hover:underline">Upload a CV</button> to get started.
+                    <button onClick={() => setMode("upload")} className="text-[#2D4A2D] hover:underline">Upload a CV</button> to get started.
                   </p>
                 )}
               </div>
@@ -503,7 +503,7 @@ export default function Screening() {
             {mode === "upload" && (
               <div
                 onClick={() => document.getElementById("screen-upload")?.click()}
-                className="border border-dashed border-[#1e3a5f] hover:border-[#7C3AED] rounded-lg p-4 text-center cursor-pointer transition-all"
+                className="border border-dashed border-[rgba(45,74,45,0.15)] hover:border-[#2D4A2D] rounded-lg p-4 text-center cursor-pointer transition-all"
               >
                 <input
                   id="screen-upload" type="file" className="hidden" accept=".pdf,.doc,.docx"
@@ -514,12 +514,12 @@ export default function Screening() {
                   }}
                 />
                 {uploading ? (
-                  <div className="flex items-center justify-center gap-2 text-[#7C3AED]">
+                  <div className="flex items-center justify-center gap-2 text-[#2D4A2D]">
                     <Loader2 size={16} className="animate-spin" />
                     <span className="text-sm">Processing…</span>
                   </div>
                 ) : uploadedCV ? (
-                  <div className="flex items-center justify-center gap-2 text-[#10b981]">
+                  <div className="flex items-center justify-center gap-2 text-[#4CAF50]">
                     <CheckCircle size={16} />
                     <span className="text-sm">{uploadedCV.firstName} · CV ready</span>
                   </div>
@@ -534,7 +534,7 @@ export default function Screening() {
 
             {/* CV loading state */}
             {loadingProfileCV && (
-              <div className="flex items-center gap-2 text-[#7C3AED] text-sm mt-3">
+              <div className="flex items-center gap-2 text-[#2D4A2D] text-sm mt-3">
                 <Loader2 size={14} className="animate-spin" />
                 Loading CV from profile…
               </div>
@@ -542,11 +542,11 @@ export default function Screening() {
 
             {/* CV preview card */}
             {cv && !loadingProfileCV && (
-              <div className="mt-3 p-3 bg-[#112244] rounded-lg border border-[#1e3a5f]">
+              <div className="mt-3 p-3 bg-[#FFFFFF] rounded-lg border border-[rgba(45,74,45,0.15)]">
                 <div className="flex items-center gap-2">
-                  <CheckCircle size={14} className="text-[#10b981] flex-shrink-0" />
+                  <CheckCircle size={14} className="text-[#4CAF50] flex-shrink-0" />
                   <div>
-                    <p className="text-white text-sm font-medium leading-none">{cv.firstName}</p>
+                    <p className="text-[#2D4A2D] text-sm font-medium leading-none">{cv.firstName}</p>
                     <p className="text-[#94a3b8] text-xs mt-0.5">{cv.currentRole}{cv.skills.length > 0 && ` · ${cv.skills.slice(0, 3).join(", ")}`}</p>
                   </div>
                 </div>
@@ -555,13 +555,13 @@ export default function Screening() {
           </div>
 
           {/* ── Step 2: Vacancy ────────────────────────────────────────────── */}
-          <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-5">
-            <h2 className="text-white font-semibold mb-4">Step 2 — Select Vacancy</h2>
+          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
+            <h2 className="text-[#2D4A2D] font-semibold mb-4">Step 2 — Select Vacancy</h2>
             {vacancies.filter(v => v.status === "open").length === 0 ? (
-              <p className="text-[#94a3b8] text-sm">No open vacancies. <a href="/vacancies" className="text-[#7C3AED]">Add one first →</a></p>
+              <p className="text-[#94a3b8] text-sm">No open vacancies. <a href="/vacancies" className="text-[#2D4A2D]">Add one first →</a></p>
             ) : (
               <select
-                className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                 value={selectedVacancy}
                 onChange={e => setSelectedVacancy(e.target.value)}
               >
@@ -572,8 +572,8 @@ export default function Screening() {
               </select>
             )}
             {vacancy && (
-              <div className="mt-3 p-3 bg-[#112244] rounded-lg border border-[#1e3a5f]">
-                <p className="text-white text-sm font-medium">{vacancy.title}</p>
+              <div className="mt-3 p-3 bg-[#FFFFFF] rounded-lg border border-[rgba(45,74,45,0.15)]">
+                <p className="text-[#2D4A2D] text-sm font-medium">{vacancy.title}</p>
                 <p className="text-[#94a3b8] text-xs">{vacancy.seniorityLevel} · {vacancy.currency} {vacancy.salaryMin.toLocaleString()}–{vacancy.salaryMax.toLocaleString()}</p>
               </div>
             )}
@@ -589,7 +589,7 @@ export default function Screening() {
           <button
             onClick={runScreening}
             disabled={screening || !canScreen}
-            className="w-full flex items-center justify-center gap-2 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all"
+            className="w-full flex items-center justify-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all"
           >
             {screening ? (
               <><Loader2 size={18} className="animate-spin" /> Screening with Claude…</>
@@ -602,30 +602,30 @@ export default function Screening() {
         {/* ── Result panel ──────────────────────────────────────────────────── */}
         <div className="space-y-4">
           {!result && !screening && (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-12 text-center flex flex-col items-center justify-center" style={{ minHeight: 320 }}>
-              <Zap size={40} className="text-[#1e3a5f] mb-3" />
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-12 text-center flex flex-col items-center justify-center" style={{ minHeight: 320 }}>
+              <Zap size={40} className="text-[rgba(45,74,45,0.15)] mb-3" />
               <p className="text-[#94a3b8]">Screening results will appear here</p>
-              <p className="text-[#4a6080] text-sm mt-1">Select a candidate and vacancy, then run the agent</p>
+              <p className="text-[#9CA3AF] text-sm mt-1">Select a candidate and vacancy, then run the agent</p>
             </div>
           )}
 
           {screening && (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-12 text-center flex flex-col items-center justify-center" style={{ minHeight: 320 }}>
-              <Loader2 size={40} className="text-[#7C3AED] animate-spin mb-3" />
-              <p className="text-white font-medium">Claude is evaluating the candidate…</p>
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-12 text-center flex flex-col items-center justify-center" style={{ minHeight: 320 }}>
+              <Loader2 size={40} className="text-[#2D4A2D] animate-spin mb-3" />
+              <p className="text-[#2D4A2D] font-medium">Claude is evaluating the candidate…</p>
               <p className="text-[#94a3b8] text-sm mt-1">Scoring against role requirements</p>
             </div>
           )}
 
           {result && !screening && (() => {
             const flagStyle = FLAG_STYLES[result.flag];
-            const scoreColor = result.score >= 7 ? "text-[#10b981]" : result.score >= 5 ? "text-[#f59e0b]" : "text-[#ef4444]";
-            const barColor   = result.score >= 7 ? "bg-[#10b981]" : result.score >= 5 ? "bg-[#f59e0b]" : "bg-[#ef4444]";
+            const scoreColor = result.score >= 7 ? "text-[#4CAF50]" : result.score >= 5 ? "text-[#f59e0b]" : "text-[#ef4444]";
+            const barColor   = result.score >= 7 ? "bg-[#4CAF50]" : result.score >= 5 ? "bg-[#f59e0b]" : "bg-[#ef4444]";
             const label = scoreLabel(result.score);
             return (
-              <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl overflow-hidden">
+              <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
                 {/* Score header */}
-                <div className={`p-5 border-b border-[#1e3a5f] ${flagStyle.bg}`}>
+                <div className={`p-5 border-b border-[rgba(45,74,45,0.15)] ${flagStyle.bg}`}>
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
@@ -639,7 +639,7 @@ export default function Screening() {
                       <p className="text-[#94a3b8] text-xs">/ 10</p>
                     </div>
                   </div>
-                  <div className="h-1.5 bg-[#112244] rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-[#FFFFFF] rounded-full overflow-hidden">
                     <div className={`h-full rounded-full transition-all duration-1000 ${barColor}`} style={{ width: `${result.score * 10}%` }} />
                   </div>
                   {result.scoreReason && (
@@ -650,18 +650,18 @@ export default function Screening() {
                 <div className="p-5 space-y-4">
                   {/* Summary */}
                   <div>
-                    <p className="text-[#7C3AED] text-xs font-bold uppercase tracking-wider mb-2">Recruiter Summary</p>
+                    <p className="text-[#2D4A2D] text-xs font-bold uppercase tracking-wider mb-2">Recruiter Summary</p>
                     <p className="text-[#94a3b8] text-sm leading-relaxed">{result.summary}</p>
                   </div>
 
                   {/* Strengths */}
                   {result.strengths.length > 0 && (
                     <div>
-                      <p className="text-[#10b981] text-xs font-bold uppercase tracking-wider mb-2">Strengths</p>
+                      <p className="text-[#4CAF50] text-xs font-bold uppercase tracking-wider mb-2">Strengths</p>
                       <ul className="space-y-1.5">
                         {result.strengths.map((s, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-[#94a3b8]">
-                            <CheckCircle size={13} className="text-[#10b981] mt-0.5 flex-shrink-0" />{s}
+                            <CheckCircle size={13} className="text-[#4CAF50] mt-0.5 flex-shrink-0" />{s}
                           </li>
                         ))}
                       </ul>
@@ -686,7 +686,7 @@ export default function Screening() {
                   <div className="flex gap-2 pt-1">
                     <button
                       onClick={downloadReport}
-                      className="flex items-center gap-1.5 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                      className="flex items-center gap-1.5 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                     >
                       <Download size={13} />
                       Download Report
@@ -694,7 +694,7 @@ export default function Screening() {
                     <button
                       onClick={generateQuestions}
                       disabled={loadingQs}
-                      className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                      className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-50 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                     >
                       {loadingQs ? <Loader2 size={13} className="animate-spin" /> : <MessageSquare size={13} />}
                       {loadingQs ? "Generating…" : "Generate Interview Questions"}
@@ -703,7 +703,7 @@ export default function Screening() {
 
                   <button
                     onClick={() => { setResult(null); setQuestions(null); setShowAddToDb(false); }}
-                    className="w-full border border-[#1e3a5f] text-[#94a3b8] hover:text-white hover:border-[#94a3b8] py-2 rounded-lg text-sm transition-all"
+                    className="w-full border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:border-[#94a3b8] py-2 rounded-lg text-sm transition-all"
                   >
                     Screen another candidate
                   </button>
@@ -714,18 +714,18 @@ export default function Screening() {
 
           {/* ── Add to database prompt ────────────────────────────────── */}
           {showAddToDb && !addedToDb && (
-            <div className="bg-[#0d1f3c] border border-[#7C3AED]/40 rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
+            <div className="bg-[#FFFFFF] border border-[#2D4A2D]/40 rounded-xl overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-[#7C3AED]/20 flex items-center justify-center">
-                    <UserPlus size={13} className="text-[#7C3AED]" />
+                  <div className="w-7 h-7 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center">
+                    <UserPlus size={13} className="text-[#2D4A2D]" />
                   </div>
                   <div>
-                    <p className="text-white text-sm font-semibold leading-none">Add to your database?</p>
+                    <p className="text-[#2D4A2D] text-sm font-semibold leading-none">Add to your database?</p>
                     <p className="text-[#94a3b8] text-xs mt-0.5">Save this candidate for future use</p>
                   </div>
                 </div>
-                <button onClick={() => setShowAddToDb(false)} className="text-[#94a3b8] hover:text-white transition-colors">
+                <button onClick={() => setShowAddToDb(false)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
                   <X size={15} />
                 </button>
               </div>
@@ -735,7 +735,7 @@ export default function Screening() {
                   <div>
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">First Name *</label>
                     <input
-                      className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       value={addForm.firstName}
                       onChange={e => setAddForm(f => ({ ...f, firstName: e.target.value }))}
                       placeholder="Jane"
@@ -744,7 +744,7 @@ export default function Screening() {
                   <div>
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">Last Name</label>
                     <input
-                      className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       value={addForm.lastName}
                       onChange={e => setAddForm(f => ({ ...f, lastName: e.target.value }))}
                       placeholder="Smith"
@@ -756,7 +756,7 @@ export default function Screening() {
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">Email</label>
                     <input
                       type="email"
-                      className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       value={addForm.email}
                       onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))}
                       placeholder="jane@example.com"
@@ -765,7 +765,7 @@ export default function Screening() {
                   <div>
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">Phone</label>
                     <input
-                      className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       value={addForm.phone}
                       onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))}
                       placeholder="+31 6 ..."
@@ -776,7 +776,7 @@ export default function Screening() {
                   <div>
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">Job Title</label>
                     <input
-                      className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       value={addForm.jobTitle}
                       onChange={e => setAddForm(f => ({ ...f, jobTitle: e.target.value }))}
                       placeholder="Senior Developer"
@@ -785,7 +785,7 @@ export default function Screening() {
                   <div>
                     <label className="block text-[#94a3b8] text-xs font-medium mb-1">Branch</label>
                     <input
-                      className="w-full bg-[#112244] border border-[#1e3a5f] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-[#7C3AED] transition-colors"
+                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
                       value={addForm.branch}
                       onChange={e => setAddForm(f => ({ ...f, branch: e.target.value }))}
                       placeholder="IT"
@@ -797,14 +797,14 @@ export default function Screening() {
               <div className="flex gap-2 px-5 pb-4">
                 <button
                   onClick={() => setShowAddToDb(false)}
-                  className="flex-1 px-4 py-2 rounded-lg text-sm bg-[#1e3a5f] text-[#94a3b8] hover:text-white hover:bg-[#2a4f7a] transition-colors"
+                  className="flex-1 px-4 py-2 rounded-lg text-sm bg-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[#6B7280] transition-colors"
                 >
                   Skip
                 </button>
                 <button
                   onClick={saveToDatabase}
                   disabled={!addForm.firstName}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm bg-[#7C3AED] hover:bg-[#6d28d9] text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <UserPlus size={14} />
                   Save to Database
@@ -814,7 +814,7 @@ export default function Screening() {
           )}
 
           {addedToDb && (
-            <div className="flex items-center gap-3 px-4 py-3 bg-[#10b981]/10 border border-[#10b981]/30 rounded-xl text-[#10b981] text-sm">
+            <div className="flex items-center gap-3 px-4 py-3 bg-[#4CAF50]/10 border border-[#4CAF50]/30 rounded-xl text-[#4CAF50] text-sm">
               <Check size={16} className="flex-shrink-0" />
               <span>Candidate saved to your database.</span>
               <a href="/candidates" className="ml-auto text-xs underline opacity-70 hover:opacity-100 flex-shrink-0">View →</a>
@@ -823,25 +823,25 @@ export default function Screening() {
 
           {/* ── Interview Questions ───────────────────────────────────── */}
           {(loadingQs || qError || questions) && (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3a5f]">
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
                 <div className="flex items-center gap-2">
-                  <MessageSquare size={15} className="text-[#7C3AED]" />
-                  <span className="text-white font-semibold text-sm">Interview Questions</span>
-                  {questions && <span className="text-[#4a6fa5] text-xs">· {questions.length} questions</span>}
+                  <MessageSquare size={15} className="text-[#2D4A2D]" />
+                  <span className="text-[#2D4A2D] font-semibold text-sm">Interview Questions</span>
+                  {questions && <span className="text-[#6B7280] text-xs">· {questions.length} questions</span>}
                 </div>
                 {questions && (
                   <div className="flex gap-2">
                     <button
                       onClick={copyToClipboard}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white transition-colors"
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] transition-colors"
                     >
-                      {copied ? <Check size={12} className="text-[#10b981]" /> : <ClipboardCopy size={12} />}
+                      {copied ? <Check size={12} className="text-[#4CAF50]" /> : <ClipboardCopy size={12} />}
                       {copied ? "Copied!" : "Copy"}
                     </button>
                     <button
                       onClick={downloadGuide}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-[#7C3AED] hover:bg-[#6d28d9] text-white transition-colors"
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white transition-colors"
                     >
                       <Download size={12} />
                       PDF Guide
@@ -852,7 +852,7 @@ export default function Screening() {
 
               {loadingQs && (
                 <div className="flex items-center justify-center py-12 gap-3 text-[#94a3b8]">
-                  <Loader2 size={18} className="animate-spin text-[#7C3AED]" />
+                  <Loader2 size={18} className="animate-spin text-[#2D4A2D]" />
                   <span className="text-sm">Claude is generating tailored questions…</span>
                 </div>
               )}
@@ -876,11 +876,11 @@ export default function Screening() {
                         </div>
                         <div className="space-y-3">
                           {qs.map((q, i) => (
-                            <div key={i} className="pl-3 border-l-2 border-[#1e3a5f]">
-                              <p className="text-white text-sm font-medium leading-snug mb-1">
+                            <div key={i} className="pl-3 border-l-2 border-[rgba(45,74,45,0.15)]">
+                              <p className="text-[#2D4A2D] text-sm font-medium leading-snug mb-1">
                                 {i + 1}. {q.question}
                               </p>
-                              <p className="text-[#4a6fa5] text-xs leading-relaxed">
+                              <p className="text-[#6B7280] text-xs leading-relaxed">
                                 <span className="text-[#94a3b8] font-medium">Listen for: </span>
                                 {q.listenFor}
                               </p>
@@ -897,7 +897,7 @@ export default function Screening() {
 
           {/* ── Recent screenings ─────────────────────────────────────── */}
           {screenings.length > 0 && !result && (
-            <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-4">
+            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-4">
               <p className="text-[#94a3b8] text-xs font-bold uppercase tracking-wider mb-3">Recent Screenings</p>
               <div className="space-y-2">
                 {[...screenings].reverse().slice(0, 5).map((s) => {

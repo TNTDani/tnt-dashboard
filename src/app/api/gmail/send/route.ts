@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const html = buildHtmlEmail(body);
 
     const raw = [
-      `From: Dani Leeflang <dani@truenorthtalent.nl>`,
+      `From: Dani Leeflang <dani@orchard.io>`,
       `To: ${to}`,
       `Subject: ${encodeHeader(subject)}`,
       'MIME-Version: 1.0',

@@ -16,8 +16,8 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   sourced:     { bg: "rgba(148,163,184,0.15)", text: "#94a3b8" },
   screened:    { bg: "rgba(59,130,246,0.15)",  text: "#60a5fa" },
   shortlisted: { bg: "rgba(245,158,11,0.15)",  text: "#fbbf24" },
-  interviewed: { bg: "rgba(124,58,237,0.15)",  text: "#A855F7" },
-  placed:      { bg: "rgba(16,185,129,0.15)",  text: "#34d399" },
+  interviewed: { bg: "rgba(45,74,45,0.15)",  text: "#3D6B3D" },
+  placed:      { bg: "rgba(76,175,80,0.15)",  text: "#4CAF50" },
 };
 
 function getEffectiveDueDate(f: FollowUp): Date {
@@ -70,7 +70,7 @@ function FollowUpItem({ followUp, bucket, onDone, onSnooze, onSendFollowUp }: Fo
   const daysLeft = daysUntilDue(followUp);
 
   const accentColor =
-    bucket === "overdue" ? "#EF4444" : bucket === "today" ? "#F59E0B" : "#A0A0A0";
+    bucket === "overdue" ? "#EF4444" : bucket === "today" ? "#F59E0B" : "#6B7280";
   const dueBadgeText =
     bucket === "overdue"
       ? `${Math.abs(daysLeft)}d overdue`
@@ -84,7 +84,7 @@ function FollowUpItem({ followUp, bucket, onDone, onSnooze, onSendFollowUp }: Fo
       animate={{ opacity: 1, x: 0 }}
       className="group relative rounded-xl p-4 transition-all"
       style={{
-        background: "#162032",
+        background: "#FFFFFF",
         border: `1px solid ${accentColor}22`,
         borderLeft: `3px solid ${accentColor}`,
       }}
@@ -92,12 +92,12 @@ function FollowUpItem({ followUp, bucket, onDone, onSnooze, onSendFollowUp }: Fo
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[#F5F5F5] text-sm font-medium">{followUp.contactName}</span>
-            <span className="text-[#4B5563] text-xs">·</span>
-            <span className="text-[#A0A0A0] text-xs">{followUp.company}</span>
+            <span className="text-[#2D4A2D] text-sm font-medium">{followUp.contactName}</span>
+            <span className="text-[#6B7280] text-xs">·</span>
+            <span className="text-[#6B7280] text-xs">{followUp.company}</span>
           </div>
-          <p className="text-[#4B5563] text-xs truncate mt-0.5">Re: {followUp.originalEmailSubject}</p>
-          <p className="text-[#4B5563] text-xs mt-0.5">
+          <p className="text-[#6B7280] text-xs truncate mt-0.5">Re: {followUp.originalEmailSubject}</p>
+          <p className="text-[#6B7280] text-xs mt-0.5">
             {days === 0 ? "Contacted today" : `${days}d since last contact`}
           </p>
         </div>
@@ -112,23 +112,23 @@ function FollowUpItem({ followUp, bucket, onDone, onSnooze, onSendFollowUp }: Fo
         <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => onSendFollowUp(followUp)}
-          className="flex items-center gap-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+          className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
         >
           <Send size={11} /> Send Follow-up
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => onSnooze(followUp.id)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#A0A0A0] hover:text-[#F5F5F5] text-xs transition-colors"
-          style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.15)" }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#6B7280] hover:text-[#2D4A2D] text-xs transition-colors"
+          style={{ background: "rgba(45,74,45,0.08)", border: "1px solid rgba(45,74,45,0.15)" }}
         >
           <Moon size={11} /> Snooze 2d
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => onDone(followUp.id)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#A0A0A0] hover:text-[#10B981] text-xs transition-colors"
-          style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.15)" }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#6B7280] hover:text-[#4CAF50] text-xs transition-colors"
+          style={{ background: "rgba(45,74,45,0.08)", border: "1px solid rgba(45,74,45,0.15)" }}
         >
           <Check size={11} /> Done
         </motion.button>
@@ -228,8 +228,8 @@ export default function Dashboard() {
       label: "Total Candidates",
       value: candidates.length,
       icon: Users,
-      color: "#A855F7",
-      accent: "rgba(124,58,237,0.15)",
+      color: "#3D6B3D",
+      accent: "rgba(45,74,45,0.15)",
       href: "/candidates",
     },
     {
@@ -252,8 +252,8 @@ export default function Dashboard() {
       label: "Placements Made",
       value: placed,
       icon: CheckCircle,
-      color: "#34d399",
-      accent: "rgba(16,185,129,0.15)",
+      color: "#4CAF50",
+      accent: "rgba(76,175,80,0.15)",
       href: "/placements",
     },
   ];
@@ -276,8 +276,8 @@ export default function Dashboard() {
         transition={{ duration: 0.3 }}
         className="mb-8"
       >
-        <h1 className="text-2xl font-semibold text-[#F5F5F5] tracking-tight">Dashboard</h1>
-        <p className="text-[#A0A0A0] text-sm mt-1">TrueNorth Talent — Internal Overview</p>
+        <h1 className="text-2xl font-semibold text-[#2D4A2D] tracking-tight">Dashboard</h1>
+        <p className="text-[#6B7280] text-sm mt-1">Pipeline Overview</p>
       </motion.div>
 
       {/* Stats grid */}
@@ -295,18 +295,18 @@ export default function Dashboard() {
                 transition={{ duration: 0.2 }}
                 className="h-full rounded-xl p-5 cursor-pointer transition-colors"
                 style={{
-                  background: "linear-gradient(135deg, #162032 0%, #111e2d 100%)",
-                  border: "1px solid rgba(124,58,237,0.12)",
+                  background: "#FFFFFF",
+                  border: "1px solid rgba(45,74,45,0.12)",
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLDivElement).style.borderColor = `${s.color}40`;
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(124,58,237,0.12)";
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(45,74,45,0.12)";
                 }}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[#A0A0A0] text-xs font-medium tracking-wide">{s.label}</span>
+                  <span className="text-[#6B7280] text-xs font-medium tracking-wide">{s.label}</span>
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ background: s.accent }}
@@ -317,7 +317,7 @@ export default function Dashboard() {
                 <p className="text-3xl font-semibold" style={{ color: s.color }}>
                   {s.value}
                 </p>
-                <p className="text-[#4B5563] text-xs mt-2 group-hover:text-[#A0A0A0] transition-colors">
+                <p className="text-[#6B7280] text-xs mt-2 group-hover:text-[#6B7280] transition-colors">
                   View all →
                 </p>
               </motion.div>
@@ -334,7 +334,7 @@ export default function Dashboard() {
           transition={{ delay: 0.28, duration: 0.35 }}
           className="rounded-xl p-5 mb-6"
           style={{
-            background: "linear-gradient(135deg, #162032 0%, #111e2d 100%)",
+            background: "#FFFFFF",
             border: "1px solid rgba(239,68,68,0.18)",
           }}
         >
@@ -347,8 +347,8 @@ export default function Dashboard() {
                 <Bell size={16} className="text-[#EF4444]" />
               </div>
               <div>
-                <h2 className="text-[#F5F5F5] font-semibold text-sm">Follow-ups</h2>
-                <p className="text-[#A0A0A0] text-xs">
+                <h2 className="text-[#2D4A2D] font-semibold text-sm">Follow-ups</h2>
+                <p className="text-[#6B7280] text-xs">
                   {totalDue} {totalDue === 1 ? "contact needs" : "contacts need"} attention
                 </p>
               </div>
@@ -403,8 +403,8 @@ export default function Dashboard() {
             {weekFollowUps.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock size={12} className="text-[#A0A0A0]" />
-                  <span className="text-[#A0A0A0] text-[10px] font-semibold uppercase tracking-[0.08em]">
+                  <Clock size={12} className="text-[#6B7280]" />
+                  <span className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-[0.08em]">
                     This Week
                   </span>
                 </div>
@@ -438,15 +438,15 @@ export default function Dashboard() {
           <div
             className="rounded-xl p-5"
             style={{
-              background: "linear-gradient(135deg, #162032 0%, #111e2d 100%)",
-              border: "1px solid rgba(124,58,237,0.12)",
+              background: "#FFFFFF",
+              border: "1px solid rgba(45,74,45,0.12)",
             }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[#F5F5F5] font-semibold text-sm">Recent Candidates</h2>
+              <h2 className="text-[#2D4A2D] font-semibold text-sm">Recent Candidates</h2>
               <Link
                 href="/pipeline"
-                className="text-[#7C3AED] hover:text-[#A855F7] text-xs font-medium transition-colors"
+                className="text-[#2D4A2D] hover:text-[#3D6B3D] text-xs font-medium transition-colors"
               >
                 View all →
               </Link>
@@ -455,14 +455,14 @@ export default function Dashboard() {
               <div className="text-center py-10">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style={{ background: "rgba(124,58,237,0.1)" }}
+                  style={{ background: "rgba(45,74,45,0.1)" }}
                 >
-                  <Users size={20} className="text-[#7C3AED]" />
+                  <Users size={20} className="text-[#2D4A2D]" />
                 </div>
-                <p className="text-[#A0A0A0] text-sm mb-1">No candidates yet</p>
+                <p className="text-[#6B7280] text-sm mb-1">No candidates yet</p>
                 <Link
                   href="/cv-processor"
-                  className="text-[#7C3AED] hover:text-[#A855F7] text-xs font-medium transition-colors"
+                  className="text-[#2D4A2D] hover:text-[#3D6B3D] text-xs font-medium transition-colors"
                 >
                   Process your first CV →
                 </Link>
@@ -477,18 +477,18 @@ export default function Dashboard() {
                       key={c.id}
                       whileHover={{ x: 2 }}
                       className="flex items-center gap-3 py-2.5 rounded-lg px-2 -mx-2 transition-colors cursor-pointer"
-                      style={{ borderBottom: "1px solid rgba(124,58,237,0.08)" }}
+                      style={{ borderBottom: "1px solid rgba(45,74,45,0.08)" }}
                     >
                       {/* Avatar */}
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
-                        style={{ background: "rgba(124,58,237,0.15)", color: "#A855F7" }}
+                        style={{ background: "rgba(45,74,45,0.15)", color: "#3D6B3D" }}
                       >
                         {c.firstName.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[#F5F5F5] text-sm font-medium truncate">{c.firstName}</p>
-                        <p className="text-[#4B5563] text-xs truncate">
+                        <p className="text-[#2D4A2D] text-sm font-medium truncate">{c.firstName}</p>
+                        <p className="text-[#6B7280] text-xs truncate">
                           {c.currentRole}
                           {vacancy ? ` · ${vacancy.title}` : ""}
                         </p>
@@ -510,11 +510,11 @@ export default function Dashboard() {
           <div
             className="rounded-xl p-5"
             style={{
-              background: "linear-gradient(135deg, #162032 0%, #111e2d 100%)",
-              border: "1px solid rgba(124,58,237,0.12)",
+              background: "#FFFFFF",
+              border: "1px solid rgba(45,74,45,0.12)",
             }}
           >
-            <h2 className="text-[#F5F5F5] font-semibold text-sm mb-4">Quick Actions</h2>
+            <h2 className="text-[#2D4A2D] font-semibold text-sm mb-4">Quick Actions</h2>
             <div className="space-y-2">
               {[
                 {
@@ -522,8 +522,8 @@ export default function Dashboard() {
                   icon: FileText,
                   label: "Process a CV",
                   sub: "Upload and reformat with AI",
-                  color: "#A855F7",
-                  accent: "rgba(124,58,237,0.15)",
+                  color: "#3D6B3D",
+                  accent: "rgba(45,74,45,0.15)",
                 },
                 {
                   href: "/screening",
@@ -546,8 +546,8 @@ export default function Dashboard() {
                   icon: Users,
                   label: "View Pipeline",
                   sub: "Track all candidates",
-                  color: "#34d399",
-                  accent: "rgba(16,185,129,0.12)",
+                  color: "#4CAF50",
+                  accent: "rgba(76,175,80,0.12)",
                 },
               ].map((a) => (
                 <Link key={a.href} href={a.href}>
@@ -555,17 +555,17 @@ export default function Dashboard() {
                     whileHover={{ x: 3 }}
                     whileTap={{ scale: 0.98 }}
                     className="flex items-center gap-3 p-3 rounded-lg transition-all cursor-pointer group"
-                    style={{ border: "1px solid rgba(124,58,237,0.1)" }}
+                    style={{ border: "1px solid rgba(45,74,45,0.1)" }}
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLDivElement).style.background =
-                        "rgba(124,58,237,0.06)";
+                        "rgba(45,74,45,0.06)";
                       (e.currentTarget as HTMLDivElement).style.borderColor =
-                        "rgba(124,58,237,0.25)";
+                        "rgba(45,74,45,0.25)";
                     }}
                     onMouseLeave={(e) => {
                       (e.currentTarget as HTMLDivElement).style.background = "";
                       (e.currentTarget as HTMLDivElement).style.borderColor =
-                        "rgba(124,58,237,0.1)";
+                        "rgba(45,74,45,0.1)";
                     }}
                   >
                     <div
@@ -575,8 +575,8 @@ export default function Dashboard() {
                       <a.icon size={15} style={{ color: a.color }} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[#F5F5F5] text-sm font-medium truncate">{a.label}</p>
-                      <p className="text-[#4B5563] text-xs truncate">{a.sub}</p>
+                      <p className="text-[#2D4A2D] text-sm font-medium truncate">{a.label}</p>
+                      <p className="text-[#6B7280] text-xs truncate">{a.sub}</p>
                     </div>
                   </motion.div>
                 </Link>
@@ -601,7 +601,7 @@ export default function Dashboard() {
           }}
           defaultTo={composerFollowUp.contactEmail}
           defaultSubject={`Follow-up: ${composerFollowUp.originalEmailSubject}`}
-          defaultBody={`Hi ${composerFollowUp.contactName.split(" ")[0]},\n\nI wanted to follow up on my previous email regarding ${composerFollowUp.originalEmailSubject}.\n\nI'd love to connect and discuss this further. Are you available for a brief call this week?\n\nBest regards,\nDani\nTrueNorth Talent`}
+          defaultBody={`Hi ${composerFollowUp.contactName.split(" ")[0]},\n\nI wanted to follow up on my previous email regarding ${composerFollowUp.originalEmailSubject}.\n\nI'd love to connect and discuss this further. Are you available for a brief call this week?\n\nBest regards,\nDani\nOrchard`}
           followUpConfig={{
             contactType: composerFollowUp.contactType,
             contactId: composerFollowUp.contactId,

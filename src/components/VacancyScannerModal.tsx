@@ -134,7 +134,7 @@ export default function VacancyScannerModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0d1f3c] border border-[#1e3a5f] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-5 flex-shrink-0">
           <div>
@@ -149,12 +149,12 @@ export default function VacancyScannerModal({
             {(scanState === 'done' || scanState === 'error') && (
               <button
                 onClick={runScan}
-                className="flex items-center gap-1.5 text-[#94a3b8] hover:text-white text-xs px-2 py-1.5 rounded-lg hover:bg-[#1e3a5f] transition-colors"
+                className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] text-xs px-2 py-1.5 rounded-lg hover:bg-[rgba(45,74,45,0.15)] transition-colors"
               >
                 <RefreshCw size={12} /> Rescan
               </button>
             )}
-            <button onClick={onClose} className="text-[#94a3b8] hover:text-white transition-colors">
+            <button onClick={onClose} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
               <X size={18} />
             </button>
           </div>
@@ -163,7 +163,7 @@ export default function VacancyScannerModal({
         {/* Scanning state */}
         {scanState === 'scanning' && (
           <div className="flex-1 flex flex-col items-center justify-center py-16 text-center">
-            <Loader2 size={32} className="text-[#7C3AED] animate-spin mb-4" />
+            <Loader2 size={32} className="text-[#2D4A2D] animate-spin mb-4" />
             <p className="text-white font-medium">Scanning {companyName} for open roles...</p>
             {website && (
               <p className="text-[#94a3b8] text-xs mt-2 truncate max-w-xs">{website}</p>
@@ -183,7 +183,7 @@ export default function VacancyScannerModal({
             </div>
             <button
               onClick={runScan}
-              className="mt-4 flex items-center gap-2 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white px-4 py-2 rounded-lg text-sm transition-colors"
+              className="mt-4 flex items-center gap-2 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm transition-colors"
             >
               <RefreshCw size={14} /> Try again
             </button>
@@ -200,7 +200,7 @@ export default function VacancyScannerModal({
             <p className="text-[#94a3b8] text-sm">They are now visible in the Vacancy Manager.</p>
             <button
               onClick={onClose}
-              className="mt-6 bg-[#7C3AED] hover:bg-[#6d28d9] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
+              className="mt-6 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors"
             >
               Done
             </button>
@@ -218,7 +218,7 @@ export default function VacancyScannerModal({
                     href={scannedUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#7C3AED] hover:underline flex items-center gap-0.5 truncate max-w-xs"
+                    className="text-[#2D4A2D] hover:underline flex items-center gap-0.5 truncate max-w-xs"
                   >
                     {scannedUrl} <ExternalLink size={10} />
                   </a>
@@ -226,8 +226,8 @@ export default function VacancyScannerModal({
               )}
 
               {vacancies.length === 0 ? (
-                <div className="bg-[#0a1628] border border-[#1e3a5f] rounded-xl p-10 text-center">
-                  <Briefcase size={32} className="mx-auto mb-3 text-[#1e3a5f]" />
+                <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-10 text-center">
+                  <Briefcase size={32} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
                   <p className="text-white text-sm font-medium mb-1">No vacancies found</p>
                   <p className="text-[#94a3b8] text-xs">
                     The careers page may require JavaScript or use a job board embed.<br />
@@ -238,7 +238,7 @@ export default function VacancyScannerModal({
                       href={scannedUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 mt-3 text-[#7C3AED] hover:underline text-xs"
+                      className="inline-flex items-center gap-1 mt-3 text-[#2D4A2D] hover:underline text-xs"
                     >
                       Open careers page <ExternalLink size={11} />
                     </a>
@@ -251,7 +251,7 @@ export default function VacancyScannerModal({
                   </p>
                   <button
                     onClick={toggleAll}
-                    className="flex items-center gap-1.5 text-[#94a3b8] hover:text-white text-xs transition-colors"
+                    className="flex items-center gap-1.5 text-[#94a3b8] hover:text-[#2D4A2D] text-xs transition-colors"
                   >
                     {selected.size === vacancies.length
                       ? <><CheckSquare size={13} /> Deselect all</>
@@ -272,14 +272,14 @@ export default function VacancyScannerModal({
                       onClick={() => toggle(i)}
                       className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
                         selected.has(i)
-                          ? 'bg-[#7C3AED10] border-[#7C3AED40]'
-                          : 'bg-[#0a1628] border-[#1e3a5f] hover:border-[#2a4f7a]'
+                          ? 'bg-[#2D4A2D10] border-[#2D4A2D40]'
+                          : 'bg-[#FFFFFF] border-[rgba(45,74,45,0.15)] hover:border-[#6B7280]'
                       }`}
                     >
                       <div className="flex-shrink-0 mt-0.5">
                         {selected.has(i)
-                          ? <CheckSquare size={16} className="text-[#7C3AED]" />
-                          : <Square size={16} className="text-[#4a6fa5]" />
+                          ? <CheckSquare size={16} className="text-[#2D4A2D]" />
+                          : <Square size={16} className="text-[#6B7280]" />
                         }
                       </div>
                       <div className="min-w-0 flex-1">
@@ -289,7 +289,7 @@ export default function VacancyScannerModal({
                             <span className="text-[#94a3b8] text-xs">{v.department}</span>
                           )}
                           {v.department && v.location && (
-                            <span className="text-[#1e3a5f] text-xs">·</span>
+                            <span className="text-[rgba(45,74,45,0.15)] text-xs">·</span>
                           )}
                           {v.location && (
                             <span className="text-[#94a3b8] text-xs">{v.location}</span>
@@ -302,7 +302,7 @@ export default function VacancyScannerModal({
                           target="_blank"
                           rel="noreferrer"
                           onClick={e => e.stopPropagation()}
-                          className="flex-shrink-0 text-[#4a6fa5] hover:text-[#7C3AED] transition-colors mt-0.5"
+                          className="flex-shrink-0 text-[#6B7280] hover:text-[#2D4A2D] transition-colors mt-0.5"
                         >
                           <ExternalLink size={13} />
                         </a>
@@ -316,13 +316,13 @@ export default function VacancyScannerModal({
                   <button
                     onClick={handleActivate}
                     disabled={selected.size === 0}
-                    className="flex-1 bg-[#7C3AED] hover:bg-[#6d28d9] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
+                    className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
                   >
                     Activate {selected.size > 0 ? `${selected.size} ` : ''}selected vacanc{selected.size !== 1 ? 'ies' : 'y'}
                   </button>
                   <button
                     onClick={onClose}
-                    className="flex-1 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white py-2.5 rounded-lg transition-colors text-sm"
+                    className="flex-1 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
                   >
                     Cancel
                   </button>
@@ -333,7 +333,7 @@ export default function VacancyScannerModal({
             {vacancies.length === 0 && (
               <button
                 onClick={onClose}
-                className="w-full mt-4 bg-[#1e3a5f] hover:bg-[#2a4f7a] text-[#94a3b8] hover:text-white py-2.5 rounded-lg transition-colors text-sm flex-shrink-0"
+                className="w-full mt-4 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm flex-shrink-0"
               >
                 Close
               </button>

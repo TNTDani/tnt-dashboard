@@ -59,8 +59,8 @@ async function fetchWebsiteText(website: string): Promise<string> {
 
 const SIGNATURE = `Met vriendelijke groet / Kind regards,
 
-TrueNorth Talent
-info@truenorthtalent.nl`;
+Orchard
+info@orchard.io`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       ? 'Write the email in Dutch (Nederlands).'
       : 'Write the email in English.';
 
-    const prompt = `You are a senior recruitment consultant at TrueNorth Talent, a boutique tech recruitment agency.
+    const prompt = `You are a senior recruitment consultant at Orchard, a boutique tech recruitment agency.
 Your job is to write a short, personalised cold outreach email to ${firstName} (${contactRole}) at ${companyName}.
 
 COMPANY WEBSITE CONTENT:
