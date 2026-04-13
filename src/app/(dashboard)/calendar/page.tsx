@@ -136,13 +136,13 @@ function WeekView({
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       {/* Day header */}
-      <div className="flex border-b border-[rgba(45,74,45,0.15)] flex-shrink-0">
+      <div className="flex border-b border-[rgba(45,74,45,0.15)] flex-shrink-0 bg-white">
         <div className="w-14 flex-shrink-0" />
         {weekDays.map((day, i) => (
           <div key={i} className={`flex-1 text-center py-2 border-l border-[rgba(45,74,45,0.15)] ${isToday(day) ? 'bg-[#2D4A2D]/5' : ''}`}>
             <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-wider">{DAY_SHORT[i]}</p>
             <p className={`text-sm font-bold mt-0.5 w-7 h-7 mx-auto rounded-full flex items-center justify-center ${
-              isToday(day) ? 'bg-[#2D4A2D] text-white' : 'text-white'
+              isToday(day) ? 'bg-[#2D4A2D] text-white' : 'text-[#2D4A2D]'
             }`}>
               {day.getDate()}
             </p>
@@ -151,7 +151,7 @@ function WeekView({
       </div>
 
       {/* Scrollable time grid */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto bg-white">
         <div className="flex" style={{ height: HOUR_HEIGHT * HOURS.length }}>
           {/* Hour labels */}
           <div className="w-14 flex-shrink-0 relative">
@@ -501,7 +501,7 @@ export default function CalendarPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-56px)] overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-[rgba(45,74,45,0.15)] flex-shrink-0 bg-[#081525]/60">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-[rgba(45,74,45,0.15)] flex-shrink-0 bg-white">
         {/* Left: nav */}
         <div className="flex items-center gap-3">
           <button
@@ -523,68 +523,89 @@ export default function CalendarPage() {
 
         {/* Right: actions */}
         <div className="flex items-center gap-2">
-          {/* Sync message */}
-          {syncMsg && (
-            <span className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg ${
-              syncMsg.type === 'ok' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
-            }`}>
-              {syncMsg.type === 'ok' ? <Check size={11} /> : <AlertCircle size={11} />}
-              {syncMsg.text}
-            </span>
-          )}
+          {/* Desktop-only: sync message + Google Calendar + view toggle */}
+          <div className="hidden sm:flex items-center gap-2">
+            {syncMsg && (
+              <span className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg ${
+                syncMsg.type === 'ok' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+              }`}>
+                {syncMsg.type === 'ok' ? <Check size={11} /> : <AlertCircle size={11} />}
+                {syncMsg.text}
+              </span>
+            )}
 
-          {/* Google Calendar sync */}
-          {calendarConnected ? (
-            <button
-              onClick={handleSync}
-              disabled={syncing}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:border-[#2a4a7f] text-xs transition-colors"
-            >
-              <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
-              {syncing ? 'Syncing…' : 'Sync Google'}
-            </button>
-          ) : (
-            <button
-              onClick={connectGoogleCalendar}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[rgba(45,74,45,0.15)] text-[#6B7280] hover:text-[#2D4A2D] hover:border-[#2D4A2D]/50 text-xs transition-colors"
-            >
-              <CalendarDays size={12} />
-              Connect Google Calendar
-            </button>
-          )}
+            {calendarConnected ? (
+              <button
+                onClick={handleSync}
+                disabled={syncing}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:border-[rgba(45,74,45,0.3)] text-xs transition-colors"
+              >
+                <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
+                {syncing ? 'Syncing…' : 'Sync Google'}
+              </button>
+            ) : (
+              <button
+                onClick={connectGoogleCalendar}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[rgba(45,74,45,0.15)] text-[#6B7280] hover:text-[#2D4A2D] hover:border-[#2D4A2D]/50 text-xs transition-colors"
+              >
+                <CalendarDays size={12} />
+                Connect Google Calendar
+              </button>
+            )}
 
-          {/* View toggle */}
-          <div className="flex items-center border border-[rgba(45,74,45,0.15)] rounded-lg overflow-hidden">
+            <div className="flex items-center border border-[rgba(45,74,45,0.15)] rounded-lg overflow-hidden">
+              <button
+                onClick={() => setView('week')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors ${
+                  view === 'week' ? 'bg-[#2D4A2D] text-white' : 'text-[#6B7280] hover:text-[#2D4A2D] hover:bg-[rgba(45,74,45,0.08)]'
+                }`}
+              >
+                <List size={12} /> Week
+              </button>
+              <button
+                onClick={() => setView('month')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors border-l border-[rgba(45,74,45,0.15)] ${
+                  view === 'month' ? 'bg-[#2D4A2D] text-white' : 'text-[#6B7280] hover:text-[#2D4A2D] hover:bg-[rgba(45,74,45,0.08)]'
+                }`}
+              >
+                <LayoutGrid size={12} /> Month
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile-only: week/month icon toggle */}
+          <div className="flex sm:hidden items-center border border-[rgba(45,74,45,0.15)] rounded-lg overflow-hidden">
             <button
               onClick={() => setView('week')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors ${
-                view === 'week' ? 'bg-[#2D4A2D] text-white' : 'text-[#6B7280] hover:text-[#2D4A2D] hover:bg-[rgba(45,74,45,0.15)]'
+              className={`p-2 transition-colors ${
+                view === 'week' ? 'bg-[#2D4A2D] text-white' : 'text-[#6B7280]'
               }`}
             >
-              <List size={12} /> Week
+              <List size={14} />
             </button>
             <button
               onClick={() => setView('month')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors border-l border-[rgba(45,74,45,0.15)] ${
-                view === 'month' ? 'bg-[#2D4A2D] text-white' : 'text-[#6B7280] hover:text-[#2D4A2D] hover:bg-[rgba(45,74,45,0.15)]'
+              className={`p-2 transition-colors border-l border-[rgba(45,74,45,0.15)] ${
+                view === 'month' ? 'bg-[#2D4A2D] text-white' : 'text-[#6B7280]'
               }`}
             >
-              <LayoutGrid size={12} /> Month
+              <LayoutGrid size={14} />
             </button>
           </div>
 
-          {/* New event */}
+          {/* New event — always visible */}
           <button
             onClick={() => openNewEvent()}
             className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
           >
-            <Plus size={13} /> New Event
+            <Plus size={13} />
+            <span className="hidden sm:inline">New Event</span>
           </button>
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 px-6 py-2 border-b border-[rgba(45,74,45,0.15)] flex-shrink-0">
+      <div className="flex items-center gap-4 px-4 sm:px-6 py-2 border-b border-[rgba(45,74,45,0.15)] flex-shrink-0 bg-white overflow-x-auto">
         {(Object.entries(EVENT_COLORS) as [CalendarEventType, typeof EVENT_COLORS[keyof typeof EVENT_COLORS]][]).map(([type, c]) => (
           <div key={type} className="flex items-center gap-1.5">
             <div className={`w-2 h-2 rounded-full ${c.solid}`} />
@@ -596,7 +617,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Calendar body */}
-      <div className="flex flex-col flex-1 overflow-hidden bg-[#081525]">
+      <div className="flex flex-col flex-1 overflow-hidden bg-[#EDEDEB]">
         {view === 'week' ? (
           <WeekView
             weekDays={weekDays}
