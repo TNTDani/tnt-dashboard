@@ -212,32 +212,9 @@ function LoginForm() {
             </motion.button>
           </form>
 
-          {/* Divider */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0", color: "#C8D0C6", fontSize: 12 }}>
-            <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.08)" }} />
-            or
-            <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.08)" }} />
-          </div>
-
-          {/* Google SSO */}
-          <button
-            type="button"
-            onClick={() => signIn("google", { callbackUrl })}
-            style={{ width: "100%", padding: 11, background: "transparent", color: "#1D2B1F", fontSize: 13.5, fontWeight: 500, fontFamily: "inherit", border: "0.5px solid rgba(0,0,0,0.12)", borderRadius: 12, cursor: "pointer", transition: "background 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-            onMouseEnter={e => (e.currentTarget.style.background = "#F5F7F4")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="1" y="1" width="6" height="6" rx="1" fill="#4285F4"/>
-              <rect x="9" y="1" width="6" height="6" rx="1" fill="#EA4335"/>
-              <rect x="1" y="9" width="6" height="6" rx="1" fill="#34A853"/>
-              <rect x="9" y="9" width="6" height="6" rx="1" fill="#FBBC05"/>
-            </svg>
-            Continue with Google
-          </button>
-
-          <div style={{ textAlign: "center", fontSize: 12, color: "#9BAA99", marginTop: 24 }}>
-            Don&apos;t have an account? <a href="#" style={{ color: "#3BAF64", textDecoration: "none" }}>Request access</a>
+          <div style={{ textAlign: "center", fontSize: 12, color: "#9BAA99", marginTop: 20 }}>
+            Don&apos;t have an account?{" "}
+            <a href="/register" style={{ color: "#3BAF64", textDecoration: "none", fontWeight: 500 }}>Register now</a>
           </div>
         </motion.div>
       </div>
