@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Nunito, Geist } from "next/font/google";
+import { Inter, Nunito, Geist, DM_Sans, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,8 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito", weight: ["600", "700"] });
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ["300", "400", "500", "600"] });
+const dmSerifDisplay = DM_Serif_Display({ subsets: ["latin"], variable: "--font-dm-serif", weight: ["400"] });
 
 export const metadata: Metadata = {
   title: "Orchard",
@@ -48,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#2D4A2D" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className={`${inter.variable} ${nunito.variable} antialiased`}>
+      <body className={`${inter.variable} ${nunito.variable} ${dmSans.variable} ${dmSerifDisplay.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

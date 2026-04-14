@@ -402,6 +402,7 @@ export default function Dashboard() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
+                padding: "60px 24px 0",
               }}
             >
               {/* ── Heading ── */}
@@ -413,10 +414,11 @@ export default function Dashboard() {
               >
                 <div
                   style={{
-                    fontSize: 28,
-                    fontWeight: 600,
+                    fontSize: 30,
+                    fontWeight: 400,
                     color: "#2D4A2D",
                     lineHeight: 1.2,
+                    fontFamily: "var(--font-dm-serif, serif)",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 2,
@@ -590,12 +592,23 @@ export default function Dashboard() {
                 </motion.div>
               )}
 
-              {/* ── Stats row — bare, separated by dividers ── */}
+              {/* ── Stats bar card ── */}
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isExiting ? 0 : 1 }}
-                transition={{ duration: isExiting ? 0.18 : 0.5, delay: isExiting ? 0 : 0.6, ease: "easeOut" }}
-                style={{ display: "flex", gap: 0 }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -6 : 0 }}
+                transition={{ duration: isExiting ? 0.18 : 0.45, delay: isExiting ? 0 : 0.6, ease: "easeOut" }}
+                style={{
+                  width: "100%",
+                  maxWidth: 660,
+                  background: "#fff",
+                  borderRadius: 16,
+                  border: "0.5px solid rgba(0,0,0,0.06)",
+                  boxShadow: "0 2px 8px rgba(45,74,45,0.05)",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  overflow: "hidden",
+                  marginBottom: 32,
+                }}
               >
                 {(
                   [
@@ -608,20 +621,130 @@ export default function Dashboard() {
                   <div
                     key={stat.label}
                     style={{
-                      padding: "0 20px",
+                      padding: "18px 20px",
                       textAlign: "center",
-                      borderRight: i < 3 ? "1px solid rgba(45,74,45,0.12)" : "none",
-                      ...(i === 0 ? { paddingLeft: 0 } : {}),
+                      borderRight: i < 3 ? "0.5px solid rgba(45,74,45,0.08)" : "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 6,
                     }}
                   >
-                    <div style={{ fontSize: 18, fontWeight: 600, color: "#2D4A2D", lineHeight: 1.1 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(45,74,45,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <stat.Icon size={15} color="#2D4A2D" strokeWidth={1.8} />
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 600, color: "#2D4A2D", lineHeight: 1.1 }}>
                       {stat.value}
                     </div>
-                    <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
+                    <div style={{ fontSize: 10.5, color: "#6B7280", lineHeight: 1.3, textAlign: "center" }}>
                       {stat.label}
                     </div>
                   </div>
                 ))}
+              </motion.div>
+
+              {/* ── Bottom grid: Recent pipeline + Open vacancies ── */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -6 : 0 }}
+                transition={{ duration: isExiting ? 0.18 : 0.5, delay: isExiting ? 0 : 0.75, ease: "easeOut" }}
+                style={{
+                  width: "100%",
+                  maxWidth: 660,
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 20,
+                  marginBottom: 40,
+                }}
+              >
+                {/* Recent pipeline */}
+                <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(45,74,45,0.05)", overflow: "hidden" }}>
+                  <div style={{ padding: "16px 18px 12px", borderBottom: "0.5px solid rgba(45,74,45,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "#2D4A2D", letterSpacing: "-0.1px" }}>Recent pipeline</span>
+                    <Link href="/candidates" style={{ fontSize: 11, color: "#6DC88A", textDecoration: "none", fontWeight: 500 }}>View all →</Link>
+                  </div>
+                  {candidates.length === 0 ? (
+                    <div style={{ padding: "28px 18px", textAlign: "center" }}>
+                      <p style={{ fontSize: 12, color: "#6B7280" }}>No candidates yet</p>
+                      <Link href="/candidates" style={{ display: "inline-block", marginTop: 10, fontSize: 11, color: "#fff", background: "#2D4A2D", padding: "6px 14px", borderRadius: 8, textDecoration: "none", fontWeight: 500 }}>+ Add candidate</Link>
+                    </div>
+                  ) : (
+                    <div>
+                      {candidates.slice(0, 4).map((c, i) => {
+                        const ss = CAND_STATUS_STYLE[c.status] ?? CAND_STATUS_STYLE.active;
+                        return (
+                          <Link
+                            key={c.id}
+                            href={`/candidates/${c.id}`}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              padding: "10px 18px",
+                              borderBottom: i < Math.min(candidates.length, 4) - 1 ? "0.5px solid rgba(45,74,45,0.06)" : "none",
+                              textDecoration: "none",
+                              transition: "background 0.12s",
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.background = "rgba(45,74,45,0.03)")}
+                            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                          >
+                            <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(45,74,45,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#2D4A2D", flexShrink: 0 }}>
+                              {c.firstName.charAt(0)}{c.lastName.charAt(0)}
+                            </div>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ fontSize: 12, fontWeight: 500, color: "#2D4A2D", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.firstName} {c.lastName}</div>
+                              <div style={{ fontSize: 11, color: "#6B7280", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.jobTitle || c.branch || "—"}</div>
+                            </div>
+                            <span style={{ fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999, background: ss.bg, color: ss.text, flexShrink: 0, textTransform: "capitalize" }}>{c.status}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Open vacancies */}
+                <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid rgba(0,0,0,0.06)", boxShadow: "0 2px 8px rgba(45,74,45,0.05)", overflow: "hidden" }}>
+                  <div style={{ padding: "16px 18px 12px", borderBottom: "0.5px solid rgba(45,74,45,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "#2D4A2D", letterSpacing: "-0.1px" }}>Open vacancies</span>
+                    <Link href="/vacancies" style={{ fontSize: 11, color: "#6DC88A", textDecoration: "none", fontWeight: 500 }}>View all →</Link>
+                  </div>
+                  {vacancies.filter(v => v.status === "open").length === 0 ? (
+                    <div style={{ padding: "28px 18px", textAlign: "center" }}>
+                      <p style={{ fontSize: 12, color: "#6B7280" }}>No open vacancies</p>
+                      <Link href="/vacancies" style={{ display: "inline-block", marginTop: 10, fontSize: 11, color: "#fff", background: "#2D4A2D", padding: "6px 14px", borderRadius: 8, textDecoration: "none", fontWeight: 500 }}>+ Add vacancy</Link>
+                    </div>
+                  ) : (
+                    <div>
+                      {vacancies.filter(v => v.status === "open").slice(0, 4).map((v, i, arr) => (
+                        <Link
+                          key={v.id}
+                          href={`/vacancies`}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "10px 18px",
+                            borderBottom: i < arr.length - 1 ? "0.5px solid rgba(45,74,45,0.06)" : "none",
+                            textDecoration: "none",
+                            transition: "background 0.12s",
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(45,74,45,0.03)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(45,74,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <Briefcase size={13} color="#2D4A2D" strokeWidth={1.8} />
+                          </div>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: "#2D4A2D", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.title}</div>
+                            <div style={{ fontSize: 11, color: "#6B7280", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.company} · {daysOpen(v.createdAt)}d open</div>
+                          </div>
+                          <span style={{ fontSize: 10, fontWeight: 500, padding: "2px 8px", borderRadius: 999, background: "rgba(76,175,80,0.1)", color: "#4CAF50", flexShrink: 0 }}>Active</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </motion.div>
 
             </div>

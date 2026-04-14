@@ -117,7 +117,8 @@ function NavLink({ href, icon: Icon, label, exact, badge, collapsed, onNavigate 
       {active && !collapsed && (
         <motion.div
           layoutId="sidebar-active-border"
-          className="absolute left-0 top-1 bottom-1 w-[3px] rounded-r-full bg-white"
+          className="absolute left-0 top-1 bottom-1 w-[3px] rounded-r-full"
+          style={{ background: "#6DC88A" }}
           transition={{ type: "spring", stiffness: 500, damping: 40 }}
         />
       )}
@@ -288,7 +289,7 @@ function SidebarContent({
   const transition = { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#2D4A2D" }}>
+    <div className="flex flex-col h-full" style={{ background: "#1D2B1F" }}>
       {/* Logo */}
       <div className="flex items-center h-14 px-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div className="flex items-center gap-3 min-w-0">

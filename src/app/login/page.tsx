@@ -6,56 +6,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
 
-// ── Orchard SVG Icon ──────────────────────────────────────────────────────────
+// ── Orchard logo mark ─────────────────────────────────────────────────────────
 
-function OrchardIcon({ size = 40, color = "white" }: { size?: number; color?: string }) {
-  const w = Math.round((size / 36) * 48);
+function OrchardMark({ size = 36 }: { size?: number }) {
   return (
-    <svg width={w} height={size} viewBox="0 0 48 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3"  y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="37" y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="14" width="8" height="8" rx="2" fill={color} />
-      <rect x="3"  y="26" width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="26" width="8" height="8" rx="2" fill={color} />
-      <rect x="37" y="26" width="8" height="8" rx="2" fill={color} />
-      <line x1="7"  y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="41" y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="7"  y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="24" y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="41" y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// ── Background node pattern (decorative, very low opacity) ─────────────────────
-
-function NodePattern() {
-  return (
-    <svg
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.06 }}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <pattern id="nodes" x="0" y="0" width="80" height="60" patternUnits="userSpaceOnUse">
-          <rect x="4"  y="3"  width="8" height="8" rx="2" fill="white" />
-          <rect x="36" y="3"  width="8" height="8" rx="2" fill="white" />
-          <rect x="68" y="3"  width="8" height="8" rx="2" fill="white" />
-          <rect x="36" y="26" width="8" height="8" rx="2" fill="white" />
-          <rect x="4"  y="49" width="8" height="8" rx="2" fill="white" />
-          <rect x="36" y="49" width="8" height="8" rx="2" fill="white" />
-          <rect x="68" y="49" width="8" height="8" rx="2" fill="white" />
-          <line x1="8" y1="11" x2="40" y2="26" stroke="white" strokeWidth="1" />
-          <line x1="40" y1="11" x2="40" y2="26" stroke="white" strokeWidth="1" />
-          <line x1="72" y1="11" x2="40" y2="26" stroke="white" strokeWidth="1" />
-          <line x1="40" y1="34" x2="8" y2="49" stroke="white" strokeWidth="1" />
-          <line x1="40" y1="34" x2="40" y2="49" stroke="white" strokeWidth="1" />
-          <line x1="40" y1="34" x2="72" y2="49" stroke="white" strokeWidth="1" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#nodes)" />
+    <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2"  y="2"  width="8" height="8" rx="2" fill="white"/>
+      <rect x="14" y="2"  width="8" height="8" rx="2" fill="white"/>
+      <rect x="26" y="2"  width="8" height="8" rx="2" fill="white"/>
+      <rect x="14" y="14" width="8" height="8" rx="2" fill="white"/>
+      <rect x="2"  y="26" width="8" height="8" rx="2" fill="white"/>
+      <rect x="14" y="26" width="8" height="8" rx="2" fill="white"/>
+      <rect x="26" y="26" width="8" height="8" rx="2" fill="white"/>
+      <line x1="10" y1="6"  x2="14" y2="6"  stroke="white" strokeWidth="1.5"/>
+      <line x1="22" y1="6"  x2="26" y2="6"  stroke="white" strokeWidth="1.5"/>
+      <line x1="18" y1="10" x2="18" y2="14" stroke="white" strokeWidth="1.5"/>
+      <line x1="18" y1="22" x2="18" y2="26" stroke="white" strokeWidth="1.5"/>
+      <line x1="10" y1="30" x2="14" y2="30" stroke="white" strokeWidth="1.5"/>
+      <line x1="22" y1="30" x2="26" y2="30" stroke="white" strokeWidth="1.5"/>
+      <line x1="6"  y1="10" x2="6"  y2="26" stroke="white" strokeWidth="1.5"/>
     </svg>
   );
 }
@@ -88,58 +57,77 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* ── Left panel: green brand side ── */}
+    <div className="min-h-screen flex" style={{ fontFamily: "var(--font-dm-sans, var(--font-inter), system-ui, sans-serif)" }}>
+
+      {/* ── Left panel ── */}
       <div
-        className="hidden lg:flex lg:w-1/2 relative flex-col items-center justify-center p-16 overflow-hidden"
-        style={{ background: "#2D4A2D" }}
+        className="hidden lg:flex lg:w-[420px] relative flex-col flex-shrink-0 overflow-hidden"
+        style={{ background: "#1D2B1F", padding: "52px 48px" }}
       >
-        <NodePattern />
-        <div className="relative z-10 flex flex-col items-center text-center">
-          <OrchardIcon size={56} color="white" />
-          <p
-            className="text-white mt-5 text-4xl tracking-tight leading-none"
-            style={{ fontFamily: "var(--font-nunito), Nunito, sans-serif", fontWeight: 700 }}
-          >
-            Orchard
-          </p>
-          <p className="mt-4 text-lg" style={{ color: "rgba(255,255,255,0.6)" }}>
-            Cultivate your pipeline.
-          </p>
+        {/* Organic bg circles */}
+        <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "rgba(255,255,255,0.025)", bottom: -180, left: -120, pointerEvents: "none" }} />
+        <div style={{ position: "absolute", width: 280, height: 280, borderRadius: "50%", background: "rgba(109,200,138,0.07)", top: -80, right: -80, pointerEvents: "none" }} />
+
+        {/* Logo */}
+        <div className="flex items-center gap-3 relative z-10" style={{ marginBottom: "auto" }}>
+          <OrchardMark size={36} />
+          <span style={{ fontSize: 24, fontWeight: 500, color: "#fff", letterSpacing: "-0.3px" }}>Orchard</span>
+        </div>
+
+        {/* Tagline + stats */}
+        <div className="relative z-10" style={{ paddingBottom: 12 }}>
+          <div style={{ fontFamily: "var(--font-dm-serif, serif)", fontSize: 34, color: "#fff", fontWeight: 400, lineHeight: 1.2, letterSpacing: "-0.5px", marginBottom: 16 }}>
+            Recruitment,<br /><span style={{ color: "#6DC88A" }}>rooted</span> in data.
+          </div>
+          <div style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.6, maxWidth: 280 }}>
+            Source candidates, track vacancies, and close placements — all in one place.
+          </div>
+          <div style={{ display: "flex", gap: 32, marginTop: 40, paddingTop: 32, borderTop: "0.5px solid rgba(255,255,255,0.1)" }}>
+            {[
+              { value: "2.4k", label: "Candidates sourced" },
+              { value: "98%",  label: "Placement rate"     },
+              { value: "34",   label: "Active clients"     },
+            ].map((s) => (
+              <div key={s.label}>
+                <div style={{ fontSize: 22, fontWeight: 600, color: "#fff", letterSpacing: "-0.5px" }}>{s.value}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2, textTransform: "uppercase", letterSpacing: "0.8px" }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* ── Right panel: white form side ── */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-white px-8">
+      {/* ── Right panel ── */}
+      <div
+        className="flex-1 flex items-center justify-center"
+        style={{ background: "#ECEEE8", backgroundImage: "radial-gradient(#c8cbbf 1px, transparent 1px)", backgroundSize: "22px 22px", padding: 40 }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-          className="w-full max-w-sm"
+          style={{ width: "100%", maxWidth: 400, background: "#fff", borderRadius: 24, padding: "48px 44px", border: "0.5px solid rgba(0,0,0,0.06)" }}
         >
           {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-10 lg:hidden">
-            <OrchardIcon size={28} color="#2D4A2D" />
-            <p
-              className="text-[#2D4A2D] text-2xl leading-none"
-              style={{ fontFamily: "var(--font-nunito), Nunito, sans-serif", fontWeight: 700 }}
-            >
-              Orchard
-            </p>
+          <div className="flex items-center gap-3 mb-8 lg:hidden">
+            <div style={{ background: "#1D2B1F", borderRadius: 10, padding: 6 }}>
+              <OrchardMark size={22} />
+            </div>
+            <span style={{ fontSize: 20, fontWeight: 600, color: "#1D2B1F" }}>Orchard</span>
           </div>
 
-          <h2 className="text-[22px] font-medium mb-1" style={{ color: "#2D4A2D" }}>
+          <div style={{ fontSize: 22, fontWeight: 600, color: "#1D2B1F", letterSpacing: "-0.3px", marginBottom: 6 }}>
             Welcome back
-          </h2>
-          <p className="text-sm mb-8" style={{ color: "#6B7280" }}>
-            Sign in to your account to continue
-          </p>
+          </div>
+          <div style={{ fontSize: 13.5, color: "#7A8878", marginBottom: 32 }}>
+            Sign in to your Orchard workspace
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Email */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-[0.08em] mb-1.5" style={{ color: "#6B7280" }}>
-                Email
+              <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#4A5E4C", marginBottom: 6 }}>
+                Work email
               </label>
               <input
                 type="email"
@@ -147,23 +135,19 @@ function LoginForm() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                placeholder="you@orchard.io"
-                className="w-full rounded-md px-3 py-2.5 text-sm bg-white transition-colors focus:outline-none"
-                style={{
-                  border: "1px solid rgba(45,74,45,0.2)",
-                  color: "#2D4A2D",
-                }}
-                onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "#2D4A2D"; }}
-                onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(45,74,45,0.2)"; }}
+                placeholder="you@company.com"
+                style={{ width: "100%", padding: "11px 14px", fontSize: 14, fontFamily: "inherit", border: "0.5px solid rgba(0,0,0,0.14)", borderRadius: 10, outline: "none", color: "#1D2B1F", background: "#fff", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                onFocus={e => { e.target.style.borderColor = "#6DC88A"; e.target.style.boxShadow = "0 0 0 3px rgba(109,200,138,0.12)"; }}
+                onBlur={e => { e.target.style.borderColor = "rgba(0,0,0,0.14)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-[0.08em] mb-1.5" style={{ color: "#6B7280" }}>
+              <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#4A5E4C", marginBottom: 6 }}>
                 Password
               </label>
-              <div className="relative">
+              <div style={{ position: "relative" }}>
                 <input
                   type={showPwd ? "text" : "password"}
                   value={password}
@@ -171,37 +155,38 @@ function LoginForm() {
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-md pl-3 pr-10 py-2.5 text-sm bg-white transition-colors focus:outline-none"
-                  style={{
-                    border: "1px solid rgba(45,74,45,0.2)",
-                    color: "#2D4A2D",
-                  }}
-                  onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "#2D4A2D"; }}
-                  onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "rgba(45,74,45,0.2)"; }}
+                  style={{ width: "100%", padding: "11px 40px 11px 14px", fontSize: 14, fontFamily: "inherit", border: "0.5px solid rgba(0,0,0,0.14)", borderRadius: 10, outline: "none", color: "#1D2B1F", background: "#fff", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                  onFocus={e => { e.target.style.borderColor = "#6DC88A"; e.target.style.boxShadow = "0 0 0 3px rgba(109,200,138,0.12)"; }}
+                  onBlur={e => { e.target.style.borderColor = "rgba(0,0,0,0.14)"; e.target.style.boxShadow = "none"; }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPwd(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: "#6B7280" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "#2D4A2D"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#6B7280"; }}
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#7A8878", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 >
                   {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
 
-            {/* Remember me */}
+            {/* Forgot */}
+            <div style={{ textAlign: "right", marginTop: -8 }}>
+              <a href="#" style={{ fontSize: 12, color: "#3BAF64", textDecoration: "none" }}>Forgot password?</a>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, padding: "10px 14px" }}>
+                <p style={{ fontSize: 13, color: "#EF4444" }}>{error}</p>
+              </div>
+            )}
+
+            {/* Remember */}
             <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => setRemember(v => !v)}
-                className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-colors"
-                style={{
-                  background: remember ? "#2D4A2D" : "transparent",
-                  border: remember ? "1px solid #2D4A2D" : "1px solid rgba(45,74,45,0.3)",
-                }}
+                style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0, background: remember ? "#1D2B1F" : "transparent", border: remember ? "1px solid #1D2B1F" : "1px solid rgba(0,0,0,0.2)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
               >
                 {remember && (
                   <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
@@ -209,42 +194,51 @@ function LoginForm() {
                   </svg>
                 )}
               </button>
-              <span className="text-sm" style={{ color: "#6B7280" }}>
-                Remember me
-                <span className="ml-1 text-xs" style={{ color: "#9CA3AF" }}>
-                  ({remember ? "7 days" : "24 hours"})
-                </span>
+              <span style={{ fontSize: 13, color: "#7A8878" }}>
+                Remember me <span style={{ fontSize: 11, color: "#9BAA99" }}>({remember ? "7 days" : "24 hours"})</span>
               </span>
             </div>
-
-            {/* Error */}
-            {error && (
-              <div className="rounded-md px-3 py-2.5" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                <p className="text-sm text-[#EF4444]">{error}</p>
-              </div>
-            )}
 
             {/* Submit */}
             <motion.button
               type="submit"
               disabled={loading}
               whileTap={{ scale: 0.98 }}
-              className="w-full text-white font-semibold py-2.5 rounded-md text-sm transition-colors flex items-center justify-center gap-2 mt-1"
-              style={{ background: loading ? "#3D6B3D" : "#2D4A2D" }}
-              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#3D6B3D"; }}
-              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#2D4A2D"; }}
+              style={{ width: "100%", padding: 12, background: loading ? "#2E4432" : "#1D2B1F", color: "#fff", fontSize: 14, fontWeight: 500, fontFamily: "inherit", border: "none", borderRadius: 12, cursor: loading ? "default" : "pointer", transition: "background 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}
+              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#2E4432"; }}
+              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#1D2B1F"; }}
             >
-              {loading ? (
-                <><Loader2 size={16} className="animate-spin" /> Signing in…</>
-              ) : (
-                "Sign in"
-              )}
+              {loading ? <><Loader2 size={16} className="animate-spin" /> Signing in…</> : "Sign in"}
             </motion.button>
           </form>
 
-          <p className="text-center text-xs mt-8" style={{ color: "#9CA3AF" }}>
-            Orchard · Internal use only
-          </p>
+          {/* Divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0", color: "#C8D0C6", fontSize: 12 }}>
+            <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.08)" }} />
+            or
+            <div style={{ flex: 1, height: "0.5px", background: "rgba(0,0,0,0.08)" }} />
+          </div>
+
+          {/* Google SSO */}
+          <button
+            type="button"
+            onClick={() => signIn("google", { callbackUrl })}
+            style={{ width: "100%", padding: 11, background: "transparent", color: "#1D2B1F", fontSize: 13.5, fontWeight: 500, fontFamily: "inherit", border: "0.5px solid rgba(0,0,0,0.12)", borderRadius: 12, cursor: "pointer", transition: "background 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#F5F7F4")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="1" width="6" height="6" rx="1" fill="#4285F4"/>
+              <rect x="9" y="1" width="6" height="6" rx="1" fill="#EA4335"/>
+              <rect x="1" y="9" width="6" height="6" rx="1" fill="#34A853"/>
+              <rect x="9" y="9" width="6" height="6" rx="1" fill="#FBBC05"/>
+            </svg>
+            Continue with Google
+          </button>
+
+          <div style={{ textAlign: "center", fontSize: 12, color: "#9BAA99", marginTop: 24 }}>
+            Don&apos;t have an account? <a href="#" style={{ color: "#3BAF64", textDecoration: "none" }}>Request access</a>
+          </div>
         </motion.div>
       </div>
     </div>
