@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Nunito } from "next/font/google";
+import { Inter, Nunito, Geist } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito", weight: ["600", "700"] });
@@ -35,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <head>
         {/* Safari PWA — must be hardcoded; Metadata API alone is unreliable on Safari */}
         <meta name="apple-mobile-web-app-capable" content="yes" />

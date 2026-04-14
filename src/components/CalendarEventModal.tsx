@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { CalendarEvent, CalendarEventType, EVENT_COLORS, CandidateProfile, Vacancy, Client } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 import { X, Search, Trash2, MapPin, FileText, Clock, Bell } from 'lucide-react';

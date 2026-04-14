@@ -8,7 +8,7 @@ import { db, initDb } from '@/lib/db';
 import { geocodePostalCode, haversineDistance } from '@/lib/geocoding';
 import { v4 as uuidv4 } from 'uuid';
 import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 const BRANCHES = ['IT', 'Finance', 'Marketing', 'Sales', 'Engineering', 'Healthcare', 'Legal', 'HR', 'Other'];
 const RADIUS_OPTIONS = [10, 25, 50, 100];

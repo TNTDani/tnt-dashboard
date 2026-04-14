@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Building2, User, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function RegisterPage() {

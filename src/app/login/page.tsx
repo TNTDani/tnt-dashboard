@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 // ── Orchard SVG Icon ──────────────────────────────────────────────────────────
 

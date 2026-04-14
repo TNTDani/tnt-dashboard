@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { db } from "@/lib/db";
 import { storage } from "@/lib/storage";
 import { RecentItem } from "@/lib/types";

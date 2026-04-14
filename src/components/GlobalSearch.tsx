@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { db } from "@/lib/db";
 import { CandidateProfile, Vacancy, Client } from "@/lib/types";
 import { Search, UserCircle, Briefcase, Building2, X, Command } from "lucide-react";
