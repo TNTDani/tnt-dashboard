@@ -549,9 +549,289 @@ async function fetchNVB(): Promise<FetchResult> {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SOURCE 8 — Wellfound (AngelList) — Amsterdam startups
+// Public jobs feed — no auth required for public listings
+// ─────────────────────────────────────────────────────────────────────────────
+async function fetchWellfound(): Promise<FetchResult> {
+  const source: VacancySourceId = "wellfound";
+  try {
+    // Wellfound exposes a public JSON jobs feed; filter by Amsterdam startup roles
+    const queries = ["amsterdam", "netherlands"];
+    const allJobs: VacancyListing[] = [];
+
+    for (const q of queries) {
+      const res = await safeFetch(
+        `https://wellfound.com/jobs/api/jobs?location=${encodeURIComponent(q)}`,
+        {
+          headers: {
+            ...HEADERS,
+            "X-Requested-With": "XMLHttpRequest",
+            Referer: "https://wellfound.com/jobs",
+          },
+        }
+      );
+      if (!res.ok) continue;
+
+      let json: unknown;
+      try { json = await res.json(); } catch { continue; }
+
+      // Extract jobs from various possible response shapes
+      let jobs: unknown[] = [];
+      if (Array.isArray(json)) {
+        jobs = json;
+      } else if (json && typeof json === "object") {
+        const obj = json as Record<string, unknown>;
+        const found = obj.jobs ?? obj.results ?? obj.data ?? obj.startupRoles ?? obj.jobListings;
+        if (Array.isArray(found)) jobs = found;
+      }
+
+      for (const j of jobs) {
+        if (!j || typeof j !== "object") continue;
+        const job = j as Record<string, unknown>;
+
+        // Handle nested startup/company object
+        let company = "";
+        if (job.startup && typeof job.startup === "object") {
+          company = String((job.startup as Record<string, unknown>).name || "");
+        }
+        company = company || String(job.company || job.company_name || "");
+
+        const title = String(job.title || job.role || job.job_title || "");
+        const location = String(job.location || job.city || "Amsterdam, Netherlands");
+        if (!title) continue;
+        if (!isNLJob(location)) continue;
+
+        const url = (() => {
+          const raw = String(job.url || job.apply_url || job.jobUrl || job.link || "");
+          if (raw.startsWith("http")) return raw;
+          if (raw.startsWith("/")) return `https://wellfound.com${raw}`;
+          return `https://wellfound.com/jobs`;
+        })();
+
+        const dateStr = String(job.created_at || job.postedAt || job.published_at || "");
+        let postedAt = new Date().toISOString();
+        try { if (dateStr) postedAt = new Date(dateStr).toISOString(); } catch { /* ignore */ }
+
+        const desc = stripHtml(String(job.description || job.excerpt || job.summary || ""));
+
+        allJobs.push({
+          id: uuidv4(),
+          title,
+          company,
+          source,
+          location,
+          postedAt,
+          description: desc,
+          url,
+          category: detectCategory(`${title} ${desc}`),
+        });
+      }
+    }
+
+    if (allJobs.length === 0) {
+      return {
+        listings: [],
+        status: "empty",
+        count: 0,
+        error: "No results — Wellfound may require authentication for their jobs API",
+      };
+    }
+
+    return { listings: allJobs, status: "ok", count: allJobs.length };
+  } catch (err) {
+    return { listings: [], status: "error", error: err instanceof Error ? err.message : String(err), count: 0 };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SOURCE 9 — Greenhouse public job boards
+// GET https://boards-api.greenhouse.io/v1/boards/{company}/jobs
+// No auth required — uses known Amsterdam tech company board tokens
+// ─────────────────────────────────────────────────────────────────────────────
+async function fetchGreenhouse(): Promise<FetchResult> {
+  const source: VacancySourceId = "greenhouse";
+
+  // Amsterdam / Netherlands tech companies with public Greenhouse boards
+  const COMPANIES = [
+    "booking",          // Booking.com
+    "adyen",            // Adyen
+    "messagebird",      // MessageBird / Bird
+    "mollie",           // Mollie
+    "picnic",           // Picnic
+    "sendcloud",        // Sendcloud
+    "catawiki",         // Catawiki
+    "channable",        // Channable
+    "backbase",         // Backbase
+    "templafy",         // Templafy
+    "lightspeedpos",    // Lightspeed
+    "miro",             // Miro (NL office)
+    "takeaway",         // Just Eat Takeaway
+    "elastic",          // Elastic (Amsterdam office)
+  ];
+
+  type GHJob = {
+    id: number;
+    title: string;
+    updated_at: string;
+    absolute_url: string;
+    location: { name: string };
+    departments?: { name: string }[];
+  };
+
+  try {
+    const responses = await Promise.allSettled(
+      COMPANIES.map(co =>
+        safeFetch(`https://boards-api.greenhouse.io/v1/boards/${co}/jobs?content=true`, { headers: HEADERS })
+      )
+    );
+
+    const allListings: VacancyListing[] = [];
+
+    for (let i = 0; i < responses.length; i++) {
+      const r = responses[i];
+      const co = COMPANIES[i];
+      if (r.status !== "fulfilled" || !r.value.ok) continue;
+
+      let json: unknown;
+      try { json = await r.value.json(); } catch { continue; }
+
+      let jobs: GHJob[] = [];
+      if (json && typeof json === "object") {
+        const obj = json as Record<string, unknown>;
+        if (Array.isArray(obj.jobs)) jobs = obj.jobs as GHJob[];
+      }
+
+      for (const j of jobs) {
+        const location = j.location?.name || "";
+        if (!isNLJob(location)) continue;
+
+        const dept = j.departments?.[0]?.name || "";
+        allListings.push({
+          id: uuidv4(),
+          title: j.title,
+          company: co.charAt(0).toUpperCase() + co.slice(1),
+          source,
+          location,
+          postedAt: j.updated_at ? new Date(j.updated_at).toISOString() : new Date().toISOString(),
+          description: detectCategory(`${j.title} ${dept}`) ? "" : "",
+          url: j.absolute_url || `https://boards.greenhouse.io/${co}`,
+          category: detectCategory(`${j.title} ${dept}`),
+        });
+      }
+    }
+
+    if (allListings.length === 0) {
+      return {
+        listings: [],
+        status: "empty",
+        count: 0,
+        error: "No NL-based roles found across Greenhouse company boards",
+      };
+    }
+
+    return { listings: allListings, status: "ok", count: allListings.length };
+  } catch (err) {
+    return { listings: [], status: "error", error: err instanceof Error ? err.message : String(err), count: 0 };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SOURCE 10 — Lever public job boards
+// GET https://api.lever.co/v0/postings/{company}?mode=json
+// No auth required — uses known Amsterdam tech company board tokens
+// ─────────────────────────────────────────────────────────────────────────────
+async function fetchLever(): Promise<FetchResult> {
+  const source: VacancySourceId = "lever";
+
+  // Amsterdam / Netherlands tech companies with public Lever boards
+  const COMPANIES = [
+    "netflix",          // Netflix (Amsterdam office)
+    "datadog",          // Datadog (Amsterdam)
+    "miro",             // Miro
+    "typeform",         // Typeform (NL users)
+    "contentful",       // Contentful (Berlin/Amsterdam)
+    "personio",         // Personio (Amsterdam)
+    "hotjar",           // Hotjar
+    "vimeo",            // Vimeo
+    "intercom",         // Intercom
+    "gitlab",           // GitLab (remote-first, NL)
+    "mercury",          // Mercury
+    "vercel",           // Vercel (remote)
+    "notion",           // Notion
+    "figma",            // Figma (NL office)
+  ];
+
+  type LeverPosting = {
+    id: string;
+    text: string;                   // job title
+    categories: { location?: string; team?: string; department?: string; commitment?: string };
+    description?: string;
+    descriptionPlain?: string;
+    hostedUrl: string;
+    createdAt: number;              // Unix ms
+    workplaceType?: string;
+  };
+
+  try {
+    const responses = await Promise.allSettled(
+      COMPANIES.map(co =>
+        safeFetch(`https://api.lever.co/v0/postings/${co}?mode=json`, { headers: HEADERS })
+      )
+    );
+
+    const allListings: VacancyListing[] = [];
+
+    for (let i = 0; i < responses.length; i++) {
+      const r = responses[i];
+      const co = COMPANIES[i];
+      if (r.status !== "fulfilled" || !r.value.ok) continue;
+
+      let jobs: LeverPosting[] = [];
+      try {
+        const json = await r.value.json() as unknown;
+        if (Array.isArray(json)) jobs = json as LeverPosting[];
+      } catch { continue; }
+
+      for (const j of jobs) {
+        const location = j.categories?.location || "";
+        if (!isNLJob(location, j.descriptionPlain || "")) continue;
+
+        const team = j.categories?.team || j.categories?.department || "";
+        const desc = stripHtml(j.descriptionPlain || j.description || "");
+
+        allListings.push({
+          id: uuidv4(),
+          title: j.text,
+          company: co.charAt(0).toUpperCase() + co.slice(1),
+          source,
+          location: location || "Netherlands",
+          postedAt: j.createdAt ? new Date(j.createdAt).toISOString() : new Date().toISOString(),
+          description: desc,
+          url: j.hostedUrl || `https://jobs.lever.co/${co}`,
+          category: detectCategory(`${j.text} ${team} ${desc}`),
+        });
+      }
+    }
+
+    if (allListings.length === 0) {
+      return {
+        listings: [],
+        status: "empty",
+        count: 0,
+        error: "No NL-based roles found across Lever company boards",
+      };
+    }
+
+    return { listings: allListings, status: "ok", count: allListings.length };
+  } catch (err) {
+    return { listings: [], status: "error", error: err instanceof Error ? err.message : String(err), count: 0 };
+  }
+}
+
 // ─── Route handler ────────────────────────────────────────────────────────────
 export async function GET() {
-  const [arbeitnow, remoteok, jobicy, findwork, eurojobs, startupjobs, nvb] = await Promise.allSettled([
+  const [arbeitnow, remoteok, jobicy, findwork, eurojobs, startupjobs, nvb, wellfound, greenhouse, lever] = await Promise.allSettled([
     fetchArbeitnow(),
     fetchRemoteOK(),
     fetchJobicy(),
@@ -559,6 +839,9 @@ export async function GET() {
     fetchEuroJobs(),
     fetchStartupJobs(),
     fetchNVB(),
+    fetchWellfound(),
+    fetchGreenhouse(),
+    fetchLever(),
   ]);
 
   const extract = (r: PromiseSettledResult<FetchResult>): FetchResult =>
@@ -567,13 +850,16 @@ export async function GET() {
       : { listings: [], status: "error", error: String((r as PromiseRejectedResult).reason), count: 0 };
 
   const results: Record<VacancySourceId, FetchResult> = {
-    arbeitnow:  extract(arbeitnow),
-    remoteok:   extract(remoteok),
-    jobicy:     extract(jobicy),
-    findwork:   extract(findwork),
-    eurojobs:   extract(eurojobs),
+    arbeitnow:   extract(arbeitnow),
+    remoteok:    extract(remoteok),
+    jobicy:      extract(jobicy),
+    findwork:    extract(findwork),
+    eurojobs:    extract(eurojobs),
     startupjobs: extract(startupjobs),
-    nvb:        extract(nvb),
+    nvb:         extract(nvb),
+    wellfound:   extract(wellfound),
+    greenhouse:  extract(greenhouse),
+    lever:       extract(lever),
   };
 
   const raw: VacancyListing[] = (Object.values(results) as FetchResult[]).flatMap(r => r.listings);

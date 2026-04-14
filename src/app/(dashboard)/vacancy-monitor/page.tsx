@@ -59,13 +59,16 @@ const LOADING_STEPS = [
 ];
 
 const SOURCE_LABELS: Record<VacancySourceId, string> = {
-  arbeitnow: "Arbeitnow",
-  remoteok: "RemoteOK",
-  jobicy: "Jobicy",
-  findwork: "Findwork",
-  eurojobs: "EuroJobs",
+  arbeitnow:   "Arbeitnow",
+  remoteok:    "RemoteOK",
+  jobicy:      "Jobicy",
+  findwork:    "Findwork",
+  eurojobs:    "EuroJobs",
   startupjobs: "Startup.jobs",
-  nvb: "NVB",
+  nvb:         "NVB",
+  wellfound:   "Wellfound",
+  greenhouse:  "Greenhouse",
+  lever:       "Lever",
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -316,7 +319,7 @@ function LoadingSequence({
   const steps = LOADING_STEPS.map((label, i) => {
     let display = label;
     if (i === 2 && currentStep >= 2)
-      display = "Fetching from 7 job boards...";
+      display = "Fetching from 10 job boards...";
     if (i === 3 && currentStep >= 3 && listingCount > 0)
       display = `Scoring ${listingCount} listings against candidate profile...`;
     return display;

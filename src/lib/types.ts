@@ -310,7 +310,7 @@ export interface WeeklyReportMetrics {
 }
 
 export type VacancyCategory = 'sales' | 'design' | 'engineering' | 'ai' | 'product' | 'other';
-export type VacancySourceId = 'arbeitnow' | 'remoteok' | 'jobicy' | 'findwork' | 'eurojobs' | 'startupjobs' | 'nvb';
+export type VacancySourceId = 'arbeitnow' | 'remoteok' | 'jobicy' | 'findwork' | 'eurojobs' | 'startupjobs' | 'nvb' | 'wellfound' | 'greenhouse' | 'lever';
 
 export interface VacancyListing {
   id: string;
