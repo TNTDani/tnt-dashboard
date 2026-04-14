@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
@@ -442,7 +442,7 @@ function ProfileCard({ profile, idx }: { profile: SourcingProfileDescription; id
 // ---------------------------------------------------------------------------
 // Main Page
 // ---------------------------------------------------------------------------
-export default function SourcingPage() {
+function SourcingContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -857,5 +857,13 @@ export default function SourcingPage() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function SourcingPage() {
+  return (
+    <Suspense fallback={<div />}>
+      <SourcingContent />
+    </Suspense>
   );
 }
