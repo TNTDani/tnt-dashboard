@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "@/lib/db";
 import {
@@ -19,7 +20,7 @@ import {
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 function getWeekStart(d: Date): Date {
-  const day = d.getDay(); // 0=Sun, 1=Mon ...
+  const day = d.getDay();
   const diff = (day === 0 ? -6 : 1 - day);
   const mon = new Date(d);
   mon.setDate(d.getDate() + diff);
@@ -69,7 +70,6 @@ function computeMetrics(
   placements: Placement[],
   strategies: SourcingStrategy[],
 ): WeeklyReportMetrics {
-  // Emails sent — from timelines of profiles + clients
   let emailsSent = 0;
   [...profiles, ...clients].forEach(item => {
     (item.timeline || []).forEach(entry => {
@@ -103,70 +103,16 @@ function computeMetrics(
 }
 
 // ─── Chart theme ──────────────────────────────────────────────────────────────
-const CHART_STYLE = {
-  backgroundColor: "transparent",
-  fontSize: 11,
-};
+const CHART_STYLE = { backgroundColor: "transparent", fontSize: 11 };
 const tooltipStyle = {
   backgroundColor: "#FFFFFF",
-  border: "1px solid rgba(45,74,45,0.15)",
-  borderRadius: 8,
-  color: "#e2e8f0",
+  border: "1px solid rgba(45,74,45,0.12)",
+  borderRadius: 10,
+  color: "#2D4A2D",
   fontSize: 12,
+  boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
 };
-const axisColor = "#6B7280";
-
-// ─── Metric row ───────────────────────────────────────────────────────────────
-function MetricRow({
-  label, value, editable, prefix = "", suffix = "",
-  onChange,
-}: {
-  label: string; value: number; editable?: boolean;
-  prefix?: string; suffix?: string;
-  onChange?: (v: number) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft,   setDraft]   = useState(String(value));
-
-  const commit = () => {
-    const n = parseFloat(draft);
-    if (!isNaN(n) && onChange) onChange(n);
-    setEditing(false);
-  };
-
-  return (
-    <div className="flex items-center justify-between py-2 border-b border-[rgba(45,74,45,0.15)] last:border-0">
-      <span className="text-[#94a3b8] text-sm">{label}</span>
-      <div className="flex items-center gap-2">
-        {editing ? (
-          <>
-            <input
-              autoFocus
-              type="number"
-              value={draft}
-              onChange={e => setDraft(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
-              className="w-20 bg-[#FFFFFF] border border-[#2D4A2D] rounded px-2 py-0.5 text-[#2D4A2D] text-sm text-right focus:outline-none"
-            />
-            <button onClick={commit} className="text-green-400 hover:text-green-300"><Check size={13} /></button>
-            <button onClick={() => setEditing(false)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><XIcon size={13} /></button>
-          </>
-        ) : (
-          <>
-            <span className="text-[#2D4A2D] font-semibold text-sm">
-              {prefix}{typeof value === "number" && value % 1 !== 0 ? value.toFixed(1) : value}{suffix}
-            </span>
-            {editable && onChange && (
-              <button onClick={() => { setDraft(String(value)); setEditing(true); }} className="text-[#6B7280] hover:text-[#2D4A2D] transition-colors">
-                <Edit3 size={12} />
-              </button>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
+const axisColor = "#94a3b8";
 
 // ─── PDF export ───────────────────────────────────────────────────────────────
 function exportReportPDF(r: WeeklyReport) {
@@ -252,7 +198,7 @@ function exportCSV(reports: WeeklyReport[]) {
   URL.revokeObjectURL(url);
 }
 
-// ─── Month helpers for charts ─────────────────────────────────────────────────
+// ─── Month helpers ─────────────────────────────────────────────────────────────
 function monthKey(iso: string) {
   const d = new Date(iso);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -261,6 +207,61 @@ function monthKey(iso: string) {
 function monthLabel(key: string) {
   const [y, m] = key.split("-");
   return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("en-GB", { month: "short", year: "2-digit" });
+}
+
+// ─── Metric row component ─────────────────────────────────────────────────────
+function MetricRow({
+  label, value, editable, prefix = "", suffix = "",
+  onChange,
+}: {
+  label: string; value: number; editable?: boolean;
+  prefix?: string; suffix?: string;
+  onChange?: (v: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(value));
+
+  const commit = () => {
+    const n = parseFloat(draft);
+    if (!isNaN(n) && onChange) onChange(n);
+    setEditing(false);
+  };
+
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-[rgba(45,74,45,0.06)] last:border-0">
+      <span className="text-[#6B7280] text-sm">{label}</span>
+      <div className="flex items-center gap-2">
+        {editing ? (
+          <>
+            <input
+              autoFocus
+              type="number"
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
+              className="w-20 bg-white border border-[#2D4A2D] rounded-lg px-2 py-0.5 text-[#2D4A2D] text-sm text-right focus:outline-none"
+            />
+            <button onClick={commit} className="text-[#4CAF50] hover:text-[#3D9B40]"><Check size={13} /></button>
+            <button onClick={() => setEditing(false)} className="text-[#94a3b8] hover:text-[#2D4A2D]"><XIcon size={13} /></button>
+          </>
+        ) : (
+          <>
+            <span className="text-[#2D4A2D] font-semibold text-sm">
+              {prefix}{typeof value === "number" && value % 1 !== 0 ? value.toFixed(1) : value}{suffix}
+            </span>
+            {editable && onChange && (
+              <button
+                onClick={() => { setDraft(String(value)); setEditing(true); }}
+                className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors"
+              >
+                <Edit3 size={12} />
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ─── Report card ─────────────────────────────────────────────────────────────
@@ -281,21 +282,21 @@ function ReportCard({
   const updateNotes = (notes: string) => onUpdate({ ...report, notes });
 
   return (
-    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-white rounded-2xl border border-[rgba(45,74,45,0.12)] overflow-hidden">
       <button
         onClick={() => setExpanded(e => !e)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#FFFFFF] transition-colors text-left"
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#FAFAF9] transition-colors text-left"
       >
         <div className="flex items-center gap-4">
-          <div className="w-9 h-9 rounded-lg bg-[#2D4A2D20] flex items-center justify-center flex-shrink-0">
-            <FileText size={16} className="text-[#2D4A2D]" />
+          <div className="w-9 h-9 rounded-xl bg-[#2D4A2D]/10 flex items-center justify-center flex-shrink-0">
+            <FileText size={15} className="text-[#2D4A2D]" />
           </div>
           <div>
             <p className="text-[#2D4A2D] font-semibold text-sm">Week {report.weekNumber}, {report.year}</p>
             <p className="text-[#6B7280] text-xs mt-0.5">{fmtDate(report.startDate)} – {fmtDate(report.endDate)}</p>
           </div>
         </div>
-        <div className="flex items-center gap-4 mr-2">
+        <div className="flex items-center gap-5 mr-2">
           <div className="text-right hidden sm:block">
             <p className="text-[#94a3b8] text-xs">Emails</p>
             <p className="text-[#2D4A2D] text-sm font-semibold">{m.emailsSent}</p>
@@ -308,74 +309,92 @@ function ReportCard({
             <p className="text-[#94a3b8] text-xs">Revenue</p>
             <p className="text-[#4CAF50] text-sm font-semibold">{fmtMoney(m.feesReceived)}</p>
           </div>
-          {expanded ? <ChevronUp size={16} className="text-[#6B7280]" /> : <ChevronDown size={16} className="text-[#6B7280]" />}
+          {expanded
+            ? <ChevronUp size={16} className="text-[#94a3b8]" />
+            : <ChevronDown size={16} className="text-[#94a3b8]" />}
         </div>
       </button>
 
-      {expanded && (
-        <div className="border-t border-[rgba(45,74,45,0.15)] px-5 py-4">
-          <div className="grid grid-cols-2 gap-6 mb-4">
-            {/* Outreach */}
-            <div>
-              <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-widest mb-3">Outreach</p>
-              <MetricRow label="Emails Sent"  value={m.emailsSent}  />
-              <MetricRow label="Reply Rate"   value={m.replyRate}   editable suffix="%" onChange={v => updateMetric("replyRate",   v)} />
-              <MetricRow label="Calls Booked" value={m.callsBooked} editable          onChange={v => updateMetric("callsBooked", v)} />
-            </div>
-            {/* Recruitment */}
-            <div>
-              <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-widest mb-3">Recruitment</p>
-              <MetricRow label="New Prospects"    value={m.newProspects} />
-              <MetricRow label="Sourced"          value={m.candidatesSourced} />
-              <MetricRow label="Screened"         value={m.candidatesScreened} />
-              <MetricRow label="Shortlisted"      value={m.shortlistedCandidates} />
-              <MetricRow label="Placements"       value={m.placementsMade} />
-            </div>
-          </div>
-
-          {/* Revenue */}
-          <div className="mb-4">
-            <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-widest mb-3">Revenue</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#FFFFFF] rounded-lg p-3">
-                <p className="text-[#94a3b8] text-xs mb-1">Fees Invoiced</p>
-                <p className="text-[#2D4A2D] font-bold text-lg">{fmtMoney(m.feesInvoiced)}</p>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-[rgba(45,74,45,0.08)] px-5 py-5">
+              <div className="grid grid-cols-2 gap-6 mb-5">
+                <div>
+                  <p className="text-[#94a3b8] text-[10px] font-semibold uppercase tracking-widest mb-3">Outreach</p>
+                  <MetricRow label="Emails Sent"  value={m.emailsSent} />
+                  <MetricRow label="Reply Rate"   value={m.replyRate}   editable suffix="%" onChange={v => updateMetric("replyRate",   v)} />
+                  <MetricRow label="Calls Booked" value={m.callsBooked} editable          onChange={v => updateMetric("callsBooked", v)} />
+                </div>
+                <div>
+                  <p className="text-[#94a3b8] text-[10px] font-semibold uppercase tracking-widest mb-3">Recruitment</p>
+                  <MetricRow label="New Prospects" value={m.newProspects} />
+                  <MetricRow label="Sourced"       value={m.candidatesSourced} />
+                  <MetricRow label="Screened"      value={m.candidatesScreened} />
+                  <MetricRow label="Shortlisted"   value={m.shortlistedCandidates} />
+                  <MetricRow label="Placements"    value={m.placementsMade} />
+                </div>
               </div>
-              <div className="bg-[#FFFFFF] rounded-lg p-3">
-                <p className="text-[#94a3b8] text-xs mb-1">Fees Received</p>
-                <p className="text-[#4CAF50] font-bold text-lg">{fmtMoney(m.feesReceived)}</p>
+
+              <div className="mb-5">
+                <p className="text-[#94a3b8] text-[10px] font-semibold uppercase tracking-widest mb-3">Revenue</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#FAFAF9] rounded-xl border border-[rgba(45,74,45,0.08)] p-3">
+                    <p className="text-[#6B7280] text-xs mb-1">Fees Invoiced</p>
+                    <p className="text-[#2D4A2D] font-bold text-lg">{fmtMoney(m.feesInvoiced)}</p>
+                  </div>
+                  <div className="bg-[#FAFAF9] rounded-xl border border-[rgba(45,74,45,0.08)] p-3">
+                    <p className="text-[#6B7280] text-xs mb-1">Fees Received</p>
+                    <p className="text-[#4CAF50] font-bold text-lg">{fmtMoney(m.feesReceived)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-5">
+                <p className="text-[#94a3b8] text-[10px] font-semibold uppercase tracking-widest mb-2">Notes</p>
+                <textarea
+                  value={report.notes}
+                  onChange={e => updateNotes(e.target.value)}
+                  rows={2}
+                  className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#94a3b8] focus:outline-none focus:border-[#2D4A2D] transition-colors resize-none"
+                  placeholder="Add notes for this week…"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => exportReportPDF(report)}
+                  className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-xl text-xs font-medium transition-colors"
+                >
+                  <Download size={12} /> Download PDF
+                </button>
+                <button
+                  onClick={() => { if (confirm("Delete this report?")) onDelete(report.id); }}
+                  className="flex items-center gap-1.5 text-[#6B7280] hover:text-red-400 px-3 py-1.5 rounded-xl text-xs transition-colors hover:bg-red-50"
+                >
+                  Delete
+                </button>
               </div>
             </div>
-          </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
-          {/* Notes */}
-          <div className="mb-4">
-            <p className="text-[#6B7280] text-[10px] font-semibold uppercase tracking-widest mb-2">Notes</p>
-            <textarea
-              value={report.notes}
-              onChange={e => updateNotes(e.target.value)}
-              rows={2}
-              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors resize-none"
-              placeholder="Add notes for this week…"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => exportReportPDF(report)}
-              className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
-            >
-              <Download size={12} /> Download PDF
-            </button>
-            <button
-              onClick={() => { if (confirm("Delete this report?")) onDelete(report.id); }}
-              className="flex items-center gap-1.5 text-[#6B7280] hover:text-red-400 px-3 py-1.5 rounded-md text-xs transition-colors"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      )}
+// ─── Chart card ───────────────────────────────────────────────────────────────
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-2xl border border-[rgba(45,74,45,0.12)] p-5">
+      <h3 className="text-[#2D4A2D] font-semibold text-sm mb-5">{title}</h3>
+      {children}
     </div>
   );
 }
@@ -398,7 +417,6 @@ export default function ReportsPage() {
     loadReports();
     db.getCandidates().then(setAllCandidates);
 
-    // Auto-prompt on Mondays if last week's report is missing
     const today = new Date();
     if (today.getDay() === 1) {
       const lastWeekStart = getWeekStart(new Date(today.getTime() - 7 * 86400000));
@@ -413,7 +431,7 @@ export default function ReportsPage() {
 
   const generateReport = (forPreviousWeek = false) => {
     setGenerating(true);
-    const ref  = forPreviousWeek
+    const ref = forPreviousWeek
       ? new Date(Date.now() - 7 * 86400000)
       : new Date();
     const weekStart = getWeekStart(ref);
@@ -473,7 +491,7 @@ export default function ReportsPage() {
     });
   };
 
-  // ── Chart data ──────────────────────────────────────────────────────────────
+  // Chart data
   const chartReports = [...reports].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
   const weeklyData = chartReports.slice(-16).map(r => ({
@@ -484,7 +502,6 @@ export default function ReportsPage() {
     placements: r.metrics.placementsMade,
   }));
 
-  // Monthly grouping
   const monthlyMap: Record<string, { invoiced: number; received: number; placements: number }> = {};
   chartReports.forEach(r => {
     const mk = monthKey(r.startDate);
@@ -500,15 +517,13 @@ export default function ReportsPage() {
     placements: v.placements,
   }));
 
-  // Pipeline funnel
-  const candidates    = allCandidates;
-  const statusOrder   = ["sourced", "screened", "shortlisted", "interviewed", "placed"] as const;
-  const funnelData    = statusOrder.map(s => ({
+  const candidates = allCandidates;
+  const statusOrder = ["sourced", "screened", "shortlisted", "interviewed", "placed"] as const;
+  const funnelData = statusOrder.map(s => ({
     name: s.charAt(0).toUpperCase() + s.slice(1),
     count: candidates.filter(c => c.status === s).length,
   }));
 
-  // All-time summary
   const totals = reports.reduce((acc, r) => ({
     emails:     acc.emails     + r.metrics.emailsSent,
     prospects:  acc.prospects  + r.metrics.newProspects,
@@ -519,25 +534,23 @@ export default function ReportsPage() {
     received:   acc.received   + r.metrics.feesReceived,
   }), { emails: 0, prospects: 0, sourced: 0, screened: 0, placements: 0, invoiced: 0, received: 0 });
 
-  const ChartCard = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
-      <h3 className="text-[#2D4A2D] font-semibold text-sm mb-4">{title}</h3>
-      {children}
-    </div>
-  );
-
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between mb-8"
+      >
         <div>
           <h1 className="text-2xl font-bold text-[#2D4A2D]">Reports & Analytics</h1>
-          <p className="text-[#94a3b8] mt-1">Weekly activity reports and performance charts</p>
+          <p className="text-[#6B7280] mt-1">Weekly activity reports and performance charts</p>
         </div>
         <div className="flex items-center gap-2">
           {reports.length > 0 && activeTab === "analytics" && (
             <button
               onClick={() => exportCSV(reports)}
-              className="flex items-center gap-1.5 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] px-3 py-2 rounded-lg text-sm transition-colors"
+              className="flex items-center gap-1.5 bg-white border border-[rgba(45,74,45,0.15)] text-[#6B7280] hover:text-[#2D4A2D] hover:border-[#2D4A2D]/30 px-3 py-2 rounded-xl text-sm transition-colors"
             >
               <Download size={14} /> Export CSV
             </button>
@@ -545,48 +558,57 @@ export default function ReportsPage() {
           <button
             onClick={() => generateReport(false)}
             disabled={generating}
-            className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-60 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-1.5 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
           >
-            <Plus size={14} /> Generate This Week
+            {generating
+              ? <><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating…</>
+              : <><Plus size={14} /> Generate This Week</>}
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Auto-prompt banner (Monday) */}
-      {autoPrompt && (
-        <div className="bg-[#2D4A2D15] border border-[#2D4A2D30] rounded-xl px-5 py-4 mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Sparkles size={16} className="text-[#2D4A2D]" />
-            <div>
-              <p className="text-[#2D4A2D] text-sm font-medium">It's Monday — generate last week's report?</p>
-              <p className="text-[#94a3b8] text-xs mt-0.5">Auto-detected that last week's report is missing.</p>
+      {/* Auto-prompt banner */}
+      <AnimatePresence>
+        {autoPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            className="bg-[#2D4A2D]/8 border border-[rgba(45,74,45,0.2)] rounded-2xl px-5 py-4 mb-6 flex items-center justify-between overflow-hidden"
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles size={16} className="text-[#2D4A2D]" />
+              <div>
+                <p className="text-[#2D4A2D] text-sm font-medium">It's Monday — generate last week's report?</p>
+                <p className="text-[#6B7280] text-xs mt-0.5">Auto-detected that last week's report is missing.</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => generateReport(true)}
-              disabled={generating}
-              className="bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
-            >
-              Generate
-            </button>
-            <button onClick={() => setAutoPrompt(false)} className="text-[#6B7280] hover:text-[#2D4A2D]">
-              <XIcon size={16} />
-            </button>
-          </div>
-        </div>
-      )}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => generateReport(true)}
+                disabled={generating}
+                className="bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-1.5 rounded-xl text-sm font-medium transition-colors"
+              >
+                Generate
+              </button>
+              <button onClick={() => setAutoPrompt(false)} className="text-[#6B7280] hover:text-[#2D4A2D] p-1 rounded-lg hover:bg-[#2D4A2D]/8 transition-colors">
+                <XIcon size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-[#FFFFFF] rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-white rounded-xl p-1 w-fit border border-[rgba(45,74,45,0.12)]">
         {(["reports", "analytics"] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${
               activeTab === tab
-                ? "bg-[#2D4A2D] text-white"
-                : "text-[#94a3b8] hover:text-[#2D4A2D]"
+                ? "bg-[#2D4A2D] text-white shadow-sm"
+                : "text-[#6B7280] hover:text-[#2D4A2D]"
             }`}
           >
             {tab === "reports" ? (
@@ -598,58 +620,75 @@ export default function ReportsPage() {
         ))}
       </div>
 
-      {/* ── REPORTS TAB ───────────────────────────────────────────────────── */}
+      {/* Reports tab */}
       {activeTab === "reports" && (
         <div className="space-y-3">
           {reports.length === 0 ? (
-            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-12 text-center">
-              <AlertCircle size={32} className="text-[rgba(45,74,45,0.15)] mx-auto mb-3" />
-              <p className="text-[#94a3b8] text-sm">No reports yet. Generate your first weekly report above.</p>
-            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white rounded-2xl border border-[rgba(45,74,45,0.12)] p-12 text-center"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-[#2D4A2D]/8 flex items-center justify-center mx-auto mb-3">
+                <AlertCircle size={20} className="text-[#2D4A2D]/30" />
+              </div>
+              <p className="text-[#2D4A2D] font-medium mb-1">No reports yet</p>
+              <p className="text-[#6B7280] text-sm">Generate your first weekly report above.</p>
+            </motion.div>
           ) : (
-            reports.map(r => (
-              <ReportCard key={r.id} report={r} onUpdate={updateReport} onDelete={deleteReport} />
+            reports.map((r, i) => (
+              <motion.div
+                key={r.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+              >
+                <ReportCard report={r} onUpdate={updateReport} onDelete={deleteReport} />
+              </motion.div>
             ))
           )}
         </div>
       )}
 
-      {/* ── ANALYTICS TAB ─────────────────────────────────────────────────── */}
+      {/* Analytics tab */}
       {activeTab === "analytics" && (
         <div className="space-y-6">
-          {reports.length === 0 && (
-            <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-10 text-center">
-              <p className="text-[#94a3b8] text-sm">Generate at least one report to see analytics.</p>
+          {reports.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-[rgba(45,74,45,0.12)] p-10 text-center">
+              <p className="text-[#6B7280] text-sm">Generate at least one report to see analytics.</p>
             </div>
-          )}
-
-          {reports.length > 0 && (
+          ) : (
             <>
-              {/* All-time summary KPIs */}
+              {/* KPI row */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Total Emails",    value: totals.emails,     color: "text-[#2D4A2D]" },
-                  { label: "Sourced",          value: totals.sourced,    color: "text-[#3b82f6]" },
-                  { label: "Placements",       value: totals.placements, color: "text-[#4CAF50]" },
-                  { label: "Revenue Received", value: fmtMoney(totals.received), color: "text-[#4CAF50]" },
-                ].map(k => (
-                  <div key={k.label} className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5">
-                    <p className="text-[#94a3b8] text-xs mb-2">{k.label}</p>
+                  { label: "Total Emails",    value: totals.emails,               color: "text-[#2D4A2D]" },
+                  { label: "Sourced",          value: totals.sourced,              color: "text-[#2D4A2D]" },
+                  { label: "Placements",       value: totals.placements,           color: "text-[#4CAF50]" },
+                  { label: "Revenue Received", value: fmtMoney(totals.received),   color: "text-[#4CAF50]" },
+                ].map((k, i) => (
+                  <motion.div
+                    key={k.label}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className="bg-white rounded-2xl border border-[rgba(45,74,45,0.12)] p-5"
+                  >
+                    <p className="text-[#6B7280] text-xs mb-2">{k.label}</p>
                     <p className={`text-2xl font-bold ${k.color}`}>{k.value}</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
               {/* Charts */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <ChartCard title="Emails Sent per Week">
                   <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={weeklyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
-                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
-                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} />
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="emails" fill="#2D4A2D" radius={[3, 3, 0, 0]} name="Emails" />
+                    <BarChart data={weeklyData} style={CHART_STYLE} barCategoryGap="30%">
+                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(45,74,45,0.04)" }} />
+                      <Bar dataKey="emails" fill="#2D4A2D" radius={[4, 4, 0, 0]} name="Emails" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
@@ -657,49 +696,45 @@ export default function ReportsPage() {
                 <ChartCard title="Reply Rate per Week (%)">
                   <ResponsiveContainer width="100%" height={180}>
                     <LineChart data={weeklyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
-                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
-                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} domain={[0, 100]} />
+                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} domain={[0, 100]} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={tooltipStyle} formatter={(v) => [`${v}%`, "Reply Rate"]} />
-                      <Line type="monotone" dataKey="replyRate" stroke="#3D6B3D" strokeWidth={2} dot={{ fill: "#2D4A2D", r: 3 }} name="Reply %" />
+                      <Line type="monotone" dataKey="replyRate" stroke="#2D4A2D" strokeWidth={2} dot={{ fill: "#2D4A2D", r: 3 }} name="Reply %" />
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartCard>
 
                 <ChartCard title="Candidates Sourced per Week">
                   <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={weeklyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
-                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
-                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} />
+                    <BarChart data={weeklyData} style={CHART_STYLE} barCategoryGap="30%">
+                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="sourced" fill="#3b82f6" radius={[3, 3, 0, 0]} name="Sourced" />
+                      <Bar dataKey="sourced" fill="#4CAF50" radius={[4, 4, 0, 0]} name="Sourced" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
 
                 <ChartCard title="Placements per Month">
                   <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={monthlyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
-                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
-                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} />
+                    <BarChart data={monthlyData} style={CHART_STYLE} barCategoryGap="30%">
+                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="placements" fill="#4CAF50" radius={[3, 3, 0, 0]} name="Placements" />
+                      <Bar dataKey="placements" fill="#2D4A2D" radius={[4, 4, 0, 0]} name="Placements" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
 
                 <ChartCard title="Revenue per Month — Invoiced vs Received (€)">
                   <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={monthlyData} style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" />
-                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} />
-                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} tickFormatter={v => `€${(v/1000).toFixed(0)}k`} />
+                    <BarChart data={monthlyData} style={CHART_STYLE} barCategoryGap="25%">
+                      <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v/1000).toFixed(0)}k`} />
                       <Tooltip contentStyle={tooltipStyle} formatter={(v) => [fmtMoney(Number(v))]} />
-                      <Legend wrapperStyle={{ color: "#94a3b8", fontSize: 11 }} />
-                      <Bar dataKey="invoiced" fill="#3b82f6" radius={[3, 3, 0, 0]} name="Invoiced" />
-                      <Bar dataKey="received" fill="#4CAF50" radius={[3, 3, 0, 0]} name="Received" />
+                      <Legend wrapperStyle={{ color: "#6B7280", fontSize: 11 }} />
+                      <Bar dataKey="invoiced" fill="#2D4A2D" radius={[4, 4, 0, 0]} name="Invoiced" />
+                      <Bar dataKey="received" fill="#4CAF50" radius={[4, 4, 0, 0]} name="Received" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>
@@ -707,11 +742,10 @@ export default function ReportsPage() {
                 <ChartCard title="Pipeline Funnel (All Time)">
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={funnelData} layout="vertical" style={CHART_STYLE}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(45,74,45,0.15)" horizontal={false} />
-                      <XAxis type="number" tick={{ fill: axisColor, fontSize: 10 }} />
-                      <YAxis type="category" dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} width={80} />
+                      <XAxis type="number" tick={{ fill: axisColor, fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="name" tick={{ fill: axisColor, fontSize: 10 }} width={80} axisLine={false} tickLine={false} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="count" fill="#2D4A2D" radius={[0, 3, 3, 0]} name="Candidates" />
+                      <Bar dataKey="count" fill="#2D4A2D" radius={[0, 4, 4, 0]} name="Candidates" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartCard>

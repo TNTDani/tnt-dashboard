@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
 import { Client, FeeAgreement, TimelineEntry } from '@/lib/types';
 import { db } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus, X, Search, SlidersHorizontal, Building2, MapPin, User, Upload } from 'lucide-react';
+import { Plus, X, Search, Building2, MapPin, User, Upload } from 'lucide-react';
 import CsvImportModal from '@/components/CsvImportModal';
 
 const SECTORS = ['Technology', 'Finance', 'Healthcare', 'Marketing', 'Engineering', 'Legal', 'HR', 'Logistics', 'Retail', 'Education', 'Other'];
@@ -18,10 +19,10 @@ const SIZE_LABELS: Record<Client['size'], string> = {
   enterprise: 'Enterprise (1000+)',
 };
 
-const TYPE_BADGE: Record<string, string> = {
-  prospect: 'bg-blue-500/20 text-blue-400',
-  active: 'bg-green-500/20 text-green-400',
-  inactive: 'bg-[#94a3b8]/20 text-[#94a3b8]',
+const TYPE_BADGE: Record<string, { bg: string; text: string }> = {
+  prospect: { bg: 'bg-blue-50', text: 'text-blue-600' },
+  active: { bg: 'bg-emerald-50', text: 'text-emerald-700' },
+  inactive: { bg: 'bg-gray-100', text: 'text-gray-500' },
 };
 const TYPE_LABELS: Record<string, string> = {
   prospect: 'Prospect',
@@ -48,11 +49,21 @@ const EMPTY_FORM = {
   guaranteePeriod: '3',
 };
 
+const TYPE_FILTERS: { value: 'all' | Client['type']; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'prospect', label: 'Prospect' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+];
+
+const INPUT_CLASS = 'w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors';
+const SELECT_CLASS = 'w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2.5 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors';
+const LABEL_CLASS = 'block text-[#6B7280] text-xs font-medium mb-1';
+
 export default function ClientsPage() {
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -60,8 +71,6 @@ export default function ClientsPage() {
   // Filters
   const [filterType, setFilterType] = useState<'all' | Client['type']>('all');
   const [filterSector, setFilterSector] = useState('');
-  const [filterSize, setFilterSize] = useState<'' | Client['size']>('');
-  const [filterLocation, setFilterLocation] = useState('');
 
   useEffect(() => {
     db.getClients().then(setClients);
@@ -75,8 +84,6 @@ export default function ClientsPage() {
       !c.location.toLowerCase().includes(q)) return false;
     if (filterType !== 'all' && c.type !== filterType) return false;
     if (filterSector && c.sector !== filterSector) return false;
-    if (filterSize && c.size !== filterSize) return false;
-    if (filterLocation && !c.location.toLowerCase().includes(filterLocation.toLowerCase())) return false;
     return true;
   });
 
@@ -130,178 +137,179 @@ export default function ClientsPage() {
     db.saveClients(updated);
   };
 
-  const clearFilters = () => {
-    setFilterType('all');
-    setFilterSector('');
-    setFilterSize('');
-    setFilterLocation('');
-  };
-
   return (
-    <div className="p-8">
+    <div className="p-6 lg:p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#2D4A2D] mb-1">Clients</h1>
-          <p className="text-[#94a3b8] text-sm">{filtered.length} of {clients.length} clients</p>
+          <h1 className="text-2xl font-bold text-[#2D4A2D]">Clients</h1>
+          <p className="text-[#6B7280] text-sm mt-0.5">
+            {filtered.length === clients.length
+              ? `${clients.length} client${clients.length !== 1 ? 's' : ''}`
+              : `${filtered.length} of ${clients.length} clients`}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowImport(true)}
-            className="flex items-center gap-2 bg-[#FFFFFF] hover:bg-[rgba(45,74,45,0.15)] border border-[rgba(45,74,45,0.15)] hover:border-[#2D4A2D40] text-[#94a3b8] hover:text-[#2D4A2D] px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-white hover:bg-[rgba(45,74,45,0.06)] border border-[rgba(45,74,45,0.12)] text-[#6B7280] hover:text-[#2D4A2D] px-4 py-2 rounded-xl text-sm font-medium transition-colors"
           >
-            <Upload size={16} /> Import CSV
+            <Upload size={15} /> Import CSV
           </button>
           <button
             onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
           >
-            <Plus size={16} /> Add Client
+            <Plus size={15} /> Add Client
           </button>
         </div>
       </div>
 
-      {/* Search + filter toggle */}
-      <div className="flex gap-3 mb-6">
+      {/* Filter bar */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        {/* Search */}
         <div className="flex-1 relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
           <input
-            className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg pl-9 pr-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
+            className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl pl-9 pr-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
             placeholder="Search by company, contact, sector, location..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <button
-          onClick={() => setShowFilters(f => !f)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors border ${showFilters ? 'bg-[#2D4A2D20] border-[#2D4A2D] text-[#2D4A2D]' : 'bg-[#FFFFFF] border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D]'}`}
+
+        {/* Sector filter */}
+        <select
+          className="bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2.5 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
+          value={filterSector}
+          onChange={e => setFilterSector(e.target.value)}
         >
-          <SlidersHorizontal size={15} />
-          Filters
-        </button>
+          <option value="">All Sectors</option>
+          {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
       </div>
 
-      {/* Filter panel */}
-      {showFilters && (
-        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[#2D4A2D] font-semibold text-sm">Filter Clients</p>
-            <button onClick={clearFilters} className="text-[#94a3b8] text-xs hover:text-[#2D4A2D] transition-colors">Clear all</button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:grid-cols-4">
-            <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Type</label>
-              <select
-                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                value={filterType}
-                onChange={e => setFilterType(e.target.value as typeof filterType)}
-              >
-                <option value="all">All</option>
-                <option value="prospect">Prospect</option>
-                <option value="active">Active Client</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Sector</label>
-              <select
-                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                value={filterSector}
-                onChange={e => setFilterSector(e.target.value)}
-              >
-                <option value="">All Sectors</option>
-                {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Company Size</label>
-              <select
-                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                value={filterSize}
-                onChange={e => setFilterSize(e.target.value as typeof filterSize)}
-              >
-                <option value="">All Sizes</option>
-                {SIZES.map(s => <option key={s} value={s}>{SIZE_LABELS[s]}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[#94a3b8] text-xs font-medium mb-1">Location</label>
-              <input
-                className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                placeholder="e.g. Amsterdam"
-                value={filterLocation}
-                onChange={e => setFilterLocation(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Type filter chips */}
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
+        {TYPE_FILTERS.map(f => (
+          <button
+            key={f.value}
+            onClick={() => setFilterType(f.value)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              filterType === f.value
+                ? 'bg-[#2D4A2D] text-white'
+                : 'bg-white border border-[rgba(45,74,45,0.12)] text-[#6B7280] hover:text-[#2D4A2D] hover:border-[#2D4A2D]'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
 
       {/* Results grid */}
-      {clients.length === 0 ? (
-        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-16 text-center">
-          <Building2 size={40} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
-          <p className="text-[#2D4A2D] font-semibold mb-1">No clients yet</p>
-          <p className="text-[#94a3b8] text-sm mb-4">Add your first client to get started.</p>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="inline-flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+      <AnimatePresence mode="wait">
+        {clients.length === 0 ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="bg-white border border-[rgba(45,74,45,0.12)] rounded-2xl p-16 text-center"
           >
-            <Plus size={16} /> Add Client
-          </button>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-16 text-center">
-          <Search size={32} className="mx-auto mb-3 text-[rgba(45,74,45,0.15)]" />
-          <p className="text-[#94a3b8] text-sm">No clients match your filters.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map(c => (
-            <div
-              key={c.id}
-              onClick={() => router.push(`/clients/${c.id}`)}
-              className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-xl p-5 cursor-pointer hover:border-[#2D4A2D40] transition-all duration-200 group"
+            <Building2 size={40} className="mx-auto mb-3 text-[rgba(45,74,45,0.20)]" />
+            <p className="text-[#2D4A2D] font-semibold mb-1">No clients yet</p>
+            <p className="text-[#6B7280] text-sm mb-5">Add your first client to get started.</p>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="inline-flex items-center gap-2 bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#2D4A2D20] flex items-center justify-center flex-shrink-0">
-                    <Building2 size={18} className="text-[#2D4A2D]" />
-                  </div>
-                  <div>
-                    <p className="text-[#2D4A2D] font-semibold text-sm group-hover:text-[#2D4A2D] transition-colors">
-                      {c.companyName}
-                    </p>
-                    <p className="text-[#94a3b8] text-xs">{c.sector}</p>
-                  </div>
-                </div>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${TYPE_BADGE[c.type]}`}>
-                  {TYPE_LABELS[c.type]}
-                </span>
-              </div>
+              <Plus size={15} /> Add Client
+            </button>
+          </motion.div>
+        ) : filtered.length === 0 ? (
+          <motion.div
+            key="no-results"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="bg-white border border-[rgba(45,74,45,0.12)] rounded-2xl p-16 text-center"
+          >
+            <Search size={32} className="mx-auto mb-3 text-[rgba(45,74,45,0.20)]" />
+            <p className="text-[#6B7280] text-sm">No clients match your filters.</p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="grid"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {filtered.map((c, i) => {
+              const badge = TYPE_BADGE[c.type];
+              return (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03, duration: 0.22 }}
+                  whileHover={{ y: -3, boxShadow: '0 12px 24px rgba(45,74,45,0.10)' }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => router.push(`/clients/${c.id}`)}
+                  className="bg-white border border-[rgba(45,74,45,0.12)] rounded-2xl p-5 cursor-pointer transition-colors group relative overflow-hidden"
+                >
+                  {/* Left green accent on hover */}
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#2D4A2D] rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
-              <div className="space-y-1.5">
-                {c.contactName && (
-                  <div className="flex items-center gap-1.5 text-[#94a3b8] text-xs">
-                    <User size={11} className="flex-shrink-0" />
-                    <span className="truncate">{c.contactName} · {c.contactRole}</span>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-[rgba(45,74,45,0.08)] flex items-center justify-center flex-shrink-0">
+                        <Building2 size={18} className="text-[#2D4A2D]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[#2D4A2D] font-semibold text-sm truncate">{c.companyName}</p>
+                        <span className="inline-flex items-center gap-1 mt-0.5">
+                          <span className="text-[#6B7280] text-xs">{c.sector}</span>
+                          <span className="text-[rgba(45,74,45,0.25)] text-xs">·</span>
+                          <span className="text-[#6B7280] text-xs">{SIZE_LABELS[c.size]}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ml-2 ${badge.bg} ${badge.text}`}>
+                      {TYPE_LABELS[c.type]}
+                    </span>
                   </div>
-                )}
-                {c.location && (
-                  <div className="flex items-center gap-1.5 text-[#94a3b8] text-xs">
-                    <MapPin size={11} className="flex-shrink-0" />
-                    <span className="truncate">{c.location}</span>
+
+                  <div className="space-y-1.5 pl-[52px]">
+                    {c.contactName && (
+                      <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
+                        <User size={11} className="flex-shrink-0" />
+                        <span className="truncate">{c.contactName}{c.contactRole ? ` · ${c.contactRole}` : ''}</span>
+                      </div>
+                    )}
+                    {c.location && (
+                      <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
+                        <MapPin size={11} className="flex-shrink-0" />
+                        <span className="truncate">{c.location}</span>
+                      </div>
+                    )}
+                    {c.feeAgreement && c.feeAgreement.type !== 'standard' && (
+                      <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
+                        <span className="w-[11px] flex-shrink-0 flex items-center justify-center text-[10px]">%</span>
+                        <span>
+                          {c.feeAgreement.type === 'custom'
+                            ? `Custom ${c.feeAgreement.customPercentage ?? ''}%`
+                            : 'Retainer agreement'}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-                <div className="flex items-center gap-1.5 text-[#94a3b8] text-xs">
-                  <Building2 size={11} className="flex-shrink-0" />
-                  <span>{SIZE_LABELS[c.size]}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* CSV Import Modal */}
       {showImport && (
@@ -313,213 +321,154 @@ export default function ClientsPage() {
       )}
 
       {/* Add Client Modal */}
-      {showAdd && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-end sm:items-center justify-center sm:p-4">
-          <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl p-6 w-full max-w-2xl max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[#2D4A2D] font-semibold">Add New Client</h2>
-              <button onClick={() => setShowAdd(false)} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {/* Company info */}
-              <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider">Company</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Company Name *</label>
-                  <input
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="Acme Corp"
-                    value={form.companyName}
-                    onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Website</label>
-                  <input
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="https://acme.com"
-                    value={form.website}
-                    onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
-                  />
-                </div>
+      <AnimatePresence>
+        {showAdd && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+              className="bg-white border border-[rgba(45,74,45,0.12)] rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-2xl max-h-[92vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-[#2D4A2D] font-semibold text-base">Add New Client</h2>
+                <button onClick={() => setShowAdd(false)} className="text-[#6B7280] hover:text-[#2D4A2D] transition-colors">
+                  <X size={18} />
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-5">
+                {/* Company */}
                 <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Sector</label>
-                  <select
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    value={form.sector}
-                    onChange={e => setForm(f => ({ ...f, sector: e.target.value }))}
-                  >
-                    {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Size</label>
-                  <select
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    value={form.size}
-                    onChange={e => setForm(f => ({ ...f, size: e.target.value as Client['size'] }))}
-                  >
-                    {SIZES.map(s => <option key={s} value={s}>{SIZE_LABELS[s]}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Type</label>
-                  <select
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    value={form.type}
-                    onChange={e => setForm(f => ({ ...f, type: e.target.value as Client['type'] }))}
-                  >
-                    <option value="prospect">Prospect</option>
-                    <option value="active">Active Client</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[#94a3b8] text-xs font-medium mb-1">Location</label>
-                <input
-                  className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                  placeholder="Amsterdam"
-                  value={form.location}
-                  onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-                />
-              </div>
-
-              {/* Contact */}
-              <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider pt-1">Primary Contact</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Contact Name *</label>
-                  <input
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="Jane Smith"
-                    value={form.contactName}
-                    onChange={e => setForm(f => ({ ...f, contactName: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Role</label>
-                  <input
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="HR Manager"
-                    value={form.contactRole}
-                    onChange={e => setForm(f => ({ ...f, contactRole: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Email</label>
-                  <input
-                    type="email"
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="jane@acme.com"
-                    value={form.contactEmail}
-                    onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Phone</label>
-                  <input
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#6B7280] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="+31 20 123 4567"
-                    value={form.contactPhone}
-                    onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {/* Fee Agreement */}
-              <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider pt-1">Fee Agreement</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Fee Type</label>
-                  <select
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    value={form.feeType}
-                    onChange={e => setForm(f => ({ ...f, feeType: e.target.value as FeeAgreement['type'] }))}
-                  >
-                    <option value="standard">Standard</option>
-                    <option value="custom">Custom %</option>
-                    <option value="retainer">Retainer</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Guarantee Period (months)</label>
-                  <input
-                    type="number"
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="3"
-                    value={form.guaranteePeriod}
-                    onChange={e => setForm(f => ({ ...f, guaranteePeriod: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {form.feeType === 'custom' && (
-                <div>
-                  <label className="block text-[#94a3b8] text-xs font-medium mb-1">Custom Percentage (%)</label>
-                  <input
-                    type="number"
-                    className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="20"
-                    value={form.customPercentage}
-                    onChange={e => setForm(f => ({ ...f, customPercentage: e.target.value }))}
-                  />
-                </div>
-              )}
-
-              {form.feeType === 'retainer' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[#94a3b8] text-xs font-medium mb-1">Upfront Retainer (€)</label>
-                    <input
-                      type="number"
-                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                      placeholder="5000"
-                      value={form.retainerAmount}
-                      onChange={e => setForm(f => ({ ...f, retainerAmount: e.target.value }))}
-                    />
+                  <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider mb-3">Company</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className={LABEL_CLASS}>Company Name *</label>
+                      <input className={INPUT_CLASS} placeholder="Acme Corp" value={form.companyName} onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASS}>Website</label>
+                      <input className={INPUT_CLASS} placeholder="https://acme.com" value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[#94a3b8] text-xs font-medium mb-1">On Placement (%)</label>
-                    <input
-                      type="number"
-                      className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                      placeholder="12"
-                      value={form.retainerPercentage}
-                      onChange={e => setForm(f => ({ ...f, retainerPercentage: e.target.value }))}
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                    <div>
+                      <label className={LABEL_CLASS}>Sector</label>
+                      <select className={SELECT_CLASS} value={form.sector} onChange={e => setForm(f => ({ ...f, sector: e.target.value }))}>
+                        {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASS}>Size</label>
+                      <select className={SELECT_CLASS} value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value as Client['size'] }))}>
+                        {SIZES.map(s => <option key={s} value={s}>{SIZE_LABELS[s]}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASS}>Type</label>
+                      <select className={SELECT_CLASS} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as Client['type'] }))}>
+                        <option value="prospect">Prospect</option>
+                        <option value="active">Active Client</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <label className={LABEL_CLASS}>Location</label>
+                    <input className={INPUT_CLASS} placeholder="Amsterdam" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
                   </div>
                 </div>
-              )}
-            </div>
 
-            <div className="flex gap-3 mt-5">
-              <button
-                onClick={addClient}
-                disabled={!form.companyName.trim() || !form.contactName.trim()}
-                className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
-              >
-                Add Client
-              </button>
-              <button
-                onClick={() => setShowAdd(false)}
-                className="flex-1 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                {/* Contact */}
+                <div>
+                  <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider mb-3">Primary Contact</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className={LABEL_CLASS}>Contact Name *</label>
+                      <input className={INPUT_CLASS} placeholder="Jane Smith" value={form.contactName} onChange={e => setForm(f => ({ ...f, contactName: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASS}>Role</label>
+                      <input className={INPUT_CLASS} placeholder="HR Manager" value={form.contactRole} onChange={e => setForm(f => ({ ...f, contactRole: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                    <div>
+                      <label className={LABEL_CLASS}>Email</label>
+                      <input type="email" className={INPUT_CLASS} placeholder="jane@acme.com" value={form.contactEmail} onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASS}>Phone</label>
+                      <input className={INPUT_CLASS} placeholder="+31 20 123 4567" value={form.contactPhone} onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fee Agreement */}
+                <div>
+                  <p className="text-[#2D4A2D] text-xs font-semibold uppercase tracking-wider mb-3">Fee Agreement</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className={LABEL_CLASS}>Fee Type</label>
+                      <select className={SELECT_CLASS} value={form.feeType} onChange={e => setForm(f => ({ ...f, feeType: e.target.value as FeeAgreement['type'] }))}>
+                        <option value="standard">Standard</option>
+                        <option value="custom">Custom %</option>
+                        <option value="retainer">Retainer</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={LABEL_CLASS}>Guarantee Period (months)</label>
+                      <input type="number" className={INPUT_CLASS} placeholder="3" value={form.guaranteePeriod} onChange={e => setForm(f => ({ ...f, guaranteePeriod: e.target.value }))} />
+                    </div>
+                  </div>
+
+                  {form.feeType === 'custom' && (
+                    <div className="mt-3">
+                      <label className={LABEL_CLASS}>Custom Percentage (%)</label>
+                      <input type="number" className={INPUT_CLASS} placeholder="20" value={form.customPercentage} onChange={e => setForm(f => ({ ...f, customPercentage: e.target.value }))} />
+                    </div>
+                  )}
+
+                  {form.feeType === 'retainer' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <label className={LABEL_CLASS}>Upfront Retainer (€)</label>
+                        <input type="number" className={INPUT_CLASS} placeholder="5000" value={form.retainerAmount} onChange={e => setForm(f => ({ ...f, retainerAmount: e.target.value }))} />
+                      </div>
+                      <div>
+                        <label className={LABEL_CLASS}>On Placement (%)</label>
+                        <input type="number" className={INPUT_CLASS} placeholder="12" value={form.retainerPercentage} onChange={e => setForm(f => ({ ...f, retainerPercentage: e.target.value }))} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={addClient}
+                  disabled={!form.companyName.trim() || !form.contactName.trim()}
+                  className="flex-1 bg-[#2D4A2D] hover:bg-[#3D6B3D] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-xl transition-colors text-sm"
+                >
+                  Add Client
+                </button>
+                <button
+                  onClick={() => setShowAdd(false)}
+                  className="flex-1 bg-[rgba(45,74,45,0.08)] hover:bg-[rgba(45,74,45,0.14)] text-[#6B7280] hover:text-[#2D4A2D] py-2.5 rounded-xl transition-colors text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
