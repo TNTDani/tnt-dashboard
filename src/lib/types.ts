@@ -79,6 +79,15 @@ export interface RecentItem {
   viewedAt: string;
 }
 
+export interface ActivityItem {
+  type: 'candidate' | 'vacancy' | 'client';
+  id: string;
+  name: string;
+  href: string;
+  lastAction: string;  // e.g. "Viewed", "Email sent", "Screened", "Added to pipeline"
+  timestamp: string;   // ISO
+}
+
 export interface WorkExperience {
   title: string;
   company: string;

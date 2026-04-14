@@ -1,4 +1,4 @@
-import { WatchlistItem, VacancyMonitorCache, RecentItem } from './types';
+import { WatchlistItem, VacancyMonitorCache, RecentItem, ActivityItem } from './types';
 
 // localStorage-only storage: device-specific / ephemeral data that doesn't
 // need to sync across sessions or devices. All entity data (candidates,
@@ -11,6 +11,7 @@ const KEYS = {
   vacancyWatchlist: 'tnt_vacancy_watchlist',
   vacancyMonitorCache: 'tnt_vacancy_monitor_cache',
   recentItems: 'tnt_recent_items',
+  activityItems: 'tnt_activity_items',
 };
 
 function get<T>(key: string): T[] {
@@ -89,5 +90,14 @@ export const storage = {
     // Remove duplicate then prepend
     const filtered = existing.filter(r => !(r.type === item.type && r.id === item.id));
     set(KEYS.recentItems, [item, ...filtered].slice(0, 9));
+  },
+
+  getActivityItems: (): ActivityItem[] => get<ActivityItem>(KEYS.activityItems),
+  addActivityItem: (item: ActivityItem) => {
+    if (typeof window === 'undefined') return;
+    const existing = get<ActivityItem>(KEYS.activityItems);
+    // Update in place if same type+id (update action + timestamp), otherwise prepend
+    const filtered = existing.filter(r => !(r.type === item.type && r.id === item.id));
+    set(KEYS.activityItems, [item, ...filtered].slice(0, 3));
   },
 };

@@ -457,6 +457,7 @@ export default function Vacancies() {
     setViewingVacancy(v);
     setDetailTab("overview");
     storage.addRecentItem({ type: "vacancy", id: v.id, name: v.title, href: "/vacancies", viewedAt: new Date().toISOString() });
+    storage.addActivityItem({ type: "vacancy", id: v.id, name: v.title, href: "/vacancies", lastAction: "Viewed", timestamp: new Date().toISOString() });
   };
 
   // ── Filters ───────────────────────────────────────────────────────────────

@@ -118,6 +118,14 @@ export default function CandidateDetailPage() {
           href: `/candidates/${found.id}`,
           viewedAt: new Date().toISOString(),
         });
+        storage.addActivityItem({
+          type: 'candidate',
+          id: found.id,
+          name: `${found.firstName} ${found.lastName}`,
+          href: `/candidates/${found.id}`,
+          lastAction: 'Viewed',
+          timestamp: new Date().toISOString(),
+        });
       }
       setVacancies(vacancyList);
       setMatches(candidateMatches);
@@ -412,7 +420,17 @@ export default function CandidateDetailPage() {
   const handleEmailSent = useCallback((entry: TimelineEntry) => {
     addTimelineEntry(entry);
     setTimeout(refreshFollowUp, 100);
-  }, [addTimelineEntry, refreshFollowUp]);
+    if (candidate) {
+      storage.addActivityItem({
+        type: 'candidate',
+        id: candidate.id,
+        name: `${candidate.firstName} ${candidate.lastName}`,
+        href: `/candidates/${candidate.id}`,
+        lastAction: 'Email sent',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [addTimelineEntry, refreshFollowUp, candidate]);
 
   if (loading || !candidate) {
     return (
@@ -1332,7 +1350,17 @@ export default function CandidateDetailPage() {
           profile={candidate}
           vacancies={vacancies}
           onClose={() => setShowPipelineModal(false)}
-          onAdded={() => setPipelineAdded(true)}
+          onAdded={() => {
+            setPipelineAdded(true);
+            storage.addActivityItem({
+              type: 'candidate',
+              id: candidate.id,
+              name: `${candidate.firstName} ${candidate.lastName}`,
+              href: `/candidates/${candidate.id}`,
+              lastAction: 'Added to pipeline',
+              timestamp: new Date().toISOString(),
+            });
+          }}
         />
       )}
     </div>

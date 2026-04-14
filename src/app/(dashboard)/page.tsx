@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { db, initDb } from "@/lib/db";
 import { storage } from "@/lib/storage";
 import {
-  CandidateProfile, Vacancy, FollowUp, Placement, RecentItem,
+  CandidateProfile, Vacancy, FollowUp, Placement, RecentItem, ActivityItem,
 } from "@/lib/types";
 import {
   UserCircle, Briefcase, Building2, ArrowLeft, Search, Plus,
@@ -113,6 +113,124 @@ const PILL_ICON: Record<RecentItem["type"], React.ReactNode> = {
   client:    <PillBuildingIcon />,
 };
 
+// ── Activity helpers ───────────────────────────────────────────────────────────
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  if (hours < 48) return "yesterday";
+  return `${Math.floor(hours / 24)} days ago`;
+}
+
+const ACTIVITY_TYPE_LABEL: Record<ActivityItem["type"], string> = {
+  candidate: "Candidate",
+  vacancy:   "Vacancy",
+  client:    "Client",
+};
+
+const ACTIVITY_ICON: Record<ActivityItem["type"], React.ReactNode> = {
+  candidate: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="7" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M2 13c0-2.76 2.24-5 5-5h1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  vacancy: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="2" y="5" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M5 5V4a2 2 0 014 0v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  client: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="5" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M5 10v3M8 10v3M11 10v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      <path d="M4 5V4a4 4 0 018 0v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+};
+
+function ActivityCard({ item, isExiting }: { item: ActivityItem; isExiting: boolean }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={isExiting ? { opacity: 0, y: -6 } : { opacity: 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: isExiting ? 0.15 : 0.25, ease: "easeOut" }}
+      style={{ flex: 1, minWidth: 0 }}
+    >
+      <Link
+        href={item.href}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          padding: "16px 18px",
+          borderRadius: 14,
+          background: hovered ? "rgba(45,74,45,0.04)" : "#fff",
+          border: "1px solid rgba(45,74,45,0.12)",
+          borderLeft: "3px solid rgba(45,74,45,0.25)",
+          boxShadow: hovered ? "0 4px 12px rgba(45,74,45,0.08)" : "0 1px 4px rgba(45,74,45,0.04)",
+          textDecoration: "none",
+          cursor: "pointer",
+          transition: "background 150ms ease-out, box-shadow 150ms ease-out, border-color 150ms ease-out",
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Top row: icon + type badge */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{
+            width: 30, height: 30, borderRadius: 8,
+            background: "rgba(45,74,45,0.08)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "#2D4A2D", flexShrink: 0,
+          }}>
+            {ACTIVITY_ICON[item.type]}
+          </div>
+          <span style={{
+            fontSize: 10, fontWeight: 600, letterSpacing: "0.5px",
+            textTransform: "uppercase", color: "#7A8878",
+            background: "rgba(45,74,45,0.06)",
+            padding: "2px 8px", borderRadius: 999,
+          }}>
+            {ACTIVITY_TYPE_LABEL[item.type]}
+          </span>
+        </div>
+
+        {/* Name */}
+        <div style={{
+          fontSize: 13, fontWeight: 600, color: "#2D4A2D",
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          lineHeight: 1.3,
+        }}>
+          {item.name}
+        </div>
+
+        {/* Last action + time */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 500, color: "#4CAF50",
+            background: "rgba(76,175,80,0.08)",
+            padding: "2px 7px", borderRadius: 999,
+          }}>
+            {item.lastAction}
+          </span>
+          <span style={{ fontSize: 11, color: "#9BAA99" }}>
+            {relativeTime(item.timestamp)}
+          </span>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
 // ── Spotlight Card ─────────────────────────────────────────────────────────────
 
 function SpotlightCard({
@@ -160,11 +278,11 @@ function SpotlightCard({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
-      style={{ color: "#2D4A2D" }}  // currentColor base for SVGs
+      style={{ color: "#2D4A2D", flex: 1, minWidth: 0 }}
     >
       <div
         style={{
-          width: 300,
+          width: "100%",
           minHeight: 210,
           position: "relative",
           overflow: "hidden",
@@ -258,6 +376,7 @@ export default function Dashboard() {
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [placements, setPlacements] = useState<Placement[]>([]);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
 
   const [candSearch, setCandSearch] = useState("");
   const [candFilter, setCandFilter] = useState<"all" | "active" | "passive" | "placed">("all");
@@ -266,6 +385,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     setRecentItems(storage.getRecentItems().slice(0, 3));
+    setActivityItems(storage.getActivityItems());
   }, []);
 
   useEffect(() => {
@@ -395,6 +515,7 @@ export default function Dashboard() {
               }}
             />
 
+            {/* ── Single centred column, 820px max ── */}
             <div
               style={{
                 position: "relative",
@@ -405,6 +526,8 @@ export default function Dashboard() {
                 padding: "60px 24px 0",
               }}
             >
+              <div style={{ width: "100%", maxWidth: 820, display: "flex", flexDirection: "column", alignItems: "stretch" }}>
+
               {/* ── Heading ── */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -447,10 +570,8 @@ export default function Dashboard() {
               <div
                 style={{
                   display: "flex",
-                  gap: 28,
+                  gap: 32,
                   alignItems: "stretch",
-                  flexWrap: "wrap",
-                  justifyContent: "center",
                   marginBottom: 32,
                 }}
               >
@@ -535,58 +656,23 @@ export default function Dashboard() {
                 </SpotlightCard>
               </div>
 
-              {/* ── Continue where you left off ── */}
-              {recentItems.length > 0 && (
+              {/* ── Pick up where you left off ── */}
+              {activityItems.length > 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -8 : 0 }}
-                  transition={{ duration: isExiting ? 0.18 : 0.5, delay: isExiting ? 0 : 0.5, ease: "easeOut" }}
-                  style={{ textAlign: "center", width: "100%", maxWidth: 660, marginBottom: 28 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -6 : 0 }}
+                  transition={{ duration: isExiting ? 0.18 : 0.4, delay: isExiting ? 0 : 0.5, ease: "easeOut" }}
+                  style={{ marginBottom: 36 }}
                 >
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 500,
-                      letterSpacing: "1.5px",
-                      color: "#6B7280",
-                      textTransform: "uppercase",
-                      marginBottom: 10,
-                    }}
-                  >
-                    Continue where you left off
+                  <div style={{
+                    fontSize: 11, fontWeight: 500, letterSpacing: "1.5px",
+                    color: "#6B7280", textTransform: "uppercase", marginBottom: 12,
+                  }}>
+                    Or pick up where you left off
                   </div>
-                  <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-                    {recentItems.map((item) => (
-                      <Link
-                        key={`${item.type}-${item.id}`}
-                        href={item.href}
-                        className="flex items-center gap-[7px] transition-all duration-150"
-                        style={{
-                          background: "white",
-                          border: "1px solid rgba(45,74,45,0.2)",
-                          borderRadius: 999,
-                          padding: "7px 14px",
-                          fontSize: 12,
-                          color: "#2D4A2D",
-                          cursor: "pointer",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#2D4A2D";
-                          e.currentTarget.style.color = "white";
-                          e.currentTarget.style.borderColor = "#2D4A2D";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "white";
-                          e.currentTarget.style.color = "#2D4A2D";
-                          e.currentTarget.style.borderColor = "rgba(45,74,45,0.2)";
-                        }}
-                      >
-                        {PILL_ICON[item.type]}
-                        {item.name}
-                        <span style={{ fontSize: 10, opacity: 0.6, marginLeft: 2, textTransform: "capitalize" }}>
-                          · {item.type}
-                        </span>
-                      </Link>
+                  <div style={{ display: "flex", gap: 16 }}>
+                    {activityItems.map((item) => (
+                      <ActivityCard key={`${item.type}-${item.id}`} item={item} isExiting={isExiting} />
                     ))}
                   </div>
                 </motion.div>
@@ -599,7 +685,6 @@ export default function Dashboard() {
                 transition={{ duration: isExiting ? 0.18 : 0.45, delay: isExiting ? 0 : 0.6, ease: "easeOut" }}
                 style={{
                   width: "100%",
-                  maxWidth: 660,
                   background: "#fff",
                   borderRadius: 16,
                   border: "0.5px solid rgba(0,0,0,0.06)",
@@ -650,7 +735,6 @@ export default function Dashboard() {
                 transition={{ duration: isExiting ? 0.18 : 0.5, delay: isExiting ? 0 : 0.75, ease: "easeOut" }}
                 style={{
                   width: "100%",
-                  maxWidth: 660,
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                   gap: 20,
@@ -747,6 +831,7 @@ export default function Dashboard() {
                 </div>
               </motion.div>
 
+              </div>{/* end maxWidth:820 */}
             </div>
           </motion.div>
         )}

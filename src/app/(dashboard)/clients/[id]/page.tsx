@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Client, FeeAgreement, TimelineEntry, FollowUp } from '@/lib/types';
 import { db } from '@/lib/db';
+import { storage } from '@/lib/storage';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ArrowLeft, Edit, Mail, Phone, MapPin, Globe, Building2,
@@ -79,6 +80,14 @@ export default function ClientDetailPage() {
       if (found) {
         setClient(found);
         setNotesValue(found.notes);
+        storage.addActivityItem({
+          type: 'client',
+          id: found.id,
+          name: found.companyName,
+          href: `/clients/${found.id}`,
+          lastAction: 'Viewed',
+          timestamp: new Date().toISOString(),
+        });
       }
       const activeFollowUp = allFollowUps.find(f => f.contactId === id && f.status !== 'done');
       setFollowUp(activeFollowUp || null);
