@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 // ── Orchard logo mark ─────────────────────────────────────────────────────────
 
@@ -214,7 +215,7 @@ function LoginForm() {
 
           <div style={{ textAlign: "center", fontSize: 12, color: "#9BAA99", marginTop: 20 }}>
             Don&apos;t have an account?{" "}
-            <a href="/register" style={{ color: "#3BAF64", textDecoration: "none", fontWeight: 500 }}>Register now</a>
+            <Link href="/register" style={{ color: "#3BAF64", textDecoration: "none", fontWeight: 500 }}>Register now</Link>
           </div>
         </motion.div>
       </div>
