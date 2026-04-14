@@ -6,6 +6,7 @@ import { CandidateProfile, Vacancy, PipelineStatus, Candidate } from '@/lib/type
 import { storage } from '@/lib/storage';
 import { db } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const STAGES: { value: PipelineStatus; label: string }[] = [
   { value: 'sourced',     label: 'Sourced' },
@@ -53,15 +54,18 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
-      <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl w-full max-w-sm shadow-2xl">
+    <Dialog open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-sm w-full p-0 gap-0 rounded-xl border border-[rgba(45,74,45,0.15)] bg-white shadow-2xl"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.15)]">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center">
               <GitMerge size={13} className="text-[#2D4A2D]" />
             </div>
-            <h2 className="text-white font-semibold text-sm">Add to Pipeline</h2>
+            <h2 className="text-[#2D4A2D] font-semibold text-sm">Add to Pipeline</h2>
           </div>
           <button onClick={onClose} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
             <X size={15} />
@@ -71,12 +75,12 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
         {/* Body */}
         <div className="px-5 py-5 space-y-4">
           {/* Candidate summary */}
-          <div className="flex items-center gap-3 p-3 bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-[#F7F7F5] border border-[rgba(45,74,45,0.1)] rounded-lg">
             <div className="w-9 h-9 rounded-full bg-[#2D4A2D]/20 flex items-center justify-center text-[#2D4A2D] font-bold text-sm flex-shrink-0">
               {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
             </div>
             <div>
-              <p className="text-white text-sm font-medium">{profile.firstName} {profile.lastName}</p>
+              <p className="text-[#2D4A2D] text-sm font-medium">{profile.firstName} {profile.lastName}</p>
               <p className="text-[#94a3b8] text-xs">{profile.jobTitle || profile.branch || '—'}</p>
             </div>
           </div>
@@ -89,7 +93,7 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
             <select
               value={vacancyId}
               onChange={e => setVacancyId(e.target.value)}
-              className="w-full bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D]"
+              className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-lg px-3 py-2.5 text-[#2D4A2D] text-sm focus:outline-none focus:border-[#2D4A2D]"
             >
               <option value="">— No vacancy —</option>
               {openVacancies.map(v => (
@@ -112,7 +116,7 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
                   className={`py-1.5 rounded-lg text-[11px] font-medium transition-all ${
                     stage === s.value
                       ? 'bg-[#2D4A2D] text-white'
-                      : 'bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2D4A2D] hover:text-[#2D4A2D]'
+                      : 'bg-white border border-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:border-[#2D4A2D] hover:text-[#2D4A2D]'
                   }`}
                 >
                   {s.label}
@@ -126,7 +130,7 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
         <div className="flex gap-2 px-5 py-4 border-t border-[rgba(45,74,45,0.15)]">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg text-sm bg-[rgba(45,74,45,0.15)] text-[#94a3b8] hover:text-[#2D4A2D] hover:bg-[#6B7280] transition-colors"
+            className="flex-1 px-4 py-2 rounded-lg text-sm bg-[rgba(45,74,45,0.08)] text-[#6B7280] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] transition-colors"
           >
             Cancel
           </button>
@@ -138,7 +142,7 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
             Add to Pipeline
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
