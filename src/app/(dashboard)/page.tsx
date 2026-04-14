@@ -408,6 +408,18 @@ export default function Dashboard() {
       .catch(() => {});
   }, [agencyId]);
 
+  // ── Activity items — real data or placeholders ────────────────────────────
+
+  const displayActivityItems = useMemo((): ActivityItem[] => {
+    if (activityItems.length > 0) return activityItems;
+    const now = Date.now();
+    return [
+      { type: "candidate", id: "_p1", name: "Laura Sanabria",           href: "/candidates",  lastAction: "Viewed", timestamp: new Date(now - 2 * 3600 * 1000).toISOString() },
+      { type: "vacancy",   id: "_p2", name: "Senior Frontend Engineer", href: "/vacancies",   lastAction: "Viewed", timestamp: new Date(now - 25 * 3600 * 1000).toISOString() },
+      { type: "client",    id: "_p3", name: "Lleverage",                href: "/clients",     lastAction: "Viewed", timestamp: new Date(now - 3 * 24 * 3600 * 1000).toISOString() },
+    ];
+  }, [activityItems]);
+
   // ── Derived stats ──────────────────────────────────────────────────────────
 
   const activeVacanciesCount  = vacancies.filter((v) => v.status === "open").length;
@@ -657,26 +669,24 @@ export default function Dashboard() {
               </div>
 
               {/* ── Pick up where you left off ── */}
-              {activityItems.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -6 : 0 }}
-                  transition={{ duration: isExiting ? 0.18 : 0.4, delay: isExiting ? 0 : 0.5, ease: "easeOut" }}
-                  style={{ marginBottom: 36 }}
-                >
-                  <div style={{
-                    fontSize: 11, fontWeight: 500, letterSpacing: "1.5px",
-                    color: "#6B7280", textTransform: "uppercase", marginBottom: 12,
-                  }}>
-                    Or pick up where you left off
-                  </div>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    {activityItems.map((item) => (
-                      <ActivityCard key={`${item.type}-${item.id}`} item={item} isExiting={isExiting} />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -6 : 0 }}
+                transition={{ duration: isExiting ? 0.18 : 0.4, delay: isExiting ? 0 : 0.5, ease: "easeOut" }}
+                style={{ marginBottom: 36 }}
+              >
+                <div style={{
+                  fontSize: 11, fontWeight: 500, letterSpacing: "1.5px",
+                  color: "#6B7280", textTransform: "uppercase", marginBottom: 12,
+                }}>
+                  Or pick up where you left off
+                </div>
+                <div style={{ display: "flex", gap: 16 }}>
+                  {displayActivityItems.map((item) => (
+                    <ActivityCard key={`${item.type}-${item.id}`} item={item} isExiting={isExiting} />
+                  ))}
+                </div>
+              </motion.div>
 
               {/* ── Stats bar card ── */}
               <motion.div
