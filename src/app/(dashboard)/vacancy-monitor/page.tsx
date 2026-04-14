@@ -49,6 +49,8 @@ interface ScoredListing extends VacancyListing {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
+const SENIORITY_LEVELS = ["Junior", "Mid-level", "Senior", "Lead", "Manager", "Director", "VP", "C-Level"];
+
 const LOADING_STEPS = [
   "Reading candidate profile...",
   "Building vacancy search criteria...",
@@ -895,6 +897,16 @@ export default function VacancyMonitorPage() {
   const [sendModal, setSendModal] = useState<ScoredListing | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Manual form mode
+  const [manualMode, setManualMode] = useState(false);
+  const [manualJobTitle, setManualJobTitle] = useState("");
+  const [manualSkills, setManualSkills] = useState<string[]>([]);
+  const [manualSkillInput, setManualSkillInput] = useState("");
+  const [manualSeniority, setManualSeniority] = useState("Senior");
+  const [manualSalaryMin, setManualSalaryMin] = useState("");
+  const [manualSalaryMax, setManualSalaryMax] = useState("");
+  const [manualLocation, setManualLocation] = useState("Amsterdam");
+
   // Filters
   const [minScore, setMinScore] = useState(0);
   const [locationFilter, setLocationFilter] = useState("all");
@@ -909,7 +921,8 @@ export default function VacancyMonitorPage() {
   }, [agencyId]);
 
   async function handleStart() {
-    if (!selectedCandidate) return;
+    if (!selectedCandidate && !manualMode) return;
+    if (manualMode && !manualJobTitle.trim()) return;
     setStep("loading");
     setError(null);
     setLoadingStep(0);
@@ -930,18 +943,27 @@ export default function VacancyMonitorPage() {
 
       setLoadingStep(3);
 
-      const candidate = selectedCandidate;
+      const candidatePayload = selectedCandidate
+        ? {
+            jobTitle: selectedCandidate.jobTitle,
+            skills: [],
+            location: selectedCandidate.location,
+            salaryExpectation: selectedCandidate.salaryExpectation,
+            branch: selectedCandidate.branch,
+          }
+        : {
+            jobTitle: manualJobTitle.trim(),
+            skills: manualSkills,
+            location: manualLocation.trim(),
+            salaryExpectation: manualSalaryMin ? Number(manualSalaryMin) : undefined,
+            branch: manualSeniority,
+          };
+
       const matchRes = await fetch("/api/match-vacancies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          candidate: {
-            jobTitle: candidate.jobTitle,
-            skills: [],
-            location: candidate.location,
-            salaryExpectation: candidate.salaryExpectation,
-            branch: candidate.branch,
-          },
+          candidate: candidatePayload,
           listings: vmData.listings,
         }),
       });
@@ -1099,60 +1121,193 @@ export default function VacancyMonitorPage() {
               </motion.div>
             )}
 
-            {candidates.length === 0 ? (
-              <div
-                className="rounded-xl p-6 text-center"
-                style={{
-                  background: "#fff",
-                  border: "1px solid rgba(45,74,45,0.1)",
-                }}
-              >
-                <Users size={32} className="mx-auto mb-3" style={{ color: "rgba(45,74,45,0.25)" }} />
-                <p className="text-sm font-medium mb-1" style={{ color: "#2D4A2D" }}>
-                  No candidates yet
-                </p>
-                <p className="text-xs mb-4" style={{ color: "#6B7280" }}>
-                  Add candidates to your CRM to use the vacancy monitor
-                </p>
-                <Link
-                  href="/candidates/new"
-                  className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150"
-                  style={{ background: "#2D4A2D", color: "#fff" }}
-                >
-                  <Plus size={14} />
-                  Add candidate
-                </Link>
-              </div>
-            ) : (
-              <>
-                <CandidateCombobox
-                  candidates={candidates}
-                  value={selectedCandidate}
-                  onChange={setSelectedCandidate}
-                />
-
-                <AnimatePresence>
-                  {selectedCandidate && (
-                    <ConfirmationCard
-                      candidate={selectedCandidate}
-                      onStart={handleStart}
-                    />
+            <AnimatePresence mode="wait">
+              {!manualMode ? (
+                <motion.div key="combobox" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                  {candidates.length === 0 ? (
+                    <div
+                      className="rounded-xl p-6 text-center"
+                      style={{ background: "#fff", border: "1px solid rgba(45,74,45,0.1)" }}
+                    >
+                      <Users size={32} className="mx-auto mb-3" style={{ color: "rgba(45,74,45,0.25)" }} />
+                      <p className="text-sm font-medium mb-1" style={{ color: "#2D4A2D" }}>No candidates yet</p>
+                      <p className="text-xs mb-4" style={{ color: "#6B7280" }}>Add candidates to your CRM to use the vacancy monitor</p>
+                      <Link
+                        href="/candidates/new"
+                        className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150"
+                        style={{ background: "#2D4A2D", color: "#fff" }}
+                      >
+                        <Plus size={14} /> Add candidate
+                      </Link>
+                    </div>
+                  ) : (
+                    <>
+                      <CandidateCombobox
+                        candidates={candidates}
+                        value={selectedCandidate}
+                        onChange={setSelectedCandidate}
+                      />
+                      <AnimatePresence>
+                        {selectedCandidate && (
+                          <ConfirmationCard candidate={selectedCandidate} onStart={handleStart} />
+                        )}
+                      </AnimatePresence>
+                    </>
                   )}
-                </AnimatePresence>
-              </>
-            )}
 
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => router.push("/vacancy-monitor/watchlist")}
-                className="text-sm transition-colors duration-150"
-                style={{ color: "#6B7280" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#2D4A2D")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
-              >
-                or search without a candidate →
-              </button>
-            </div>
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={() => setManualMode(true)}
+                      className="text-xs transition-colors duration-150 underline underline-offset-2"
+                      style={{ color: "#6B7280" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "#2D4A2D")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
+                    >
+                      Or start without a candidate →
+                    </button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div key="manual" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.2 }}>
+                  {/* Back link */}
+                  <button
+                    onClick={() => setManualMode(false)}
+                    className="flex items-center gap-1.5 text-xs mb-5 transition-colors"
+                    style={{ color: "#6B7280" }}
+                    onMouseOver={(e) => (e.currentTarget.style.color = "#2D4A2D")}
+                    onMouseOut={(e) => (e.currentTarget.style.color = "#6B7280")}
+                  >
+                    <ArrowLeft size={12} /> Back to candidate selector
+                  </button>
+
+                  {/* Manual form */}
+                  <div
+                    className="p-5 rounded-xl flex flex-col gap-4"
+                    style={{ background: "#fff", border: "1.5px solid rgba(45,74,45,0.15)" }}
+                  >
+                    {/* Job title / role type */}
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6B7280" }}>Job Title / Role Type *</label>
+                      <input
+                        type="text"
+                        value={manualJobTitle}
+                        onChange={(e) => setManualJobTitle(e.target.value)}
+                        placeholder="e.g. Senior Backend Engineer"
+                        className="w-full bg-white rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                        style={{ border: "1.5px solid rgba(45,74,45,0.15)", color: "#2D4A2D" }}
+                        onFocus={(e) => (e.currentTarget.style.borderColor = "#2D4A2D")}
+                        onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(45,74,45,0.15)")}
+                      />
+                    </div>
+
+                    {/* Key skills tags */}
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6B7280" }}>Key Skills</label>
+                      <div
+                        className="w-full bg-white rounded-xl px-3 py-2 min-h-[42px] flex flex-wrap gap-1.5 items-center cursor-text"
+                        style={{ border: "1.5px solid rgba(45,74,45,0.15)" }}
+                        onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement)?.focus()}
+                      >
+                        {manualSkills.map((skill) => (
+                          <span key={skill} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: "#a8e6cf", color: "#2D4A2D" }}>
+                            {skill}
+                            <button onClick={() => setManualSkills((s) => s.filter((x) => x !== skill))} className="hover:opacity-70 leading-none">
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                        <input
+                          type="text"
+                          value={manualSkillInput}
+                          onChange={(e) => setManualSkillInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if ((e.key === "Enter" || e.key === ",") && manualSkillInput.trim()) {
+                              e.preventDefault();
+                              const val = manualSkillInput.trim().replace(/,$/, "");
+                              if (val && !manualSkills.includes(val)) setManualSkills((s) => [...s, val]);
+                              setManualSkillInput("");
+                            }
+                            if (e.key === "Backspace" && !manualSkillInput && manualSkills.length > 0) {
+                              setManualSkills((s) => s.slice(0, -1));
+                            }
+                          }}
+                          placeholder={manualSkills.length === 0 ? "Type skill and press Enter…" : ""}
+                          className="flex-1 min-w-[120px] text-sm outline-none bg-transparent"
+                          style={{ color: "#2D4A2D" }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Seniority + Location row */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6B7280" }}>Seniority</label>
+                        <select
+                          value={manualSeniority}
+                          onChange={(e) => setManualSeniority(e.target.value)}
+                          className="w-full bg-white rounded-xl px-3 py-2.5 text-sm outline-none appearance-none transition-colors"
+                          style={{ border: "1.5px solid rgba(45,74,45,0.15)", color: "#2D4A2D" }}
+                        >
+                          {SENIORITY_LEVELS.map((l) => <option key={l}>{l}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6B7280" }}>Location</label>
+                        <input
+                          type="text"
+                          value={manualLocation}
+                          onChange={(e) => setManualLocation(e.target.value)}
+                          placeholder="Amsterdam"
+                          className="w-full bg-white rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                          style={{ border: "1.5px solid rgba(45,74,45,0.15)", color: "#2D4A2D" }}
+                          onFocus={(e) => (e.currentTarget.style.borderColor = "#2D4A2D")}
+                          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(45,74,45,0.15)")}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Salary expectation */}
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6B7280" }}>Salary Expectation (€)</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          type="number"
+                          value={manualSalaryMin}
+                          onChange={(e) => setManualSalaryMin(e.target.value)}
+                          placeholder="Min e.g. 60000"
+                          className="w-full bg-white rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                          style={{ border: "1.5px solid rgba(45,74,45,0.15)", color: "#2D4A2D" }}
+                          onFocus={(e) => (e.currentTarget.style.borderColor = "#2D4A2D")}
+                          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(45,74,45,0.15)")}
+                        />
+                        <input
+                          type="number"
+                          value={manualSalaryMax}
+                          onChange={(e) => setManualSalaryMax(e.target.value)}
+                          placeholder="Max e.g. 85000"
+                          className="w-full bg-white rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                          style={{ border: "1.5px solid rgba(45,74,45,0.15)", color: "#2D4A2D" }}
+                          onFocus={(e) => (e.currentTarget.style.borderColor = "#2D4A2D")}
+                          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(45,74,45,0.15)")}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                      onClick={handleStart}
+                      disabled={!manualJobTitle.trim()}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all mt-1"
+                      style={{ background: manualJobTitle.trim() ? "#2D4A2D" : "rgba(45,74,45,0.3)", cursor: manualJobTitle.trim() ? "pointer" : "not-allowed" }}
+                      onMouseOver={(e) => { if (manualJobTitle.trim()) e.currentTarget.style.background = "#3D6B3D"; }}
+                      onMouseOut={(e) => { if (manualJobTitle.trim()) e.currentTarget.style.background = "#2D4A2D"; }}
+                    >
+                      <Search size={15} /> Find Vacancies
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
