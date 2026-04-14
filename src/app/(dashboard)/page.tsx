@@ -11,7 +11,7 @@ import {
 } from "@/lib/types";
 import {
   UserCircle, Briefcase, Building2, ArrowLeft, Search, Plus,
-  ChevronRight, Clock, Users, TrendingUp, Bell, ArrowRight,
+  Clock, Users, TrendingUp, Bell,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -41,43 +41,77 @@ const STAGE_ORDER = [
   "sent-to-client", "interviewing", "offer", "placed",
 ];
 
-const RECENT_ICON: Record<RecentItem["type"], React.ElementType> = {
-  candidate: UserCircle, vacancy: Briefcase, client: Building2,
-};
-
 function daysOpen(createdAt: string): number {
   return Math.floor((Date.now() - new Date(createdAt).getTime()) / 86400000);
 }
 
-// ── SVG Icons ─────────────────────────────────────────────────────────────────
+// ── Inline SVG icons (from HTML prototype) ────────────────────────────────────
 
 function CandidatesIcon() {
   return (
-    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-      <circle cx="26" cy="18" r="9" fill="rgba(45,74,45,0.1)" stroke="#2D4A2D" strokeWidth="1.5" />
-      <path d="M11 44c0-8.284 6.716-15 15-15s15 6.716 15 15" stroke="#2D4A2D" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="42" cy="10" r="2.5" fill="#2D4A2D" opacity="0.35" />
-      <circle cx="47" cy="19" r="1.75" fill="#2D4A2D" opacity="0.25" />
-      <circle cx="39" cy="5"  r="1.75" fill="#2D4A2D" opacity="0.25" />
-      <line x1="42" y1="10" x2="34" y2="16" stroke="#2D4A2D" strokeWidth="0.75" opacity="0.25" />
-      <line x1="42" y1="10" x2="47" y2="19" stroke="#2D4A2D" strokeWidth="0.75" opacity="0.25" />
-      <line x1="42" y1="10" x2="39" y2="5"  stroke="#2D4A2D" strokeWidth="0.75" opacity="0.25" />
+    <svg className="tile-icon" width="52" height="52" viewBox="0 0 52 52" fill="none">
+      <circle cx="22" cy="18" r="8" stroke="currentColor" strokeWidth="1.8"/>
+      <path d="M8 42c0-7.732 6.268-14 14-14h1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      <circle cx="36" cy="36" r="9" stroke="currentColor" strokeWidth="1.8" opacity="0.5"/>
+      <line x1="43" y1="43" x2="47" y2="47" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="36" cy="32" r="1.5" fill="currentColor" opacity="0.4"/>
+      <circle cx="32" cy="38" r="1.5" fill="currentColor" opacity="0.4"/>
+      <circle cx="40" cy="38" r="1.5" fill="currentColor" opacity="0.4"/>
+      <line x1="36" y1="33.5" x2="32" y2="36.5" stroke="currentColor" strokeWidth="0.8" opacity="0.3"/>
+      <line x1="36" y1="33.5" x2="40" y2="36.5" stroke="currentColor" strokeWidth="0.8" opacity="0.3"/>
     </svg>
   );
 }
 
 function VacanciesIcon() {
   return (
-    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-      <rect x="8" y="22" width="36" height="23" rx="5" fill="rgba(45,74,45,0.1)" stroke="#2D4A2D" strokeWidth="1.5" />
-      <path d="M20 22v-4a2 2 0 012-2h8a2 2 0 012 2v4" stroke="#2D4A2D" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="8" y1="33" x2="44" y2="33" stroke="#2D4A2D" strokeWidth="1.25" opacity="0.4" />
-      <path d="M36 20 Q41 14 47 20" stroke="#2D4A2D" strokeWidth="1.25" fill="none" opacity="0.3" strokeLinecap="round" />
-      <path d="M38 17 Q43 9  49 17" stroke="#2D4A2D" strokeWidth="1.25" fill="none" opacity="0.18" strokeLinecap="round" />
-      <circle cx="36" cy="20" r="2" fill="#2D4A2D" opacity="0.5" />
+    <svg className="tile-icon" width="52" height="52" viewBox="0 0 52 52" fill="none">
+      <rect x="10" y="16" width="32" height="26" rx="4" stroke="currentColor" strokeWidth="1.8"/>
+      <path d="M18 16V12a2 2 0 012-2h12a2 2 0 012 2v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      <circle cx="26" cy="29" r="7" stroke="currentColor" strokeWidth="1.4" opacity="0.45"/>
+      <circle cx="26" cy="29" r="4" stroke="currentColor" strokeWidth="1.2" opacity="0.35"/>
+      <circle cx="26" cy="29" r="1.5" fill="currentColor" opacity="0.6"/>
+      <line x1="26" y1="22" x2="26" y2="20" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3"/>
+      <line x1="26" y1="36" x2="26" y2="38" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3"/>
+      <line x1="19" y1="29" x2="17" y2="29" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3"/>
+      <line x1="33" y1="29" x2="35" y2="29" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.3"/>
     </svg>
   );
 }
+
+// Small icons for continue pills — matching HTML prototype types
+function PillPersonIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <circle cx="5" cy="4" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M1 10c0-2.2 1.8-4 4-4h1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function PillBriefcaseIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <rect x="2" y="4" width="8" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M4 4V3a1 1 0 011-1h2a1 1 0 011 1v1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function PillBuildingIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <rect x="1" y="3" width="10" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+      <line x1="4" y1="7" x2="4" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <line x1="6" y1="7" x2="6" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      <line x1="8" y1="7" x2="8" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+const PILL_ICON: Record<RecentItem["type"], React.ReactNode> = {
+  candidate: <PillPersonIcon />,
+  vacancy:   <PillBriefcaseIcon />,
+  client:    <PillBuildingIcon />,
+};
 
 // ── Spotlight Card ─────────────────────────────────────────────────────────────
 
@@ -94,12 +128,16 @@ function SpotlightCard({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [spot, setSpot] = useState({ x: 0, y: 0 });
+  // Percentage-based coords, matching HTML prototype's approach
+  const [spot, setSpot] = useState({ x: "50", y: "50" });
 
   const onMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     const r = cardRef.current.getBoundingClientRect();
-    setSpot({ x: e.clientX - r.left, y: e.clientY - r.top });
+    setSpot({
+      x: ((e.clientX - r.left) / r.width  * 100).toFixed(1),
+      y: ((e.clientY - r.top)  / r.height * 100).toFixed(1),
+    });
   }, []);
 
   return (
@@ -115,10 +153,6 @@ function SpotlightCard({
           ? { duration: 0.2, ease: "easeIn" }
           : { duration: 0.5, delay, ease: "easeOut" }
       }
-      style={{
-        // whileHover has its own spring-feel transition below
-        ...(isExiting ? {} : {}),
-      }}
       onMouseMove={onMouseMove}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
@@ -126,66 +160,58 @@ function SpotlightCard({
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
+      style={{ color: "#2D4A2D" }}  // currentColor base for SVGs
     >
-      {/* Outer shell — CSS transitions for colour/shadow, Motion for transform */}
       <div
         style={{
-          width: 320,
-          height: 220,
+          width: 300,
+          minHeight: 210,
           position: "relative",
           overflow: "hidden",
           cursor: "pointer",
           borderRadius: 20,
+          padding: "28px 24px 22px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
           background: isHovered ? "#FAFAF9" : "#FFFFFF",
           border: `1px solid ${isHovered ? "rgba(45,74,45,0.4)" : "rgba(45,74,45,0.15)"}`,
           boxShadow: isHovered
             ? "0 20px 40px rgba(45,74,45,0.15)"
             : "0 2px 8px rgba(45,74,45,0.06)",
-          transition: "border-color 200ms, background 200ms, box-shadow 200ms",
+          transition: "border-color 200ms cubic-bezier(0.34,1.56,0.64,1), background 200ms ease, box-shadow 200ms cubic-bezier(0.34,1.56,0.64,1)",
         }}
       >
-        {/* Spotlight glow — follows cursor */}
+        {/* Spotlight — opacity-only transition, gradient always set at last position */}
         <div
           style={{
             position: "absolute",
             inset: 0,
+            borderRadius: 20,
             pointerEvents: "none",
-            zIndex: 0,
-            background: isHovered
-              ? `radial-gradient(220px circle at ${spot.x}px ${spot.y}px, rgba(45,74,45,0.07), transparent 80%)`
-              : "transparent",
+            background: `radial-gradient(circle 140px at ${spot.x}% ${spot.y}%, rgba(45,74,45,0.09) 0%, transparent 70%)`,
+            opacity: isHovered ? 1 : 0,
+            transition: "opacity 300ms ease",
           }}
         />
 
-        {/* Left accent line — slides in on hover */}
-        <motion.div
+        {/* Left accent line */}
+        <div
           style={{
             position: "absolute",
             left: 0,
-            top: 16,
-            bottom: 16,
+            top: 20,
+            bottom: 20,
             width: 3,
-            borderRadius: 99,
             background: "#2D4A2D",
-            originY: 0.5,
-            zIndex: 1,
+            borderRadius: "0 2px 2px 0",
+            opacity: isHovered ? 1 : 0,
+            transition: "opacity 180ms ease",
           }}
-          initial={{ scaleY: 0, opacity: 0 }}
-          animate={isHovered ? { scaleY: 1, opacity: 1 } : { scaleY: 0, opacity: 0 }}
-          transition={{ duration: 0.15 }}
         />
 
-        {/* Content */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            padding: "20px 24px 22px",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
+        {/* Content (sits above spotlight) */}
+        <div style={{ position: "relative", zIndex: 1, display: "contents" }}>
           {children}
         </div>
       </div>
@@ -264,9 +290,9 @@ export default function Dashboard() {
 
   // ── Derived stats ──────────────────────────────────────────────────────────
 
-  const activeVacanciesCount   = vacancies.filter((v) => v.status === "open").length;
-  const activeCandidatesCount  = candidates.filter((c) => c.status === "active").length;
-  const followUpsCount         = followUps.length;
+  const activeVacanciesCount  = vacancies.filter((v) => v.status === "open").length;
+  const activeCandidatesCount = candidates.filter((c) => c.status === "active").length;
+  const followUpsCount        = followUps.length;
 
   const monthStart = new Date();
   monthStart.setDate(1);
@@ -338,11 +364,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-full">
-      {/* Global cursor-blink keyframe */}
       <style>{`
         @keyframes cursor-blink {
-          0%, 100% { opacity: 0.55 }
-          50%       { opacity: 0 }
+          0%, 100% { opacity: 0.7; }
+          50%       { opacity: 0; }
         }
       `}</style>
 
@@ -357,7 +382,7 @@ export default function Dashboard() {
             exit={{ opacity: 0, x: -30 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Dot grid — fixed behind content */}
+            {/* Dot grid — fixed, behind everything */}
             <div
               style={{
                 position: "fixed",
@@ -370,52 +395,61 @@ export default function Dashboard() {
               }}
             />
 
-            <div style={{ position: "relative", zIndex: 1 }}>
-
+            <div
+              style={{
+                position: "relative",
+                zIndex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               {/* ── Heading ── */}
               <motion.div
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -10 : 0 }}
                 transition={{ duration: isExiting ? 0.2 : 0.4, ease: "easeOut" }}
-                className="text-center mb-10 mt-2"
+                style={{ textAlign: "center", marginBottom: 36 }}
               >
-                <h1
+                <div
                   style={{
-                    fontSize: 32,
+                    fontSize: 28,
                     fontWeight: 600,
                     color: "#2D4A2D",
                     lineHeight: 1.2,
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 10,
+                    gap: 2,
                   }}
                 >
                   What&apos;s your focus today?
-                  {/* Terminal cursor */}
                   <span
                     style={{
                       display: "inline-block",
                       width: 2,
-                      height: 26,
+                      height: 28,
                       background: "#2D4A2D",
+                      marginLeft: 4,
                       borderRadius: 1,
                       verticalAlign: "middle",
-                      animation: "cursor-blink 1.2s step-end infinite",
+                      animation: "cursor-blink 1.1s step-end infinite",
                     }}
                   />
-                </h1>
-                <p style={{ color: "#6B7280", fontSize: 14, marginTop: 6 }}>{dateStr}</p>
+                </div>
+                <div style={{ fontSize: 13, color: "#6B7280", marginTop: 6, letterSpacing: "0.2px" }}>
+                  {dateStr}
+                </div>
               </motion.div>
 
               {/* ── Tiles ── */}
               <div
                 style={{
                   display: "flex",
+                  gap: 28,
+                  alignItems: "stretch",
                   flexWrap: "wrap",
-                  alignItems: "center",
                   justifyContent: "center",
-                  gap: 32,
-                  marginBottom: 40,
+                  marginBottom: 32,
                 }}
               >
                 {/* Find Candidates → /sourcing */}
@@ -425,56 +459,36 @@ export default function Dashboard() {
                   isExiting={isExiting}
                 >
                   <CandidatesIcon />
-                  <div style={{ marginTop: 8, marginBottom: 8 }}>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "#2D4A2D",
-                        background: "#a8e6cf",
-                        padding: "2px 8px",
-                        borderRadius: 99,
-                        letterSpacing: "0.3px",
-                      }}
-                    >
-                      AI-Powered
-                    </span>
+                  {/* Badge */}
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#a8e6cf", color: "#2D4A2D", fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 999, width: "fit-content", letterSpacing: "0.1px" }}>
+                    <span style={{ width: 5, height: 5, background: "#2D4A2D", borderRadius: "50%", opacity: 0.6, flexShrink: 0 }} />
+                    AI-Powered
                   </div>
-                  <h2
-                    style={{
-                      fontSize: 22,
-                      fontWeight: 600,
-                      color: "#2D4A2D",
-                      lineHeight: 1.2,
-                      marginBottom: 4,
-                    }}
-                  >
+                  <div style={{ fontSize: 20, fontWeight: 600, color: "#2D4A2D", lineHeight: 1.2 }}>
                     Find Candidates
-                  </h2>
-                  <p
-                    style={{
-                      fontSize: 13,
-                      color: "#6B7280",
-                      lineHeight: 1.5,
-                      flex: 1,
-                    }}
-                  >
-                    Search, source and engage<br />the right talent for any role
-                  </p>
+                  </div>
+                  <div style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6, flex: 1 }}>
+                    Search, source and engage the right talent for any role
+                  </div>
+                  {/* Arrow — gap & line grow via group-hover */}
                   <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
-                      color: "#2D4A2D",
-                      fontSize: 13,
-                      fontWeight: 500,
-                    }}
+                    className="flex items-center text-[rgba(45,74,45,0.5)] group-hover:text-[#2D4A2D] transition-colors duration-200"
+                    style={{ gap: 6, fontSize: 12, fontWeight: 500, marginTop: 4 }}
                   >
-                    <ArrowRight
-                      size={14}
-                      className="transition-transform duration-150 group-hover:translate-x-1"
+                    <span>Explore talent</span>
+                    <span
+                      className="h-px bg-current opacity-40 transition-all duration-200"
+                      style={{ flex: "none", width: 32 }}
+                      ref={(el) => {
+                        if (el) {
+                          el.closest(".group")?.addEventListener("mouseenter", () => { el.style.width = "44px"; });
+                          el.closest(".group")?.addEventListener("mouseleave", () => { el.style.width = "32px"; });
+                        }
+                      }}
                     />
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </div>
                 </SpotlightCard>
 
@@ -485,56 +499,36 @@ export default function Dashboard() {
                   isExiting={isExiting}
                 >
                   <VacanciesIcon />
-                  <div style={{ marginTop: 8, marginBottom: 8 }}>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "#2D4A2D",
-                        background: "#a8e6cf",
-                        padding: "2px 8px",
-                        borderRadius: 99,
-                        letterSpacing: "0.3px",
-                      }}
-                    >
-                      Live Market Data
-                    </span>
+                  {/* Badge */}
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#a8e6cf", color: "#2D4A2D", fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 999, width: "fit-content", letterSpacing: "0.1px" }}>
+                    <span style={{ width: 5, height: 5, background: "#2D4A2D", borderRadius: "50%", opacity: 0.6, flexShrink: 0 }} />
+                    Live Market Data
                   </div>
-                  <h2
-                    style={{
-                      fontSize: 22,
-                      fontWeight: 600,
-                      color: "#2D4A2D",
-                      lineHeight: 1.2,
-                      marginBottom: 4,
-                    }}
-                  >
+                  <div style={{ fontSize: 20, fontWeight: 600, color: "#2D4A2D", lineHeight: 1.2 }}>
                     Find Vacancies
-                  </h2>
-                  <p
-                    style={{
-                      fontSize: 13,
-                      color: "#6B7280",
-                      lineHeight: 1.5,
-                      flex: 1,
-                    }}
-                  >
-                    Discover open roles and<br />build your client pipeline
-                  </p>
+                  </div>
+                  <div style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6, flex: 1 }}>
+                    Discover open roles and build your client pipeline
+                  </div>
+                  {/* Arrow */}
                   <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
-                      color: "#2D4A2D",
-                      fontSize: 13,
-                      fontWeight: 500,
-                    }}
+                    className="flex items-center text-[rgba(45,74,45,0.5)] group-hover:text-[#2D4A2D] transition-colors duration-200"
+                    style={{ gap: 6, fontSize: 12, fontWeight: 500, marginTop: 4 }}
                   >
-                    <ArrowRight
-                      size={14}
-                      className="transition-transform duration-150 group-hover:translate-x-1"
+                    <span>Browse roles</span>
+                    <span
+                      className="h-px bg-current opacity-40 transition-all duration-200"
+                      style={{ flex: "none", width: 32 }}
+                      ref={(el) => {
+                        if (el) {
+                          el.closest(".group")?.addEventListener("mouseenter", () => { el.style.width = "44px"; });
+                          el.closest(".group")?.addEventListener("mouseleave", () => { el.style.width = "32px"; });
+                        }
+                      }}
                     />
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </div>
                 </SpotlightCard>
               </div>
@@ -544,151 +538,90 @@ export default function Dashboard() {
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -8 : 0 }}
-                  transition={{
-                    duration: isExiting ? 0.18 : 0.5,
-                    delay: isExiting ? 0 : 0.5,
-                    ease: "easeOut",
-                  }}
-                  className="mb-8 max-w-[700px] mx-auto"
+                  transition={{ duration: isExiting ? 0.18 : 0.5, delay: isExiting ? 0 : 0.5, ease: "easeOut" }}
+                  style={{ textAlign: "center", width: "100%", maxWidth: 660, marginBottom: 28 }}
                 >
-                  <p
+                  <div
                     style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
+                      fontSize: 10,
+                      fontWeight: 500,
                       letterSpacing: "1.5px",
                       color: "#6B7280",
-                      marginBottom: 12,
-                      textAlign: "center",
+                      textTransform: "uppercase",
+                      marginBottom: 10,
                     }}
                   >
                     Continue where you left off
-                  </p>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 8,
-                      justifyContent: "center",
-                    }}
-                  >
-                    {recentItems.map((item) => {
-                      const Icon = RECENT_ICON[item.type];
-                      return (
-                        <Link
-                          key={`${item.type}-${item.id}`}
-                          href={item.href}
-                          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
-                          style={{
-                            background: "#FFFFFF",
-                            border: "1px solid rgba(45,74,45,0.2)",
-                            color: "#2D4A2D",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "#2D4A2D";
-                            e.currentTarget.style.color = "#FFFFFF";
-                            e.currentTarget.style.borderColor = "#2D4A2D";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "#FFFFFF";
-                            e.currentTarget.style.color = "#2D4A2D";
-                            e.currentTarget.style.borderColor = "rgba(45,74,45,0.2)";
-                          }}
-                        >
-                          <Icon size={13} />
-                          <span>{item.name}</span>
-                          <span
-                            style={{
-                              fontSize: 11,
-                              opacity: 0.55,
-                              textTransform: "capitalize",
-                            }}
-                          >
-                            {item.type}
-                          </span>
-                        </Link>
-                      );
-                    })}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                    {recentItems.map((item) => (
+                      <Link
+                        key={`${item.type}-${item.id}`}
+                        href={item.href}
+                        className="flex items-center gap-[7px] transition-all duration-150"
+                        style={{
+                          background: "white",
+                          border: "1px solid rgba(45,74,45,0.2)",
+                          borderRadius: 999,
+                          padding: "7px 14px",
+                          fontSize: 12,
+                          color: "#2D4A2D",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#2D4A2D";
+                          e.currentTarget.style.color = "white";
+                          e.currentTarget.style.borderColor = "#2D4A2D";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "white";
+                          e.currentTarget.style.color = "#2D4A2D";
+                          e.currentTarget.style.borderColor = "rgba(45,74,45,0.2)";
+                        }}
+                      >
+                        {PILL_ICON[item.type]}
+                        {item.name}
+                        <span style={{ fontSize: 10, opacity: 0.6, marginLeft: 2, textTransform: "capitalize" }}>
+                          · {item.type}
+                        </span>
+                      </Link>
+                    ))}
                   </div>
                 </motion.div>
               )}
 
-              {/* ── Quick stats row ── */}
+              {/* ── Stats row — bare, separated by dividers ── */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isExiting ? 0 : 1 }}
-                transition={{
-                  duration: isExiting ? 0.18 : 0.5,
-                  delay: isExiting ? 0 : 0.4,
-                  ease: "easeOut",
-                }}
-                className="max-w-[672px] mx-auto"
+                transition={{ duration: isExiting ? 0.18 : 0.5, delay: isExiting ? 0 : 0.6, ease: "easeOut" }}
+                style={{ display: "flex", gap: 0 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "stretch",
-                    background: "#FFFFFF",
-                    borderRadius: 16,
-                    border: "1px solid rgba(45,74,45,0.08)",
-                    overflow: "hidden",
-                  }}
-                >
-                  {(
-                    [
-                      { label: "Active vacancies",  value: activeVacanciesCount,  Icon: Briefcase  },
-                      { label: "Active candidates",  value: activeCandidatesCount, Icon: Users      },
-                      { label: "Follow-ups due",     value: followUpsCount,        Icon: Bell       },
-                      { label: "Revenue this month", value: revenueLabel,          Icon: TrendingUp },
-                    ] as const
-                  ).map((stat, i) => (
-                    <div
-                      key={stat.label}
-                      style={{ display: "flex", alignItems: "stretch", flex: 1 }}
-                    >
-                      {i > 0 && (
-                        <div
-                          style={{
-                            width: 1,
-                            background: "rgba(45,74,45,0.08)",
-                            flexShrink: 0,
-                          }}
-                        />
-                      )}
-                      <div
-                        style={{
-                          flex: 1,
-                          padding: "14px 10px",
-                          textAlign: "center",
-                        }}
-                      >
-                        <stat.Icon
-                          size={13}
-                          style={{ color: "#6B7280", margin: "0 auto 5px" }}
-                        />
-                        <p
-                          style={{
-                            fontSize: 20,
-                            fontWeight: 600,
-                            color: "#2D4A2D",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {stat.value}
-                        </p>
-                        <p
-                          style={{
-                            fontSize: 11,
-                            color: "#6B7280",
-                            marginTop: 4,
-                            lineHeight: 1.3,
-                          }}
-                        >
-                          {stat.label}
-                        </p>
-                      </div>
+                {(
+                  [
+                    { label: "Active vacancies",  value: activeVacanciesCount,  Icon: Briefcase  },
+                    { label: "Active candidates",  value: activeCandidatesCount, Icon: Users      },
+                    { label: "Follow-ups due",     value: followUpsCount,        Icon: Bell       },
+                    { label: "Revenue this month", value: revenueLabel,          Icon: TrendingUp },
+                  ] as const
+                ).map((stat, i) => (
+                  <div
+                    key={stat.label}
+                    style={{
+                      padding: "0 20px",
+                      textAlign: "center",
+                      borderRight: i < 3 ? "1px solid rgba(45,74,45,0.12)" : "none",
+                      ...(i === 0 ? { paddingLeft: 0 } : {}),
+                    }}
+                  >
+                    <div style={{ fontSize: 18, fontWeight: 600, color: "#2D4A2D", lineHeight: 1.1 }}>
+                      {stat.value}
                     </div>
-                  ))}
-                </div>
+                    <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
               </motion.div>
 
             </div>
@@ -873,10 +806,10 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-2 mb-6">
               {(
                 [
-                  { key: "all",      label: "All"        },
-                  { key: "open",     label: "Active"     },
-                  { key: "on-hold",  label: "Prospected" },
-                  { key: "closed",   label: "Filled"     },
+                  { key: "all",     label: "All"        },
+                  { key: "open",    label: "Active"     },
+                  { key: "on-hold", label: "Prospected" },
+                  { key: "closed",  label: "Filled"     },
                 ] as const
               ).map((f) => (
                 <FilterPill key={f.key} active={vacFilter === f.key} onClick={() => setVacFilter(f.key)}>
