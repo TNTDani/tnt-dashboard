@@ -13,7 +13,7 @@ import {
   LayoutDashboard, FileText, Users, Briefcase, UserCircle,
   Building2, Calculator, Mail, ListChecks, Trophy, Inbox,
   BarChart2, LogOut, Radar, Clock, CalendarDays, ChevronLeft,
-  Zap, ChevronDown,
+  Zap, ChevronDown, Shield,
 } from "lucide-react";
 
 // ── Nav groups — workflow-oriented ────────────────────────────────────────────
@@ -397,6 +397,46 @@ function SidebarContent({
             />
           ))}
         </div>
+
+        {/* Workspace group — owners and admins only */}
+        {(session?.user?.role === "owner" || session?.user?.role === "admin") && (
+          <div className={collapsed ? "px-2 mt-1" : "px-3 mt-1"}>
+            <div className="mb-3">
+              <AnimatePresence initial={false}>
+                {!collapsed ? (
+                  <motion.p
+                    key="workspace-label"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="text-[10px] font-semibold uppercase tracking-[0.12em] px-3 mb-1"
+                    style={{ color: "#8a9a90" }}
+                  >
+                    Workspace
+                  </motion.p>
+                ) : (
+                  <motion.div
+                    key="workspace-divider"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="mx-3 mb-1.5 h-px"
+                    style={{ background: "rgba(20,33,26,0.08)" }}
+                  />
+                )}
+              </AnimatePresence>
+              <NavLink
+                href="/team"
+                icon={Shield}
+                label="Team"
+                exact={true}
+                collapsed={collapsed}
+                onNavigate={onNavigate}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Recent items */}
         <AnimatePresence initial={false}>

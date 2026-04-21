@@ -18,7 +18,7 @@ const handler = NextAuth({
         // Look up user in agency_users table
         const { data: agencyUser, error } = await supabaseAdmin
           .from("agency_users")
-          .select("id, agency_id, email, password_hash, name")
+          .select("id, agency_id, email, password_hash, name, role")
           .eq("email", credentials.email)
           .single();
 
@@ -35,6 +35,7 @@ const handler = NextAuth({
           email:    agencyUser.email,
           name:     agencyUser.name,
           agencyId: agencyUser.agency_id,
+          role:     agencyUser.role,
           remember: credentials.remember === "true",
         };
       },
@@ -51,6 +52,7 @@ const handler = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.agencyId = user.agencyId;
+        token.role     = user.role;
         token.remember = (user as { remember?: boolean }).remember ?? false;
         const maxAge = token.remember ? 7 * 24 * 60 * 60 : 24 * 60 * 60;
         token.exp = Math.floor(Date.now() / 1000) + maxAge;
@@ -60,6 +62,11 @@ const handler = NextAuth({
     session({ session, token }) {
       if (session.user) {
         session.user.agencyId = token.agencyId as string;
+        // NOTE: role is baked into the JWT at login and goes stale if the DB role
+        // is changed. This is a known limitation — the user must re-login for a
+        // role change to appear in session.user.role. All API routes re-check role
+        // directly from agency_users on every request, so enforcement is not affected.
+        session.user.role = token.role as string;
       }
       return session;
     },

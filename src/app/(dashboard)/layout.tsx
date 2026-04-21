@@ -80,6 +80,7 @@ function usePageTitle() {
     "/sourcing": "Sourcing",
     "/vacancy-monitor": "Vacancy Monitor",
     "/reports": "Reports",
+    "/team": "Team",
   };
   if (map[path]) return map[path];
   const base = "/" + path.split("/")[1];
