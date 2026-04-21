@@ -677,6 +677,7 @@ async function fetchGreenhouse(): Promise<FetchResult> {
     absolute_url: string;
     location: { name: string };
     departments?: { name: string }[];
+    content?: string;
   };
 
   try {
@@ -714,7 +715,7 @@ async function fetchGreenhouse(): Promise<FetchResult> {
           source,
           location,
           postedAt: j.updated_at ? new Date(j.updated_at).toISOString() : new Date().toISOString(),
-          description: detectCategory(`${j.title} ${dept}`) ? "" : "",
+          description: stripHtml(j.content || ""),
           url: j.absolute_url || `https://boards.greenhouse.io/${co}`,
           category: detectCategory(`${j.title} ${dept}`),
         });

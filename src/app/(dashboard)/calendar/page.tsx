@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { db } from '@/lib/db';
+import { useSession } from 'next-auth/react';
+import { db, initDb } from '@/lib/db';
 import { storage } from '@/lib/storage';
 import { CalendarEvent, CalendarEventType, EVENT_COLORS, CandidateProfile, Vacancy, Client } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -288,6 +289,8 @@ function MonthView({
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function CalendarPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const agencyId = session?.user?.agencyId;
   const [view, setView] = useState<'week' | 'month'>('week');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -301,8 +304,10 @@ export default function CalendarPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
-  // Load data
+  // Load data — wait for agencyId so requireAgencyId() doesn't throw
   useEffect(() => {
+    if (!agencyId) return;
+    initDb(agencyId);
     Promise.all([
       db.getCalendarEvents(),
       db.getCandidateProfiles(),
@@ -313,9 +318,9 @@ export default function CalendarPage() {
       setCandidates(profs);
       setVacancies(vacs);
       setClients(clts);
-    });
+    }).catch(() => {});
     setCalendarConnected(!!storage.getCalendarToken());
-  }, []);
+  }, [agencyId]);
 
   // Read URL params for pre-fill (client-side only)
   useEffect(() => {

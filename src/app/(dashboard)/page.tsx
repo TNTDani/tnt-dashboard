@@ -520,7 +520,7 @@ export default function Dashboard() {
                 position: "fixed",
                 inset: 0,
                 backgroundImage:
-                  "radial-gradient(circle, rgba(45,74,45,0.08) 1px, transparent 1px)",
+                  "radial-gradient(circle, rgba(20,33,26,0.06) 1px, transparent 1px)",
                 backgroundSize: "24px 24px",
                 pointerEvents: "none",
                 zIndex: 0,
@@ -550,10 +550,10 @@ export default function Dashboard() {
                 <div
                   style={{
                     fontSize: 30,
-                    fontWeight: 400,
-                    color: "#2D4A2D",
+                    fontWeight: 500,
+                    color: "#0f1711",
                     lineHeight: 1.2,
-                    fontFamily: "var(--font-dm-serif, serif)",
+                    fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 2,

@@ -19,6 +19,7 @@ import {
 import Timeline from '@/components/Timeline';
 import EmailComposer from '@/components/EmailComposer';
 import AddToPipelineModal from '@/components/AddToPipelineModal';
+import WindowChrome from '@/components/WindowChrome';
 import { motion, AnimatePresence } from 'motion/react';
 
 const STATUS_BADGE: Record<string, string> = {
@@ -459,18 +460,27 @@ export default function CandidateDetailPage() {
   const initials = `${candidate.firstName.charAt(0)}${candidate.lastName.charAt(0)}`.toUpperCase();
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto">
-      {/* Back nav */}
-      <motion.button
-        initial={{ opacity: 0, x: -6 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.18 }}
-        onClick={() => router.push('/candidates')}
-        className="flex items-center gap-1.5 text-[#6B7280] hover:text-[#2D4A2D] text-sm mb-5 transition-colors"
-      >
-        <ArrowLeft size={15} />
-        Candidates
-      </motion.button>
+    <div className="max-w-7xl mx-auto">
+      {/* Window chrome breadcrumb */}
+      <div className="px-4 md:px-8 pt-4 md:pt-6 pb-0">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ff5f56" }} />
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ffbd2e" }} />
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#27c93f" }} />
+          </div>
+          <div style={{ width: 1, height: 14, background: "rgba(20,33,26,0.1)" }} />
+          <button
+            onClick={() => router.push('/candidates')}
+            style={{ fontSize: 11, color: "#8a9a90", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          >
+            Candidates
+          </button>
+          <span style={{ fontSize: 11, color: "rgba(20,33,26,0.25)" }}>·</span>
+          <span style={{ fontSize: 11, color: "#2a3a30", fontWeight: 500 }}>{fullName}</span>
+        </div>
+      </div>
+      <div className="p-4 md:p-8 pt-0">
 
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -479,7 +489,7 @@ export default function CandidateDetailPage() {
         className="space-y-5"
       >
         {/* ── HEADER CARD ─────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-[rgba(45,74,45,0.12)] p-6">
+        <div className="bg-white rounded-xl border border-[rgba(20,33,26,0.08)] p-6">
           <div className="flex flex-col sm:flex-row sm:items-start gap-5">
             {/* Avatar + info */}
             <div className="flex items-start gap-4 flex-1 min-w-0">
@@ -1363,6 +1373,7 @@ export default function CandidateDetailPage() {
           }}
         />
       )}
+      </div>{/* end p-4/p-8 */}
     </div>
   );
 }

@@ -5,31 +5,48 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Orchard brand palette */
+  /* Orchard design system — v3 (aligned to orchard.works marketing site) */
   --color-brand:          #2D4A2D;
   --color-brand-hover:    #3D6B3D;
-  --color-body-text:      #3A5C3A;
-  --color-bg:             #EDEDEB;
-  --color-surface:        #F7F7F5;
-  --color-card:           #FFFFFF;
-  --color-border:         rgba(45, 74, 45, 0.12);
+  --color-moss:           #2D4A2D;
+  --color-moss-hover:     #3D6B3D;
+  --color-moss-soft:      rgba(45, 74, 45, 0.06);
+
+  /* Text hierarchy */
+  --color-ink:            #0f1711;
+  --color-ink-2:          #2a3a30;
+  --color-ink-3:          #5a6a60;
+  --color-ink-4:          #8a9a90;
+
+  /* Backgrounds */
+  --color-bg:             #fafafa;
+  --color-surface:        #ffffff;
+  --color-card:           #ffffff;
+
+  /* Borders */
+  --color-border:         rgba(20, 33, 26, 0.08);
+  --color-border-strong:  rgba(20, 33, 26, 0.16);
+
+  /* Accents */
   --color-mint:           #a8e6cf;
-  --color-muted:          #6B7280;
   --color-success:        #4CAF50;
   --color-warning:        #F59E0B;
   --color-danger:         #EF4444;
-  --color-sidebar:        #1D2B1F;
+
+  /* Sidebar — now white, not dark green */
+  --color-sidebar:        #ffffff;
 
   /* Legacy aliases — prevents hardcoded class breakage */
-  --color-navy:           #EDEDEB;
-  --color-navy-light:     #F7F7F5;
-  --color-navy-card:      #FFFFFF;
-  --color-navy-border:    rgba(45, 74, 45, 0.12);
+  --color-body-text:      #2a3a30;
+  --color-muted:          #5a6a60;
+  --color-navy:           #fafafa;
+  --color-navy-light:     #ffffff;
+  --color-navy-card:      #ffffff;
+  --color-navy-border:    rgba(20, 33, 26, 0.08);
   --color-purple:         #2D4A2D;
   --color-purple-light:   #3D6B3D;
   --color-purple-hover:   #3D6B3D;
-  --color-purple-dim:     rgba(45, 74, 45, 0.08);
-  --color-ink:            #2D4A2D;
+  --color-purple-dim:     rgba(45, 74, 45, 0.06);
   --font-heading:          var(--font-inter), Inter, system-ui, sans-serif;
   --font-sans:          var(--font-inter), Inter, system-ui, sans-serif;
   --color-sidebar-ring:          var(--sidebar-ring);
@@ -71,8 +88,8 @@
 * { box-sizing: border-box; }
 
 body {
-  background: #EDEDEB;
-  color: #3A5C3A;
+  background: #fafafa;
+  color: #2a3a30;
   font-family: var(--font-inter), Inter, system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.6;
@@ -97,39 +114,40 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 :root {
-  /* Orchard palette mapped to shadcn tokens */
-  --background:          #EDEDEB;
-  --foreground:          #3A5C3A;
-  --card:                #FFFFFF;
-  --card-foreground:     #2D4A2D;
-  --popover:             #FFFFFF;
-  --popover-foreground:  #2D4A2D;
+  /* Orchard v3 — shadcn tokens */
+  --background:          #fafafa;
+  --foreground:          #0f1711;
+  --card:                #ffffff;
+  --card-foreground:     #0f1711;
+  --popover:             #ffffff;
+  --popover-foreground:  #0f1711;
   --primary:             #2D4A2D;
   --primary-foreground:  #FFFFFF;
-  --secondary:           #F7F7F5;
-  --secondary-foreground: #2D4A2D;
-  --muted:               #F7F7F5;
-  --muted-foreground:    #6B7280;
+  --secondary:           #f4f4f2;
+  --secondary-foreground: #2a3a30;
+  --muted:               #f4f4f2;
+  --muted-foreground:    #5a6a60;
   --accent:              rgba(45, 74, 45, 0.06);
   --accent-foreground:   #2D4A2D;
   --destructive:         #EF4444;
-  --border:              rgba(45, 74, 45, 0.12);
-  --input:               rgba(45, 74, 45, 0.12);
-  --ring:                rgba(45, 74, 45, 0.5);
+  --border:              rgba(20, 33, 26, 0.08);
+  --input:               rgba(20, 33, 26, 0.08);
+  --ring:                rgba(45, 74, 45, 0.4);
   --chart-1:             #2D4A2D;
   --chart-2:             #3D6B3D;
   --chart-3:             #a8e6cf;
   --chart-4:             #4CAF50;
   --chart-5:             #F59E0B;
   --radius:              0.625rem;
-  --sidebar:             #1D2B1F;
-  --sidebar-foreground:  #FFFFFF;
-  --sidebar-primary:     #3D6B3D;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:      rgba(255, 255, 255, 0.08);
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border:      rgba(255, 255, 255, 0.1);
-  --sidebar-ring:        rgba(255, 255, 255, 0.3);
+  /* Sidebar — white, with moss accents */
+  --sidebar:             #ffffff;
+  --sidebar-foreground:  #2a3a30;
+  --sidebar-primary:     #2D4A2D;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:      rgba(45, 74, 45, 0.06);
+  --sidebar-accent-foreground: #2D4A2D;
+  --sidebar-border:      rgba(20, 33, 26, 0.08);
+  --sidebar-ring:        rgba(45, 74, 45, 0.3);
 }
 
 .dark {

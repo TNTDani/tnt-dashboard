@@ -5,57 +5,108 @@ import { supabaseAdmin } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
   try {
-    const { agencyName, name, email, password } = await req.json();
+    const { agencyName, inviteCode, name, email, password } = await req.json();
 
-    if (!agencyName || !name || !email || !password) {
+    if (!name || !email || !password) {
       return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
-
+    if (!agencyName && !inviteCode) {
+      return NextResponse.json(
+        { error: "Provide either an agency name (create) or an invite code (join)." },
+        { status: 400 },
+      );
+    }
     if (password.length < 8) {
       return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
     }
 
-    // Check if email already registered
+    const normalizedEmail = email.trim().toLowerCase();
+
     const { data: existing } = await supabaseAdmin
       .from("agency_users")
       .select("id")
-      .eq("email", email)
-      .single();
+      .eq("email", normalizedEmail)
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({ error: "Email already registered." }, { status: 409 });
     }
 
-    // Find or create agency
-    let agencyId: string;
-    const { data: existingAgency } = await supabaseAdmin
-      .from("agencies")
-      .select("id")
-      .ilike("name", agencyName.trim())
-      .single();
+    const passwordHash = await bcrypt.hash(password, 12);
+    const userId = uuid();
 
-    if (existingAgency) {
-      agencyId = existingAgency.id;
+    if (inviteCode) {
+      // ── Join existing agency via invite code ──────────────────────────────
+      const { data: invite } = await supabaseAdmin
+        .from("invite_codes")
+        .select("agency_id, role, expires_at, used_at")
+        .eq("code", inviteCode.trim())
+        .maybeSingle();
+
+      if (!invite) {
+        return NextResponse.json({ error: "Invalid invite code." }, { status: 400 });
+      }
+      if (invite.used_at) {
+        return NextResponse.json({ error: "Invite code has already been used." }, { status: 400 });
+      }
+      if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
+        return NextResponse.json({ error: "Invite code has expired." }, { status: 400 });
+      }
+
+      // Write order matters:
+      // 1) insert users       — stable identity row; FK anchor for the audit trail
+      // 2) insert agency_users — membership record; if this fails, the code stays
+      //                         usable and the orphan users row is recoverable
+      // 3) mark code used     — only after membership succeeds; reversing steps 2
+      //                         and 3 would burn the invite on a failed insert with
+      //                         no way to recover it
+      const { error: userErr } = await supabaseAdmin
+        .from("users")
+        .insert({ id: userId, email: normalizedEmail });
+      if (userErr) throw userErr;
+
+      const { error: memberErr } = await supabaseAdmin.from("agency_users").insert({
+        id:            userId,
+        agency_id:     invite.agency_id,
+        email:         normalizedEmail,
+        password_hash: passwordHash,
+        name:          name.trim(),
+        role:          invite.role,
+      });
+      if (memberErr) throw memberErr;
+
+      // Guard against a race: only update if the code is still unused.
+      const { error: codeErr } = await supabaseAdmin
+        .from("invite_codes")
+        .update({ used_by_user_id: userId, used_at: new Date().toISOString() })
+        .eq("code", inviteCode.trim())
+        .is("used_at", null);
+      if (codeErr) throw codeErr;
+
     } else {
-      const newId = uuid();
+      // ── Create new agency ─────────────────────────────────────────────────
+      const agencyId = uuid();
+
       const { error: agencyErr } = await supabaseAdmin
         .from("agencies")
-        .insert({ id: newId, name: agencyName.trim(), owner_email: email });
+        .insert({ id: agencyId, name: agencyName.trim(), owner_email: normalizedEmail });
       if (agencyErr) throw agencyErr;
-      agencyId = newId;
-    }
 
-    // Hash password and create user
-    const passwordHash = await bcrypt.hash(password, 12);
-    const { error: userErr } = await supabaseAdmin.from("agency_users").insert({
-      id:            uuid(),
-      agency_id:     agencyId,
-      email:         email.trim().toLowerCase(),
-      password_hash: passwordHash,
-      name:          name.trim(),
-      role:          "member",
-    });
-    if (userErr) throw userErr;
+      const { error: userErr } = await supabaseAdmin
+        .from("users")
+        .insert({ id: userId, email: normalizedEmail });
+      if (userErr) throw userErr;
+
+      const { error: memberErr } = await supabaseAdmin.from("agency_users").insert({
+        id:            userId,
+        agency_id:     agencyId,
+        email:         normalizedEmail,
+        password_hash: passwordHash,
+        name:          name.trim(),
+        role:          "owner",
+      });
+      if (memberErr) throw memberErr;
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

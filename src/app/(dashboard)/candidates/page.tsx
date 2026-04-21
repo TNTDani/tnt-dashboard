@@ -7,7 +7,7 @@ import { CandidateProfile, TimelineEntry } from '@/lib/types';
 import { db, initDb } from '@/lib/db';
 import { geocodePostalCode, haversineDistance } from '@/lib/geocoding';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2, Euro } from 'lucide-react';
+import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2, Euro, ChevronUp, ChevronDown, Mail, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const BRANCHES = ['IT', 'Finance', 'Marketing', 'Sales', 'Engineering', 'Healthcare', 'Legal', 'HR', 'Other'];
@@ -52,6 +52,11 @@ export default function CandidatesPage() {
   const [filterStatus, setFilterStatus] = useState<'all' | CandidateProfile['status']>('all');
   const [filterPostalCode, setFilterPostalCode] = useState('');
   const [filterRadius, setFilterRadius] = useState(25);
+
+  // Sort
+  type SortKey = 'name' | 'branch' | 'location' | 'salary' | 'status';
+  const [sortKey, setSortKey] = useState<SortKey>('name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   // Geocoding
   const [isGeocoding, setIsGeocoding] = useState(false);
@@ -114,24 +119,38 @@ export default function CandidatesPage() {
     }
   }, [filterPostalCode, candidates, geocodeCache]);
 
-  const filtered = candidates.filter(c => {
-    const q = search.toLowerCase();
-    if (q && !`${c.firstName} ${c.lastName}`.toLowerCase().includes(q) &&
-      !c.jobTitle.toLowerCase().includes(q) &&
-      !c.branch.toLowerCase().includes(q)) return false;
+  const filtered = candidates
+    .filter(c => {
+      const q = search.toLowerCase();
+      if (q && !`${c.firstName} ${c.lastName}`.toLowerCase().includes(q) &&
+        !c.jobTitle.toLowerCase().includes(q) &&
+        !c.branch.toLowerCase().includes(q)) return false;
 
-    if (filterBranch && c.branch !== filterBranch) return false;
-    if (filterJobTitle && !c.jobTitle.toLowerCase().includes(filterJobTitle.toLowerCase())) return false;
-    if (filterLocation && !c.location.toLowerCase().includes(filterLocation.toLowerCase())) return false;
-    if (filterStatus !== 'all' && c.status !== filterStatus) return false;
+      if (filterBranch && c.branch !== filterBranch) return false;
+      if (filterJobTitle && !c.jobTitle.toLowerCase().includes(filterJobTitle.toLowerCase())) return false;
+      if (filterLocation && !c.location.toLowerCase().includes(filterLocation.toLowerCase())) return false;
+      if (filterStatus !== 'all' && c.status !== filterStatus) return false;
 
-    if (filterPostalCode.trim() && distanceFilter.size > 0) {
-      const dist = distanceFilter.get(c.id);
-      if (dist === undefined || dist > filterRadius) return false;
-    }
+      if (filterPostalCode.trim() && distanceFilter.size > 0) {
+        const dist = distanceFilter.get(c.id);
+        if (dist === undefined || dist > filterRadius) return false;
+      }
 
-    return true;
-  });
+      return true;
+    })
+    .sort((a, b) => {
+      let av = '';
+      let bv = '';
+      if (sortKey === 'name') { av = `${a.firstName} ${a.lastName}`; bv = `${b.firstName} ${b.lastName}`; }
+      else if (sortKey === 'branch') { av = a.branch ?? ''; bv = b.branch ?? ''; }
+      else if (sortKey === 'location') { av = a.location ?? ''; bv = b.location ?? ''; }
+      else if (sortKey === 'salary') {
+        const diff = (a.salaryExpectation ?? 0) - (b.salaryExpectation ?? 0);
+        return sortDir === 'asc' ? diff : -diff;
+      }
+      else if (sortKey === 'status') { av = a.status; bv = b.status; }
+      return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
 
   const addCandidate = () => {
     if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) return;
@@ -374,114 +393,146 @@ export default function CandidatesPage() {
           <p className="text-[#6B7280] text-sm">Try adjusting your search or clearing the filters.</p>
         </motion.div>
       ) : (
-        /* ── Candidate card grid ── */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((c, i) => {
-            const ss = STATUS_STYLE[c.status] ?? STATUS_STYLE.active;
-            // Use branch as the primary "skill" pill; job title words as extras
-            const pills: string[] = [];
-            if (c.branch) pills.push(c.branch);
-            const extraWords = c.jobTitle
-              ? c.jobTitle.split(/[\s,/]+/).filter(w => w.length > 2 && w.toLowerCase() !== c.branch.toLowerCase())
-              : [];
-            for (const w of extraWords) {
-              if (pills.length < 4) pills.push(w);
-            }
-            const visiblePills = pills.slice(0, 4);
-            const extraCount = Math.max(0, pills.length - 4);
-
-            return (
-              <motion.div
-                key={c.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04, duration: 0.25 }}
-                whileHover={{ y: -3, boxShadow: '0 12px 24px rgba(45,74,45,0.10)' }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => router.push(`/candidates/${c.id}`)}
-                className="bg-white rounded-2xl border border-[rgba(45,74,45,0.12)] p-5 cursor-pointer relative overflow-hidden group transition-colors"
+        /* ── Candidate data table ── */
+        <div className="bg-white rounded-2xl border border-[rgba(20,33,26,0.08)] overflow-hidden">
+          {/* Table header */}
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] items-center px-4 py-2.5 border-b border-[rgba(20,33,26,0.06)] bg-[#fafafa]">
+            {[
+              { key: 'name', label: 'Name' },
+              { key: 'branch', label: 'Sector' },
+              { key: 'location', label: 'Location' },
+              { key: 'salary', label: 'Salary' },
+              { key: 'status', label: 'Status' },
+            ].map(col => (
+              <button
+                key={col.key}
+                onClick={() => {
+                  if (sortKey === col.key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+                  else { setSortKey(col.key as SortKey); setSortDir('asc'); }
+                }}
+                className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#8a9a90] hover:text-[#2D4A2D] transition-colors text-left"
               >
-                {/* Left green accent bar on hover */}
-                <div
-                  className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl transition-all duration-200 group-hover:opacity-100 opacity-0"
-                  style={{ background: '#2D4A2D' }}
-                />
+                {col.label}
+                <span className="flex flex-col gap-px">
+                  <ChevronUp size={9} className={sortKey === col.key && sortDir === 'asc' ? 'text-[#2D4A2D]' : 'text-[rgba(20,33,26,0.2)]'} />
+                  <ChevronDown size={9} className={sortKey === col.key && sortDir === 'desc' ? 'text-[#2D4A2D]' : 'text-[rgba(20,33,26,0.2)]'} />
+                </span>
+              </button>
+            ))}
+            <div />
+          </div>
 
-                {/* Top row: avatar + status */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
+          {/* Table rows */}
+          <div className="divide-y divide-[rgba(20,33,26,0.05)]">
+            {filtered.map((c, i) => {
+              const ss = STATUS_STYLE[c.status] ?? STATUS_STYLE.active;
+              return (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.02, duration: 0.2 }}
+                  onClick={() => router.push(`/candidates/${c.id}`)}
+                  className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] items-center px-4 py-3 cursor-pointer group hover:bg-[rgba(45,74,45,0.02)] transition-colors relative"
+                >
+                  {/* Left moss accent on hover */}
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#2D4A2D] opacity-0 group-hover:opacity-100 transition-opacity rounded-l" />
+
+                  {/* Name + role */}
+                  <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
-                      style={{ background: 'rgba(45,74,45,0.12)', color: '#2D4A2D' }}
+                      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold"
+                      style={{ background: 'rgba(45,74,45,0.10)', color: '#2D4A2D' }}
                     >
                       {c.firstName.charAt(0)}{c.lastName.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[#2D4A2D] text-sm font-semibold leading-tight truncate group-hover:text-[#3D6B3D] transition-colors">
+                      <p className="text-[#0f1711] text-sm font-medium leading-tight truncate group-hover:text-[#2D4A2D] transition-colors">
                         {c.firstName} {c.lastName}
                       </p>
-                      <p className="text-[#6B7280] text-xs truncate mt-0.5">{c.jobTitle || '—'}</p>
+                      <p className="text-[#8a9a90] text-xs truncate mt-0.5">{c.jobTitle || '—'}</p>
                     </div>
                   </div>
-                  <span
-                    className="rounded-full px-2.5 py-0.5 text-xs font-medium capitalize flex-shrink-0 ml-2"
-                    style={{ background: ss.bg, color: ss.color }}
-                  >
-                    {c.status}
-                  </span>
-                </div>
 
-                {/* Location + salary */}
-                <div className="flex flex-col gap-1 mb-3">
-                  {c.location && (
-                    <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
-                      <MapPin size={11} className="flex-shrink-0" />
-                      <span className="truncate">
-                        {c.location}{c.postalCode ? ` · ${c.postalCode}` : ''}
-                        {filterPostalCode.trim() && distanceFilter.has(c.id) && (
-                          <span className="text-[#2D4A2D] font-medium"> · ~{Math.round(distanceFilter.get(c.id)!)}km</span>
-                        )}
-                      </span>
-                    </div>
-                  )}
-                  {c.salaryExpectation ? (
-                    <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
-                      <Euro size={11} className="flex-shrink-0" />
-                      <span>{c.salaryExpectation.toLocaleString()}</span>
-                    </div>
-                  ) : c.branch && !c.location ? (
-                    <div className="flex items-center gap-1.5 text-[#6B7280] text-xs">
-                      <Briefcase size={11} className="flex-shrink-0" />
-                      <span>{c.branch}</span>
-                    </div>
-                  ) : null}
-                </div>
-
-                {/* Skill / branch pills */}
-                {visiblePills.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {visiblePills.map(pill => (
+                  {/* Sector / branch */}
+                  <div className="min-w-0">
+                    {c.branch ? (
                       <span
-                        key={pill}
-                        className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                        className="inline-block rounded-full px-2 py-0.5 text-xs font-medium truncate max-w-full"
                         style={{ background: 'rgba(45,74,45,0.08)', color: '#2D4A2D' }}
                       >
-                        {pill}
+                        {c.branch}
                       </span>
-                    ))}
-                    {extraCount > 0 && (
-                      <span
-                        className="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                        style={{ background: 'rgba(107,114,128,0.1)', color: '#6B7280' }}
-                      >
-                        +{extraCount} more
-                      </span>
+                    ) : (
+                      <span className="text-[#8a9a90] text-xs">—</span>
                     )}
                   </div>
-                )}
-              </motion.div>
-            );
-          })}
+
+                  {/* Location */}
+                  <div className="min-w-0">
+                    {c.location ? (
+                      <div className="flex items-center gap-1 text-[#5a6a60] text-xs truncate">
+                        <MapPin size={10} className="flex-shrink-0 text-[#8a9a90]" />
+                        <span className="truncate">
+                          {c.location}
+                          {filterPostalCode.trim() && distanceFilter.has(c.id) && (
+                            <span className="text-[#2D4A2D] font-medium"> · ~{Math.round(distanceFilter.get(c.id)!)}km</span>
+                          )}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[#8a9a90] text-xs">—</span>
+                    )}
+                  </div>
+
+                  {/* Salary */}
+                  <div>
+                    {c.salaryExpectation ? (
+                      <div className="flex items-center gap-1 text-[#5a6a60] text-xs">
+                        <Euro size={10} className="text-[#8a9a90]" />
+                        <span>{c.salaryExpectation.toLocaleString()}</span>
+                      </div>
+                    ) : (
+                      <span className="text-[#8a9a90] text-xs">—</span>
+                    )}
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <span
+                      className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize"
+                      style={{ background: ss.bg, color: ss.color }}
+                    >
+                      {c.status}
+                    </span>
+                  </div>
+
+                  {/* Actions (hover-reveal) */}
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={e => { e.stopPropagation(); window.location.href = `mailto:${c.email}`; }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[#8a9a90] hover:text-[#2D4A2D] hover:bg-[rgba(45,74,45,0.08)] transition-colors"
+                      title="Send email"
+                    >
+                      <Mail size={13} />
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); router.push(`/candidates/${c.id}`); }}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[#8a9a90] hover:text-[#2D4A2D] hover:bg-[rgba(45,74,45,0.08)] transition-colors"
+                      title="View profile"
+                    >
+                      <ArrowRight size={13} />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Table footer */}
+          <div className="px-4 py-2.5 border-t border-[rgba(20,33,26,0.06)] bg-[#fafafa]">
+            <p className="text-[10px] text-[#8a9a90]">{filtered.length} candidate{filtered.length !== 1 ? 's' : ''}</p>
+          </div>
         </div>
       )}
 

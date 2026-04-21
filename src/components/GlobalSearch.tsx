@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { db } from "@/lib/db";
 import { CandidateProfile, Vacancy, Client } from "@/lib/types";
-import { Search, UserCircle, Briefcase, Building2, X, Command } from "lucide-react";
+import { Search, UserCircle, Briefcase, Building2, X, Command, Plus, Mail, Sparkles, Radar } from "lucide-react";
 
 interface Result {
   type: "candidate" | "vacancy" | "client";
@@ -52,6 +52,15 @@ interface GlobalSearchProps {
   autoFocus?: boolean;
   onClose?: () => void;
 }
+
+const QUICK_ACTIONS = [
+  { label: "New candidate",       icon: Plus,       href: "/candidates?new=1",      shortcut: "C" },
+  { label: "New vacancy",         icon: Plus,       href: "/vacancies?new=1",        shortcut: "V" },
+  { label: "Send email",          icon: Mail,       href: "/email",                  shortcut: "E" },
+  { label: "Run AI screening",    icon: Sparkles,   href: "/screening",              shortcut: "S" },
+  { label: "Source candidates",   icon: Sparkles,   href: "/sourcing",               shortcut: "A" },
+  { label: "Vacancy monitor",     icon: Radar,      href: "/vacancy-monitor",        shortcut: "M" },
+];
 
 export default function GlobalSearch({ autoFocus = false, onClose }: GlobalSearchProps = {}) {
   const router = useRouter();
@@ -207,26 +216,27 @@ export default function GlobalSearch({ autoFocus = false, onClose }: GlobalSearc
     <>
       {/* Trigger button */}
       <motion.button
-        whileHover={{ borderColor: "rgba(45,74,45,0.3)" }}
+        whileHover={{ borderColor: "rgba(20,33,26,0.2)" }}
         whileTap={{ scale: 0.98 }}
         onClick={() => {
           setOpen(true);
           loadData();
         }}
-        className="flex items-center gap-2 rounded-lg px-3 py-2 text-[#6B7280] hover:text-[#2D4A2D] text-sm transition-colors w-64"
+        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors w-64"
         style={{
-          background: "#FFFFFF",
-          border: "1px solid rgba(45,74,45,0.15)",
+          background: "#fafafa",
+          border: "1px solid rgba(20,33,26,0.1)",
+          color: "#8a9a90",
         }}
       >
-        <Search size={14} className="text-[#3D6B3D] flex-shrink-0" />
-        <span className="flex-1 text-left">Search everything...</span>
+        <Search size={13} style={{ color: "#5a6a60", flexShrink: 0 }} />
+        <span className="flex-1 text-left text-[13px]">Search or jump to…</span>
         <span
           className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded font-mono"
           style={{
-            background: "#EDEDEB",
-            border: "1px solid rgba(45,74,45,0.15)",
-            color: "#6B7280",
+            background: "#ffffff",
+            border: "1px solid rgba(20,33,26,0.1)",
+            color: "#8a9a90",
           }}
         >
           <Command size={9} />K
@@ -344,21 +354,52 @@ export default function GlobalSearch({ autoFocus = false, onClose }: GlobalSearc
                     key="hint"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="py-6 px-4"
+                    className="py-3 px-2"
                   >
-                    <p className="text-[#6B7280] text-[10px] uppercase tracking-widest font-semibold mb-3">
-                      Search across
+                    <p className="text-[#8a9a90] text-[10px] uppercase tracking-[1.2px] font-semibold px-2 mb-2">
+                      Quick actions
                     </p>
-                    <div className="flex gap-4">
-                      {(["candidate", "vacancy", "client"] as const).map((t) => {
-                        const Icon = ICON[t];
+                    <div className="space-y-0.5">
+                      {QUICK_ACTIONS.map((action, i) => {
+                        const Icon = action.icon;
                         return (
-                          <div key={t} className={`flex items-center gap-1.5 text-xs ${TYPE_COLOR[t]}`}>
-                            <Icon size={12} />
-                            <span className="text-[#6B7280]">{TYPE_LABEL[t]}s</span>
-                          </div>
+                          <motion.button
+                            key={action.label}
+                            initial={{ opacity: 0, x: -6 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.03 }}
+                            onClick={() => navigate(action.href)}
+                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors"
+                            style={{ color: "#2a3a30" }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(45,74,45,0.06)"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = ""; }}
+                          >
+                            <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(45,74,45,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Icon size={13} color="#2D4A2D" />
+                            </div>
+                            <span className="flex-1 text-sm">{action.label}</span>
+                            <span style={{ fontSize: 10, color: "#8a9a90", background: "rgba(20,33,26,0.05)", border: "1px solid rgba(20,33,26,0.1)", borderRadius: 4, padding: "1px 5px", fontFamily: "monospace" }}>
+                              {action.shortcut}
+                            </span>
+                          </motion.button>
                         );
                       })}
+                    </div>
+                    <div style={{ borderTop: "1px solid rgba(20,33,26,0.07)", margin: "10px 8px 0", paddingTop: 10 }}>
+                      <p className="text-[#8a9a90] text-[10px] uppercase tracking-[1.2px] font-semibold mb-2">
+                        Search
+                      </p>
+                      <div className="flex gap-4 px-1">
+                        {(["candidate", "vacancy", "client"] as const).map((t) => {
+                          const Icon = ICON[t];
+                          return (
+                            <div key={t} className={`flex items-center gap-1.5 text-xs ${TYPE_COLOR[t]}`}>
+                              <Icon size={11} />
+                              <span className="text-[#8a9a90]">{TYPE_LABEL[t]}s</span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </motion.div>
                 )}

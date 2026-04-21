@@ -42,7 +42,7 @@ export default function VacancyStageBar({ stage, stageLog = [], compact = false,
             />
           );
         })}
-        <span className="text-[10px] text-[#94a3b8] ml-1.5 whitespace-nowrap">
+        <span className="text-[10px] text-[#8a9a90] ml-1.5 whitespace-nowrap">
           {VACANCY_STAGES[currentIdx]?.label}
         </span>
       </div>
@@ -102,7 +102,7 @@ export default function VacancyStageBar({ stage, stageLog = [], compact = false,
 
       {/* Last stage change log */}
       {stageLog.length > 0 && (
-        <p className="text-[10px] text-[#9CA3AF] mt-2 text-right">
+        <p className="text-[10px] text-[#8a9a90] mt-2 text-right">
           Moved to {VACANCY_STAGES.find(s => s.id === stageLog[stageLog.length - 1].stage)?.label} ·{" "}
           {new Date(stageLog[stageLog.length - 1].changedAt).toLocaleDateString("en-GB", {
             day: "numeric", month: "short",
