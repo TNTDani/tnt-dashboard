@@ -9,6 +9,7 @@ import { storage } from "@/lib/storage";
 import { RecentItem } from "@/lib/types";
 import { useSidebar } from "@/lib/sidebar-context";
 import { signOut, useSession } from "next-auth/react";
+import { OrchardLogo } from "@/components/OrchardLogo";
 import {
   LayoutDashboard, FileText, Users, Briefcase, UserCircle,
   Building2, Calculator, Mail, ListChecks, Trophy, Inbox,
@@ -73,26 +74,6 @@ function getInitials(name: string) {
   return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }
 
-export function OrchardIcon({ size = 28, color = "white" }: { size?: number; color?: string }) {
-  const w = Math.round((size / 36) * 48);
-  return (
-    <svg width={w} height={size} viewBox="0 0 48 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3"  y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="37" y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="14" width="8" height="8" rx="2" fill={color} />
-      <rect x="3"  y="26" width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="26" width="8" height="8" rx="2" fill={color} />
-      <rect x="37" y="26" width="8" height="8" rx="2" fill={color} />
-      <line x1="7"  y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="41" y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="7"  y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="24" y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="41" y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 // ── NavLink ────────────────────────────────────────────────────────────────────
 
@@ -365,7 +346,7 @@ function SidebarContent({
       <div className="flex items-center h-14 px-4 flex-shrink-0" style={{ borderBottom: "1px solid rgba(20,33,26,0.07)" }}>
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex-shrink-0">
-            <OrchardIcon size={28} color="#2D4A2D" />
+            <OrchardLogo size={28} />
           </div>
           <AnimatePresence initial={false}>
             {!collapsed && (

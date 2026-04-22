@@ -5,27 +5,8 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "motion/react";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-
-function OrchardMark({ size = 36, color = "white" }: { size?: number; color?: string }) {
-  const w = Math.round((size / 36) * 48);
-  return (
-    <svg width={w} height={size} viewBox="0 0 48 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="3"  y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="37" y="2"  width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="14" width="8" height="8" rx="2" fill={color} />
-      <rect x="3"  y="26" width="8" height="8" rx="2" fill={color} />
-      <rect x="20" y="26" width="8" height="8" rx="2" fill={color} />
-      <rect x="37" y="26" width="8" height="8" rx="2" fill={color} />
-      <line x1="7"  y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="41" y1="10" x2="24" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="7"  y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="24" y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="24" y1="22" x2="41" y2="26" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
+import Link from "next/link";
+import { OrchardLogo } from "@/components/OrchardLogo";
 
 type Mode = "create" | "join";
 
@@ -106,207 +87,255 @@ export default function RegisterPage() {
   });
 
   return (
-    <div className="min-h-screen flex" style={{ fontFamily: "var(--font-inter), Inter, system-ui, sans-serif" }}>
-
-      {/* ── Left panel — 50% moss ── */}
+    <div
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        background: "#FAF7F2",
+        fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+        overflow: "hidden",
+      }}
+    >
+      {/* Dotted grid */}
       <div
-        className="hidden lg:flex lg:w-1/2 relative flex-col flex-shrink-0 overflow-hidden"
-        style={{ background: "#2D4A2D", padding: "52px 56px" }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "radial-gradient(circle, rgba(20,33,26,0.10) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Header */}
+      <header
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "20px 32px",
+          zIndex: 10,
+        }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-            pointerEvents: "none",
-          }}
-        />
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+          <OrchardLogo size={32} />
+          <span style={{ fontFamily: "var(--font-dm-serif)", fontSize: 20, color: "#2D4A2D", letterSpacing: "-0.2px" }}>
+            Orchard
+          </span>
+        </Link>
+        <a
+          href="https://orchard-marketing.vercel.app/"
+          style={{ fontSize: 13, color: "#8a9a90", textDecoration: "none", transition: "color 0.15s" }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "#2D4A2D"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "#8a9a90"; }}
+        >
+          Back to site →
+        </a>
+      </header>
 
-        {/* Logo */}
-        <div className="flex items-center gap-3 relative z-10 mb-auto">
-          <OrchardMark size={32} color="white" />
-          <span style={{ fontSize: 22, fontWeight: 500, color: "#fff", letterSpacing: "-0.3px" }}>Orchard</span>
-        </div>
-
-        {/* Tagline */}
-        <div className="relative z-10" style={{ paddingBottom: 16 }}>
-          <div style={{ fontSize: 28, fontWeight: 400, color: "#fff", lineHeight: 1.25, marginBottom: 12 }}>
-            Cultivate your pipeline.
-          </div>
-          <div style={{ fontSize: 14, fontWeight: 400, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, maxWidth: 320 }}>
-            The recruitment OS for boutique agencies.
-          </div>
-        </div>
-
-        <div className="relative z-10" style={{ marginTop: 40 }}>
-          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", letterSpacing: "0.2px" }}>
-            © 2026 Orchard · Built in Amsterdam
-          </p>
-        </div>
-      </div>
-
-      {/* ── Right panel — 50% near-white ── */}
-      <div
-        className="flex-1 flex items-center justify-center"
-        style={{ background: "#fafafa", padding: 40 }}
+      {/* Centered content */}
+      <main
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "96px 24px 72px",
+        }}
       >
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          style={{ width: "100%", maxWidth: 380 }}
+          style={{ width: "100%", maxWidth: 400 }}
         >
-          {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div style={{ background: "#2D4A2D", borderRadius: 8, padding: 6 }}>
-              <OrchardMark size={20} color="white" />
-            </div>
-            <span style={{ fontSize: 18, fontWeight: 600, color: "#0f1711" }}>Orchard</span>
-          </div>
+          {/* Heading */}
+          <h1
+            style={{
+              fontFamily: "var(--font-dm-serif)",
+              fontSize: 42,
+              fontWeight: 400,
+              color: "#0f1711",
+              lineHeight: 1.1,
+              letterSpacing: "-0.5px",
+              marginBottom: 10,
+            }}
+          >
+            Cultivate your pipeline.
+          </h1>
+          <p style={{ fontSize: 15, color: "#8a9a90", marginBottom: 28 }}>
+            {mode === "create" ? "Create your workspace." : "Join your team."}
+          </p>
 
-          <div style={{ fontSize: 24, fontWeight: 500, color: "#0f1711", letterSpacing: "-0.3px", marginBottom: 4 }}>
-            {mode === "create" ? "Create your workspace" : "Join your agency"}
-          </div>
-          <div style={{ fontSize: 13.5, color: "#5a6a60", marginBottom: 28 }}>
-            {mode === "create" ? "Start growing in 30 seconds" : "Enter your invite code to get started"}
-          </div>
+          {/* Form card */}
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: 16,
+              border: "1px solid rgba(20,33,26,0.08)",
+              padding: 28,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+            }}
+          >
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-            {/* Mode toggle */}
-            <div
-              style={{
-                display: "flex",
-                gap: 4,
-                background: "rgba(20,33,26,0.06)",
-                borderRadius: 8,
-                padding: 3,
-                marginBottom: 2,
-              }}
-            >
-              <button type="button" style={segmentStyle(mode === "create")} onClick={() => setMode("create")}>
-                Create new agency
-              </button>
-              <button type="button" style={segmentStyle(mode === "join")} onClick={() => setMode("join")}>
-                Join with invite code
-              </button>
-            </div>
-
-            {/* Agency name / invite code */}
-            {mode === "create" ? (
-              <div>
-                <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
-                  Agency name
-                </label>
-                <input
-                  type="text" value={agencyName} onChange={e => setAgencyName(e.target.value)}
-                  required placeholder="Acme Recruitment"
-                  style={inputStyle("agency")}
-                  onFocus={() => setFocusedField("agency")} onBlur={() => setFocusedField(null)}
-                />
-              </div>
-            ) : (
-              <div>
-                <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
-                  Invite code
-                </label>
-                <input
-                  type="text" value={inviteCode} onChange={e => setInviteCode(e.target.value)}
-                  required placeholder="xxxx-xxxx-xxxx"
-                  autoComplete="off" spellCheck={false}
-                  style={inputStyle("invite")}
-                  onFocus={() => setFocusedField("invite")} onBlur={() => setFocusedField(null)}
-                />
-              </div>
-            )}
-
-            <div>
-              <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
-                Your name
-              </label>
-              <input
-                type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                required placeholder="Jane Smith"
-                style={inputStyle("name")}
-                onFocus={() => setFocusedField("name")} onBlur={() => setFocusedField(null)}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
-                Email
-              </label>
-              <input
-                type="email" value={email} onChange={e => setEmail(e.target.value)}
-                required autoComplete="email" placeholder="you@agency.com"
-                style={inputStyle("email")}
-                onFocus={() => setFocusedField("email")} onBlur={() => setFocusedField(null)}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
-                Password
-              </label>
-              <div style={{ position: "relative" }}>
-                <input
-                  type={showPwd ? "text" : "password"} value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required minLength={8} autoComplete="new-password" placeholder="Min. 8 characters"
-                  style={{ ...inputStyle("pwd"), paddingRight: 40 }}
-                  onFocus={() => setFocusedField("pwd")} onBlur={() => setFocusedField(null)}
-                />
-                <button type="button" onClick={() => setShowPwd(v => !v)}
-                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#8a9a90", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                  {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+              {/* Mode toggle */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 4,
+                  background: "rgba(20,33,26,0.06)",
+                  borderRadius: 8,
+                  padding: 3,
+                  marginBottom: 2,
+                }}
+              >
+                <button type="button" style={segmentStyle(mode === "create")} onClick={() => setMode("create")}>
+                  Create new agency
+                </button>
+                <button type="button" style={segmentStyle(mode === "join")} onClick={() => setMode("join")}>
+                  Join with invite code
                 </button>
               </div>
-            </div>
 
-            <div>
-              <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
-                Confirm password
-              </label>
-              <div style={{ position: "relative" }}>
+              {/* Agency name / invite code */}
+              {mode === "create" ? (
+                <div>
+                  <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
+                    Agency name
+                  </label>
+                  <input
+                    type="text" value={agencyName} onChange={e => setAgencyName(e.target.value)}
+                    required placeholder="Acme Recruitment"
+                    style={inputStyle("agency")}
+                    onFocus={() => setFocusedField("agency")} onBlur={() => setFocusedField(null)}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
+                    Invite code
+                  </label>
+                  <input
+                    type="text" value={inviteCode} onChange={e => setInviteCode(e.target.value)}
+                    required placeholder="xxxx-xxxx-xxxx"
+                    autoComplete="off" spellCheck={false}
+                    style={inputStyle("invite")}
+                    onFocus={() => setFocusedField("invite")} onBlur={() => setFocusedField(null)}
+                  />
+                </div>
+              )}
+
+              <div>
+                <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
+                  Your name
+                </label>
                 <input
-                  type={showConfirm ? "text" : "password"} value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  required autoComplete="new-password" placeholder="••••••••"
-                  style={{ ...inputStyle("confirm"), paddingRight: 40 }}
-                  onFocus={() => setFocusedField("confirm")} onBlur={() => setFocusedField(null)}
+                  type="text" value={fullName} onChange={e => setFullName(e.target.value)}
+                  required placeholder="Jane Smith"
+                  style={inputStyle("name")}
+                  onFocus={() => setFocusedField("name")} onBlur={() => setFocusedField(null)}
                 />
-                <button type="button" onClick={() => setShowConfirm(v => !v)}
-                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#8a9a90", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                  {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
               </div>
-            </div>
 
-            {error && (
-              <div style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, padding: "10px 14px" }}>
-                <p style={{ fontSize: 13, color: "#EF4444" }}>{error}</p>
+              <div>
+                <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
+                  Email
+                </label>
+                <input
+                  type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  required autoComplete="email" placeholder="you@agency.com"
+                  style={inputStyle("email")}
+                  onFocus={() => setFocusedField("email")} onBlur={() => setFocusedField(null)}
+                />
               </div>
-            )}
 
-            <motion.button
-              type="submit" disabled={loading} whileTap={{ scale: 0.98 }}
-              style={{ width: "100%", padding: "11px 16px", background: loading ? "#3D6B3D" : "#2D4A2D", color: "#fff", fontSize: 14, fontWeight: 500, fontFamily: "inherit", border: "none", borderRadius: 8, cursor: loading ? "default" : "pointer", transition: "background 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}
-              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#3D6B3D"; }}
-              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#2D4A2D"; }}
-            >
-              {loading
-                ? <><Loader2 size={15} className="animate-spin" /> {mode === "create" ? "Creating account…" : "Joining agency…"}</>
-                : mode === "create" ? "Create account" : "Join agency"}
-            </motion.button>
-          </form>
+              <div>
+                <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
+                  Password
+                </label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPwd ? "text" : "password"} value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required minLength={8} autoComplete="new-password" placeholder="Min. 8 characters"
+                    style={{ ...inputStyle("pwd"), paddingRight: 40 }}
+                    onFocus={() => setFocusedField("pwd")} onBlur={() => setFocusedField(null)}
+                  />
+                  <button type="button" onClick={() => setShowPwd(v => !v)}
+                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#8a9a90", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                    {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
 
-          <div style={{ textAlign: "center", fontSize: 12.5, color: "#8a9a90", marginTop: 24 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#2a3a30", marginBottom: 5 }}>
+                  Confirm password
+                </label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showConfirm ? "text" : "password"} value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    required autoComplete="new-password" placeholder="••••••••"
+                    style={{ ...inputStyle("confirm"), paddingRight: 40 }}
+                    onFocus={() => setFocusedField("confirm")} onBlur={() => setFocusedField(null)}
+                  />
+                  <button type="button" onClick={() => setShowConfirm(v => !v)}
+                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#8a9a90", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                    {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, padding: "10px 14px" }}>
+                  <p style={{ fontSize: 13, color: "#EF4444" }}>{error}</p>
+                </div>
+              )}
+
+              <motion.button
+                type="submit" disabled={loading} whileTap={{ scale: 0.98 }}
+                style={{ width: "100%", padding: "11px 16px", background: loading ? "#3D6B3D" : "#2D4A2D", color: "#fff", fontSize: 14, fontWeight: 500, fontFamily: "inherit", border: "none", borderRadius: 8, cursor: loading ? "default" : "pointer", transition: "background 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4 }}
+                onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#3D6B3D"; }}
+                onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.background = "#2D4A2D"; }}
+              >
+                {loading
+                  ? <><Loader2 size={15} className="animate-spin" /> {mode === "create" ? "Creating account…" : "Joining agency…"}</>
+                  : mode === "create" ? "Create account" : "Join agency"}
+              </motion.button>
+            </form>
+          </div>
+
+          <div style={{ textAlign: "center", fontSize: 12.5, color: "#8a9a90", marginTop: 20 }}>
             Already have an account?{" "}
-            <a href="/login" style={{ color: "#2D4A2D", textDecoration: "none", fontWeight: 500 }}>Sign in →</a>
+            <Link href="/login" style={{ color: "#2D4A2D", textDecoration: "none", fontWeight: 500 }}>Sign in →</Link>
           </div>
         </motion.div>
-      </div>
+      </main>
+
+      {/* Footer */}
+      <footer
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          textAlign: "center",
+          padding: "20px 24px",
+          fontSize: 11,
+          color: "#8a9a90",
+          letterSpacing: "0.2px",
+        }}
+      >
+        © 2026 Orchard · Built in Amsterdam
+      </footer>
     </div>
   );
 }
