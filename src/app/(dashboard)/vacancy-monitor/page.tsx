@@ -366,6 +366,45 @@ function LoadingSequence({
   );
 }
 
+// ─── ListingStatusBadges ──────────────────────────────────────────────────────
+
+const RESURRECTION_WINDOW_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+function ListingStatusBadges({ listing }: { listing: ScoredListing }) {
+  const badges: React.ReactNode[] = [];
+
+  if (listing.status === "stale") {
+    badges.push(
+      <span
+        key="stale"
+        title={`Missed ${listing.consecutiveMisses ?? 1} consecutive sync run(s) — may be filled or delisted`}
+        className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
+        style={{ background: "rgba(245,158,11,0.1)", color: "#b45309", border: "1px solid rgba(245,158,11,0.25)" }}
+      >
+        stale
+      </span>
+    );
+  }
+
+  if (
+    listing.resurrectedAt &&
+    Date.now() - new Date(listing.resurrectedAt).getTime() < RESURRECTION_WINDOW_MS
+  ) {
+    badges.push(
+      <span
+        key="resurrected"
+        title="This listing disappeared and came back"
+        className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium"
+        style={{ background: "rgba(45,74,45,0.1)", color: "#2D4A2D", border: "1px solid rgba(45,74,45,0.25)" }}
+      >
+        ↑ back
+      </span>
+    );
+  }
+
+  return badges.length > 0 ? <div className="flex gap-1">{badges}</div> : null;
+}
+
 // ─── MatchScoreBadge ─────────────────────────────────────────────────────────
 
 function MatchScoreBadge({ score }: { score: number }) {
@@ -649,8 +688,9 @@ function VacancyCard({
           >
             {listing.title}
           </div>
-          <div className="text-xs mt-0.5" style={{ color: "#6B7280" }}>
+          <div className="text-xs mt-0.5 flex items-center gap-1.5 flex-wrap" style={{ color: "#6B7280" }}>
             {listing.company}
+            <ListingStatusBadges listing={listing} />
           </div>
         </div>
         <MatchScoreBadge score={listing.score} />
@@ -1415,7 +1455,28 @@ export default function VacancyMonitorPage() {
 
         {/* Main */}
         <div className="flex-1 min-w-0">
-          {filteredScored.length === 0 ? (
+          {listings.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="rounded-2xl p-10 text-center"
+              style={{ background: "#fff", border: "1px solid rgba(45,74,45,0.1)" }}
+            >
+              <Search size={36} className="mx-auto mb-3" style={{ color: "rgba(45,74,45,0.2)" }} />
+              <p className="text-base font-semibold mb-1" style={{ color: "#2D4A2D" }}>
+                No listings in database yet
+              </p>
+              <p className="text-sm" style={{ color: "#6B7280" }}>
+                Trigger the first sync by running:
+              </p>
+              <code
+                className="block mt-2 mb-1 text-xs px-3 py-2 rounded-lg"
+                style={{ background: "rgba(45,74,45,0.06)", color: "#2D4A2D" }}
+              >
+                curl -X POST /api/sync-vacancies -H &quot;Authorization: Bearer $CRON_SECRET&quot;
+              </code>
+            </motion.div>
+          ) : filteredScored.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

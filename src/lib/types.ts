@@ -331,6 +331,13 @@ export interface VacancyListing {
   description: string;
   url: string;
   category: VacancyCategory;
+  // Optional — only present when served from Supabase (via /api/vacancy-monitor).
+  // Kept optional to preserve backwards compatibility with localStorage/watchlist usage.
+  status?: 'active' | 'stale' | 'gone';
+  consecutiveMisses?: number;
+  firstSeenAt?: string;
+  lastSeenAt?: string;
+  resurrectedAt?: string; // permanently set on first resurrection; badge uses 14-day window
 }
 
 export interface WatchlistItem {
