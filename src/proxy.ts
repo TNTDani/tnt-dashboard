@@ -2,7 +2,7 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PREFIXES = ["/login", "/register", "/api/auth", "/api/register"];
+const PUBLIC_PREFIXES = ["/login", "/register", "/api/auth", "/api/register", "/api/sync-vacancies"];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
