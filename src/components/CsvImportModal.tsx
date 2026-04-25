@@ -247,7 +247,7 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
       <div className="bg-[#FFFFFF] border border-[rgba(45,74,45,0.15)] rounded-t-xl sm:rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-white font-semibold">Import CSV</h2>
+          <h2 className="text-[#2D4A2D] font-semibold">Import CSV</h2>
           <button onClick={onClose} className="text-[#94a3b8] hover:text-[#2D4A2D] transition-colors">
             <X size={18} />
           </button>
@@ -256,11 +256,11 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
         {result ? (
           /* ── Success state ── */
           <div className="text-center py-6">
-            <CheckCircle2 size={40} className="mx-auto mb-3 text-green-400" />
-            <p className="text-white font-semibold text-lg mb-1">
+            <CheckCircle2 size={40} className="mx-auto mb-3 text-[#2D4A2D]" />
+            <p className="text-[#2D4A2D] font-semibold text-lg mb-1">
               {result.imported} client{result.imported !== 1 ? 's' : ''} imported successfully
             </p>
-            <div className="mt-3 space-y-1 text-sm text-[#94a3b8]">
+            <div className="mt-3 space-y-1 text-sm text-[#6B7280]">
               {result.skippedLowConfidence > 0 && (
                 <p>{result.skippedLowConfidence} skipped (low confidence &lt;70%)</p>
               )}
@@ -291,8 +291,8 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
                 }`}
               >
                 <Upload size={32} className="mx-auto mb-3 text-[#6B7280]" />
-                <p className="text-white text-sm font-medium mb-1">Drag & drop your Hunter.io CSV here</p>
-                <p className="text-[#94a3b8] text-xs">or click to browse — .csv files only</p>
+                <p className="text-[#2D4A2D] text-sm font-medium mb-1">Drag & drop your Hunter.io CSV here</p>
+                <p className="text-[#6B7280] text-xs">or click to browse — .csv files only</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -316,17 +316,17 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
               <>
                 <div className="flex items-center gap-2 mb-3">
                   <FileText size={15} className="text-[#2D4A2D]" />
-                  <span className="text-white text-sm font-medium">{fileName}</span>
-                  <span className="text-[#94a3b8] text-xs ml-auto">{parsedRows.length} rows found</span>
+                  <span className="text-[#2D4A2D] text-sm font-medium">{fileName}</span>
+                  <span className="text-[#6B7280] text-xs ml-auto">{parsedRows.length} rows found</span>
                 </div>
 
-                <p className="text-[#94a3b8] text-xs font-medium mb-2 uppercase tracking-wider">Preview (first 3 rows)</p>
+                <p className="text-[#6B7280] text-xs font-medium mb-2 uppercase tracking-wider">Preview (first 3 rows)</p>
                 <div className="overflow-x-auto rounded-lg border border-[rgba(45,74,45,0.15)] mb-4">
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b border-[rgba(45,74,45,0.15)]">
                         {previewCols.map(c => (
-                          <th key={c} className="px-3 py-2 text-left text-[#94a3b8] font-medium whitespace-nowrap">{c}</th>
+                          <th key={c} className="px-3 py-2 text-left text-[#8a9a90] font-medium whitespace-nowrap">{c}</th>
                         ))}
                       </tr>
                     </thead>
@@ -337,7 +337,7 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
                         return (
                           <tr key={i} className={`border-b border-[rgba(45,74,45,0.15)] last:border-0 ${lowConf ? 'opacity-40' : ''}`}>
                             {previewCols.map(c => (
-                              <td key={c} className="px-3 py-2 text-white truncate max-w-[120px]">
+                              <td key={c} className="px-3 py-2 text-[#0f1711] truncate max-w-[120px]">
                                 {c === COL.confidence && lowConf
                                   ? <span className="text-red-400">{col(row, c)}</span>
                                   : col(row, c) || <span className="text-[#6B7280]">—</span>
@@ -352,9 +352,9 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
                 </div>
 
                 {/* Summary line */}
-                <div className="text-xs text-[#94a3b8] mb-5 space-y-0.5">
+                <div className="text-xs text-[#6B7280] mb-5 space-y-0.5">
                   <p>
-                    <span className="text-white font-medium">{validCount}</span> rows with confidence ≥70% will be imported as Prospects.
+                    <span className="text-[#2D4A2D] font-medium">{validCount}</span> rows with confidence ≥70% will be imported as Prospects.
                   </p>
                   {parsedRows.length - validCount > 0 && (
                     <p>{parsedRows.length - validCount} rows will be skipped (low confidence).</p>
@@ -372,7 +372,7 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
                   </button>
                   <button
                     onClick={onClose}
-                    className="flex-1 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
+                    className="flex-1 bg-[rgba(45,74,45,0.08)] hover:bg-[rgba(45,74,45,0.12)] text-[#6B7280] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
                   >
                     Cancel
                   </button>
@@ -384,7 +384,7 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
             {!parsedRows.length && !parseError && (
               <button
                 onClick={onClose}
-                className="w-full mt-4 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
+                className="w-full mt-4 bg-[rgba(45,74,45,0.08)] hover:bg-[rgba(45,74,45,0.12)] text-[#6B7280] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
               >
                 Cancel
               </button>
@@ -392,7 +392,7 @@ export default function CsvImportModal({ existingClients, onClose, onImport }: P
             {!parsedRows.length && parseError && (
               <button
                 onClick={onClose}
-                className="w-full mt-3 bg-[rgba(45,74,45,0.15)] hover:bg-[#6B7280] text-[#94a3b8] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
+                className="w-full mt-3 bg-[rgba(45,74,45,0.08)] hover:bg-[rgba(45,74,45,0.12)] text-[#6B7280] hover:text-[#2D4A2D] py-2.5 rounded-lg transition-colors text-sm"
               >
                 Cancel
               </button>
