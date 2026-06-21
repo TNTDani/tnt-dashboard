@@ -51,7 +51,9 @@ export default function AccountDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ website: account.website, companyName: account.companyName, location: account.location }),
       });
-      const { signals } = await res.json();
+      if (!res.ok) throw new Error('Verrijken mislukt');
+      const data = await res.json();
+      const signals = Array.isArray(data.signals) ? data.signals : [];
       const enrichedAt = new Date().toISOString();
       await accountsDb.updateAccount(account.id, { signals, enrichedAt });
       setAccount({ ...account, signals, enrichedAt });
@@ -114,13 +116,13 @@ export default function AccountDetailPage() {
           </button>
         </div>
 
-        {account.signals.length > 0 && (
+        {(account.signals?.length ?? 0) > 0 && (
           <div className="mt-4 space-y-2">
             <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: C.muted }}>
               Signalen
             </span>
             <div className="flex flex-wrap gap-2">
-              {account.signals.map((s, i) => (
+              {(account.signals ?? []).map((s, i) => (
                 <span key={i} className="rounded-lg px-2.5 py-1 text-xs" style={{ background: C.bg, color: C.primary }} title={s.summary}>
                   {s.type.replace('_', ' ')}: {s.summary.slice(0, 60)}
                 </span>
