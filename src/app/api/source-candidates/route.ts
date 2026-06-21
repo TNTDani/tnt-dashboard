@@ -45,7 +45,7 @@ Requirements:
 - Consider profiles from: traditional backgrounds, career switchers, self-taught, agency vs in-house, different countries/remote, different company sizes`;
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],
     });

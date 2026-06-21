@@ -11,7 +11,7 @@ import type { Signal } from '@/lib/accountTypes';
 export const maxDuration = 60; // web search kan even duren
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-4-6';
 
 const SCHEMA = `Antwoord UITSLUITEND met een JSON-array (niets erna, geen markdown):
 [ { "type": "open_role" | "funding" | "acquisition" | "leadership_change" | "expansion" | "competitor" | "other", "summary": string, "source": string, "date": string } ]`;

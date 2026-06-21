@@ -4,7 +4,7 @@
 
 import type { Account, AccountLead, AgencyPositioning, GeneratedPitch } from './accountTypes';
 
-export const PITCH_MODEL = 'claude-sonnet-4-20250514'; // zelfde als generate-cold-email; bump gerust naar nieuwere Sonnet
+export const PITCH_MODEL = 'claude-sonnet-4-6'; // zelfde als generate-cold-email; bump gerust naar nieuwere Sonnet
 export const METHODOLOGY_VERSION = 'challenger-spiced-v1';
 
 export function buildPitchSystemPrompt(): string {

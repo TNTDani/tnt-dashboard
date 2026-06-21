@@ -65,7 +65,7 @@ Return ONLY a valid JSON array. No markdown, no explanation, just the array:
 Categories must be exactly: "technical", "gap", "behavioural", or "culture".`;
 
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
     });

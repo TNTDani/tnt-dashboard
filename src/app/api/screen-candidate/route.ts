@@ -61,7 +61,7 @@ SCORING RULES — follow these precisely:
 5. Never score below 5 unless there are multiple must-have gaps or a clear level/domain mismatch. Minor experience shortfalls alone should not drop a score below 6.`;
 
     const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 1024,
       messages: [{ role: "user", content: prompt }],
     });

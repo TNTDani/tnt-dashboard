@@ -65,7 +65,7 @@ Score calibration:
 - 0–39: Poor fit, key requirements missing`;
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],
     });

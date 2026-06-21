@@ -83,7 +83,7 @@ Rules:
 - Return null for any field you cannot confidently extract`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 512,
       messages: [{ role: 'user', content: prompt }],
     });
