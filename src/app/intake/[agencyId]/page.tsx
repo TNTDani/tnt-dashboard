@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 
 const SENIORITY = ['Junior/Medior', 'Senior', 'Management/Lead'] as const;
@@ -18,9 +19,14 @@ const EMPTY = {
   city: '',
   description: '',
   source: '',
+  // Honeypot — must stay empty. Filled only by bots.
+  websiteUrl: '',
 };
 
 export default function IntakePage() {
+  const params = useParams();
+  const agencyId = params.agencyId as string;
+
   const [form, setForm] = useState(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -38,9 +44,19 @@ export default function IntakePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...form,
+          agencyId,
+          companyName: form.companyName,
+          contactName: form.contactName,
+          contactEmail: form.contactEmail,
+          roleTitle: form.roleTitle,
+          seniorityLevel: form.seniorityLevel,
           salaryMin: parseInt(form.salaryMin) || 0,
           salaryMax: parseInt(form.salaryMax) || 0,
+          workType: form.workType,
+          city: form.city,
+          description: form.description,
+          source: form.source,
+          websiteUrl: form.websiteUrl, // honeypot
         }),
       });
       if (!res.ok) {
@@ -119,11 +135,25 @@ export default function IntakePage() {
                 Submit a Hiring Request
               </h1>
               <p className="text-[#94a3b8] text-base">
-                Tell us about the role. We'll be in touch within 24 hours.
+                Tell us about the role. We&apos;ll be in touch within 24 hours.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+
+              {/* Honeypot — hidden from real users, filled only by bots */}
+              <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
+                <label htmlFor="website_url">Website</label>
+                <input
+                  id="website_url"
+                  name="website_url"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={form.websiteUrl}
+                  onChange={e => set('websiteUrl', e.target.value)}
+                />
+              </div>
 
               {/* Company + Contact name */}
               <div className="grid grid-cols-2 gap-4">

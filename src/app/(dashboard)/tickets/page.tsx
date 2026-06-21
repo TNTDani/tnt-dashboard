@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { IntakeTicket, Client, Vacancy } from '@/lib/types';
 import { storage } from '@/lib/storage';
@@ -54,6 +55,8 @@ export default function TicketsPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const { data: session } = useSession();
 
   const [declineId, setDeclineId] = useState<string | null>(null);
   const [sendDeclineEmail, setSendDeclineEmail] = useState(true);
@@ -186,7 +189,11 @@ dani@orchard.io
         db.getVacancies().then(vacancies => db.saveVacancies([...vacancies, newVacancy])),
       ]);
 
-      await patch(ticket.id, { status: 'converted' });
+      await patch(ticket.id, {
+        status: 'converted',
+        convertedClientId: clientId,
+        convertedVacancyId: vacancyId,
+      });
       alert(`✓ Created client "${ticket.companyName}" and vacancy "${ticket.roleTitle}".`);
     } finally {
       setActionLoading(null);
@@ -235,11 +242,13 @@ Orchard`;
     }
   };
 
+  const intakeUrl = typeof window !== 'undefined' && session?.user?.agencyId
+    ? `${window.location.origin}/intake/${session.user.agencyId}`
+    : '';
+
   const copyLink = () => {
-    const url = typeof window !== 'undefined'
-      ? `${window.location.origin}/intake`
-      : '/intake';
-    navigator.clipboard.writeText(url);
+    if (!intakeUrl) return;
+    navigator.clipboard.writeText(intakeUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -302,7 +311,7 @@ Orchard`;
           <p className="text-[#6B7280] text-xs truncate">
             Share this in cold emails:{' '}
             <span className="text-[#2D4A2D]/70">
-              {typeof window !== 'undefined' ? window.location.origin : ''}/intake
+              {intakeUrl || '…'}
             </span>
           </p>
         </div>

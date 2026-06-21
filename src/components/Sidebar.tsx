@@ -14,7 +14,7 @@ import {
   LayoutDashboard, FileText, Users, Briefcase, UserCircle,
   Building2, Calculator, Mail, ListChecks, Trophy, Inbox,
   BarChart2, LogOut, Radar, Clock, CalendarDays, ChevronLeft,
-  Zap, ChevronDown, Shield,
+  Zap, ChevronDown, Shield, Target,
 } from "lucide-react";
 
 // ── Nav groups — workflow-oriented ────────────────────────────────────────────
@@ -35,6 +35,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/candidates", icon: UserCircle, label: "Candidates", exact: false },
       { href: "/clients", icon: Building2, label: "Clients", exact: false },
+      { href: "/accounts", icon: Target, label: "Accounts", exact: false },
       { href: "/vacancies", icon: Briefcase, label: "Vacancies", exact: true },
     ],
   },

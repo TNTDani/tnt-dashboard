@@ -14,7 +14,7 @@ export function initDb(agencyId: string) {
   _agencyId = agencyId;
 }
 
-function requireAgencyId(): string {
+export function requireAgencyId(): string {
   if (!_agencyId) throw new Error('initDb() has not been called — agencyId is not set');
   return _agencyId;
 }

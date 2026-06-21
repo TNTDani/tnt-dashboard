@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const { data: members, error } = await supabaseAdmin
     .from("agency_users")
-    .select("email, name, role, created_at")
+    .select("id, email, name, role, created_at")
     .eq("agency_id", caller.agency_id)
     .order("created_at", { ascending: true });
 

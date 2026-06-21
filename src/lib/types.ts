@@ -253,6 +253,9 @@ export interface IntakeTicket {
   source: string;
   status: 'new' | 'in-review' | 'converted' | 'declined';
   confirmationSent: boolean;
+  convertedClientId?: string;
+  convertedVacancyId?: string;
+  declinedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

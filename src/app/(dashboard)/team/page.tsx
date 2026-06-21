@@ -19,6 +19,7 @@ type InviteRow = {
 };
 
 type MemberRow = {
+  id: string;
   email: string;
   name: string;
   role: string;
@@ -64,7 +65,13 @@ export default function TeamPage() {
   const [copiedId,     setCopiedId]     = useState<string | null>(null);
   const [historyOpen,  setHistoryOpen]  = useState(false);
 
+  const [removeTarget, setRemoveTarget] = useState<MemberRow | null>(null);
+  const [removing,     setRemoving]     = useState(false);
+  const [removeError,  setRemoveError]  = useState("");
+  const [toast,        setToast]        = useState("");
+
   const callerRole = session?.user?.role as string | undefined;
+  const callerId   = session?.user?.id   as string | undefined;
 
   // Role gate — members get redirected; unauthenticated users too.
   useEffect(() => {
@@ -125,6 +132,23 @@ export default function TeamPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const confirmRemove = async () => {
+    if (!removeTarget) return;
+    setRemoving(true);
+    setRemoveError("");
+    try {
+      const res = await fetch(`/api/team/members/${encodeURIComponent(removeTarget.id)}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok) { setRemoveError(json.error ?? "Failed to remove member."); return; }
+      setMembers(prev => prev.filter(m => m.id !== removeTarget.id));
+      setRemoveTarget(null);
+      setToast(`${removeTarget.name} has been removed.`);
+      setTimeout(() => setToast(""), 4000);
+    } finally {
+      setRemoving(false);
+    }
+  };
+
   // Show nothing while redirecting or loading session.
   if (status === "loading" || !session || !callerRole || callerRole === "member") return null;
 
@@ -145,6 +169,61 @@ export default function TeamPage() {
 
   return (
     <div style={{ maxWidth: 820 }}>
+
+      {/* ── Toast ──────────────────────────────────────────────────────────── */}
+      {toast && (
+        <div
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-medium"
+          style={{ background: "#2D4A2D", color: "#fff", maxWidth: 320 }}
+        >
+          <Check size={14} />
+          {toast}
+        </div>
+      )}
+
+      {/* ── Confirmation dialog ────────────────────────────────────────────── */}
+      {removeTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl p-6 w-full"
+            style={{ maxWidth: 400, margin: "0 16px", border: "1px solid rgba(20,33,26,0.1)" }}
+          >
+            <p className="text-sm font-semibold mb-1" style={{ color: "#0f1711" }}>
+              Remove {removeTarget.name} from the team?
+            </p>
+            <p className="text-xs mb-5" style={{ color: "#8a9a90" }}>
+              They&apos;ll lose access immediately. This cannot be undone.
+            </p>
+            {removeError && (
+              <p className="text-xs mb-3" style={{ color: "#EF4444" }}>{removeError}</p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={confirmRemove}
+                disabled={removing}
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                style={{ background: "#EF4444", opacity: removing ? 0.7 : 1, flex: 1 }}
+              >
+                {removing && <Loader2 size={13} className="animate-spin" />}
+                Remove
+              </button>
+              <button
+                onClick={() => { setRemoveTarget(null); setRemoveError(""); }}
+                disabled={removing}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ background: "rgba(20,33,26,0.06)", color: "#5a6a60", flex: 1 }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(20,33,26,0.10)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(20,33,26,0.06)"; }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Invite new members ─────────────────────────────────────────────── */}
       <div className={CARD}>
@@ -392,19 +471,38 @@ export default function TeamPage() {
                 <th className={TH} style={{ color: "#8a9a90" }}>Email</th>
                 <th className={TH} style={{ color: "#8a9a90" }}>Role</th>
                 <th className={TH} style={{ color: "#8a9a90" }}>Joined</th>
+                {callerRole === "owner" && <th className={TH} />}
               </tr>
             </thead>
             <tbody>
-              {members.map((m, i) => (
-                <tr key={m.email} style={{ borderTop: i === 0 ? "none" : "1px solid rgba(20,33,26,0.05)" }}>
-                  <td className={TD} style={{ color: "#2a3a30" }}>{m.name}</td>
-                  <td className={TD} style={{ color: "#8a9a90" }}>{m.email}</td>
-                  <td className={TD}><RoleBadge role={m.role} /></td>
-                  <td className={TD} style={{ color: "#8a9a90" }}>
-                    {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                  </td>
-                </tr>
-              ))}
+              {members.map((m, i) => {
+                const canRemove = callerRole === "owner" && m.role !== "owner" && m.id !== callerId;
+                return (
+                  <tr key={m.id} style={{ borderTop: i === 0 ? "none" : "1px solid rgba(20,33,26,0.05)" }}>
+                    <td className={TD} style={{ color: "#2a3a30" }}>{m.name}</td>
+                    <td className={TD} style={{ color: "#8a9a90" }}>{m.email}</td>
+                    <td className={TD}><RoleBadge role={m.role} /></td>
+                    <td className={TD} style={{ color: "#8a9a90" }}>
+                      {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </td>
+                    {callerRole === "owner" && (
+                      <td className={TD} style={{ textAlign: "right" }}>
+                        {canRemove && (
+                          <button
+                            onClick={() => { setRemoveTarget(m); setRemoveError(""); }}
+                            className="text-xs px-2 py-1 rounded transition-colors"
+                            style={{ color: "#EF4444" }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.06)"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
