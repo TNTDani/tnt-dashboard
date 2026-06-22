@@ -9,6 +9,8 @@ import GlobalSearch from "@/components/GlobalSearch";
 import OfflineBanner from "@/components/OfflineBanner";
 import InstallBanner from "@/components/InstallBanner";
 import { SidebarProvider, useSidebar } from "@/lib/sidebar-context";
+import { DialerProvider } from "@/lib/dialer-context";
+import Dialer from "@/components/Dialer";
 import { initDb } from "@/lib/db";
 import {
   Menu, Search as SearchIcon, X, Plus, FileText, Zap,
@@ -274,7 +276,10 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <LayoutInner>{children}</LayoutInner>
+      <DialerProvider>
+        <LayoutInner>{children}</LayoutInner>
+        <Dialer />
+      </DialerProvider>
     </SidebarProvider>
   );
 }

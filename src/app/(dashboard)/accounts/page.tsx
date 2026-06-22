@@ -1,10 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge } from 'lucide-react';
 import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
+import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
+import MergeAccountsModal from '@/components/MergeAccountsModal';
 import type { Account } from '@/lib/accountTypes';
 
 const SIZES: NonNullable<Account['size']>[] = ['startup', 'small', 'medium', 'large', 'enterprise'];
@@ -12,20 +15,28 @@ const EMPTY = { companyName: '', website: '', sector: '', size: 'medium' as Acco
 
 export default function AccountsPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const isAdmin = ['owner', 'admin'].includes(session?.user?.role ?? '');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [showMerge, setShowMerge] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  const reload = useCallback(() => {
+    setLoading(true);
     accountsDb
       .getAccounts()
       .then(setAccounts)
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   async function create() {
     if (!form.companyName.trim()) return;
@@ -54,6 +65,15 @@ export default function AccountsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && accounts.length >= 2 && (
+            <button
+              onClick={() => setShowMerge(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
+              style={{ border: `1px solid ${C.border}`, color: C.primary }}
+            >
+              <GitMerge size={15} /> Samenvoegen
+            </button>
+          )}
           <button
             onClick={() => router.push('/positioning')}
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
@@ -111,6 +131,19 @@ export default function AccountsPage() {
                   </span>
                 )}
               </div>
+              {(() => {
+                const sc = computeBuyingScore(a.signals);
+                return (
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="h-1.5 w-16 overflow-hidden rounded-full" style={{ background: C.border }}>
+                      <div className="h-full rounded-full" style={{ width: `${sc.score}%`, background: scoreColor(sc.label) }} />
+                    </div>
+                    <span className="text-xs" style={{ color: scoreColor(sc.label) }}>
+                      Koopkans {sc.score}
+                    </span>
+                  </div>
+                );
+              })()}
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs" style={{ color: C.muted }}>
                 {a.sector && <span>{a.sector}</span>}
                 {a.location && (
@@ -159,6 +192,7 @@ export default function AccountsPage() {
                 </div>
               </div>
               <Field label="Locatie" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
+              <Field label="LinkedIn-pagina" value={form.linkedin} onChange={(v) => setForm({ ...form, linkedin: v })} placeholder="bijv. linkedin.com/company/..." />
             </div>
             <div className="mt-5 flex items-center gap-2">
               <button
@@ -175,6 +209,16 @@ export default function AccountsPage() {
             </div>
           </div>
         </div>
+      )}
+      {showMerge && (
+        <MergeAccountsModal
+          accounts={accounts}
+          onClose={() => setShowMerge(false)}
+          onMerged={() => {
+            setShowMerge(false);
+            reload();
+          }}
+        />
       )}
     </div>
   );

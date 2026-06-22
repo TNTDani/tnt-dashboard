@@ -33,6 +33,7 @@ function rowToAccount(r: any): Account {
     description: r.description ?? undefined,
     notes: r.notes ?? '',
     signals: r.signals ?? [],
+    keyPeople: r.key_people ?? [],
     enrichedAt: r.enriched_at ?? undefined,
     convertedClientId: r.converted_client_id ?? null,
     createdAt: r.created_at,
@@ -52,6 +53,7 @@ function accountToRow(a: Partial<Account>) {
   if (a.description !== undefined) row.description = a.description ?? null;
   if (a.notes !== undefined) row.notes = a.notes;
   if (a.signals !== undefined) row.signals = a.signals;
+  if (a.keyPeople !== undefined) row.key_people = a.keyPeople;
   if (a.enrichedAt !== undefined) row.enriched_at = a.enrichedAt ?? null;
   if (a.convertedClientId !== undefined) row.converted_client_id = a.convertedClientId ?? null;
   return row;
@@ -97,13 +99,13 @@ export const accountsDb = {
   },
 
   addAccount: async (
-    a: Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'signals' | 'notes'> &
-      Partial<Pick<Account, 'signals' | 'notes'>>,
+    a: Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'signals' | 'keyPeople' | 'notes'> &
+      Partial<Pick<Account, 'signals' | 'keyPeople' | 'notes'>>,
   ): Promise<Account> => {
     const id = uuidv4();
     const { data, error } = await supabase
       .from('accounts')
-      .insert(accountToRow({ ...a, id, notes: a.notes ?? '', signals: a.signals ?? [] }))
+      .insert(accountToRow({ ...a, id, notes: a.notes ?? '', signals: a.signals ?? [], keyPeople: a.keyPeople ?? [] }))
       .select('*')
       .single();
     if (error) throw error;

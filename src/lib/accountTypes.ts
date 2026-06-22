@@ -18,6 +18,14 @@ export interface Signal {
   date?: string;
 }
 
+/** A relevant contact discovered during enrichment (HR, hiring manager, talent lead). */
+export interface SuggestedPerson {
+  name: string;
+  role: string;
+  source?: string;
+  linkedin?: string;
+}
+
 export interface ProofPoint {
   /** "soortgelijk SaaS-bedrijf, 120 fte" of een echte klantnaam als die genoemd mag worden */
   label: string;
@@ -48,6 +56,7 @@ export interface Account {
   description?: string;
   notes: string;
   signals: Signal[];
+  keyPeople: SuggestedPerson[];
   enrichedAt?: string;
   /** gezet zodra dit account een Client wordt */
   convertedClientId?: string | null;
