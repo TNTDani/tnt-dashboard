@@ -1,10 +1,4 @@
 // src/lib/accountsDb.ts
-// Data-access voor de BD/pitch-laag. Zelfde patroon als db.ts:
-// supabase anon client + expliciete .eq('agency_id', agencyId).
-// Vereist dat initDb(agencyId) is aangeroepen (gebeurt al in de dashboard layout).
-//
-// LET OP: zet in src/lib/db.ts één woord ervoor:
-//   export function requireAgencyId(): string { ... }
 
 import { supabase } from './supabase';
 import { requireAgencyId } from './db';
@@ -15,12 +9,13 @@ import type {
   AgencyPositioning,
   GeneratedPitch,
   PitchRecord,
+  Activity,
 } from './accountTypes';
 import { METHODOLOGY_VERSION } from './pitchPrompt';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// ── Accounts ────────────────────────────────────────────────────────────────
+// ── Accounts ─────────────────────────────────────────────────────────────────
 function rowToAccount(r: any): Account {
   return {
     id: r.id,
@@ -32,6 +27,7 @@ function rowToAccount(r: any): Account {
     linkedin: r.linkedin ?? undefined,
     description: r.description ?? undefined,
     notes: r.notes ?? '',
+    stage: r.stage ?? 'new',
     signals: r.signals ?? [],
     keyPeople: r.key_people ?? [],
     enrichedAt: r.enriched_at ?? undefined,
@@ -52,6 +48,7 @@ function accountToRow(a: Partial<Account>) {
   if (a.linkedin !== undefined) row.linkedin = a.linkedin ?? null;
   if (a.description !== undefined) row.description = a.description ?? null;
   if (a.notes !== undefined) row.notes = a.notes;
+  if (a.stage !== undefined) row.stage = a.stage;
   if (a.signals !== undefined) row.signals = a.signals;
   if (a.keyPeople !== undefined) row.key_people = a.keyPeople;
   if (a.enrichedAt !== undefined) row.enriched_at = a.enrichedAt ?? null;
@@ -70,6 +67,21 @@ function rowToLead(r: any): AccountLead {
     email: r.email ?? undefined,
     phone: r.phone ?? undefined,
     createdAt: r.created_at,
+  };
+}
+
+// ── Activities ────────────────────────────────────────────────────────────────
+function rowToActivity(r: any): Activity {
+  return {
+    id: r.id,
+    accountId: r.account_id,
+    leadId: r.lead_id ?? undefined,
+    type: r.type,
+    outcome: r.outcome,
+    note: r.note ?? undefined,
+    nextStepDate: r.next_step_date ?? undefined,
+    createdAt: r.created_at,
+    createdBy: r.created_by ?? undefined,
   };
 }
 
@@ -212,6 +224,56 @@ export const accountsDb = {
       methodologyVersion: data.methodology_version,
       createdAt: data.created_at,
     };
+  },
+
+  // Activities
+  getActivities: async (accountId: string): Promise<Activity[]> => {
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase
+      .from('account_activities')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('account_id', accountId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(rowToActivity);
+  },
+
+  addActivity: async (a: Omit<Activity, 'id' | 'createdAt'>): Promise<Activity> => {
+    const { data, error } = await supabase
+      .from('account_activities')
+      .insert({
+        id: uuidv4(),
+        agency_id: requireAgencyId(),
+        account_id: a.accountId,
+        lead_id: a.leadId ?? null,
+        type: a.type,
+        outcome: a.outcome,
+        note: a.note ?? null,
+        next_step_date: a.nextStepDate ?? null,
+        created_by: a.createdBy ?? null,
+      })
+      .select('*')
+      .single();
+    if (error) throw error;
+    return rowToActivity(data);
+  },
+
+  // Returns earliest pending next_step per account (next_step_date set)
+  getActivitiesWithNextStep: async (): Promise<Record<string, Activity>> => {
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase
+      .from('account_activities')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .not('next_step_date', 'is', null)
+      .order('next_step_date', { ascending: true });
+    if (error) throw error;
+    const map: Record<string, Activity> = {};
+    for (const row of data ?? []) {
+      if (!map[row.account_id]) map[row.account_id] = rowToActivity(row);
+    }
+    return map;
   },
 
   // Positionering (1 per bureau)

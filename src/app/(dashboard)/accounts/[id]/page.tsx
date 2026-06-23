@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Plus, X, Radar, Globe, MapPin, UserPlus, Loader2,
-  Link2, Phone, Trash2, UserCheck, Gauge,
+  Link2, Phone, Trash2, UserCheck, Gauge, ClipboardList,
 } from 'lucide-react';
 import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
@@ -14,10 +14,29 @@ import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
 import { useDialer } from '@/lib/dialer-context';
 import { useT } from '@/lib/i18n';
 import PitchPanel from '@/components/PitchPanel';
-import type { Account, AccountLead, AgencyPositioning, LeadSeniority, PitchRecord, SuggestedPerson } from '@/lib/accountTypes';
+import LogActivityModal from '@/components/LogActivityModal';
+import type {
+  Account, AccountLead, AgencyPositioning, LeadSeniority, PitchRecord,
+  SuggestedPerson, AccountStage, Activity,
+} from '@/lib/accountTypes';
 
 const SENIORITIES: LeadSeniority[] = ['C-level', 'Director', 'Manager', 'Lead', 'Other'];
 const EMPTY_POSITIONING: AgencyPositioning = { agencyName: '', repName: '', niche: '', services: [], differentiator: '', proofPoints: [] };
+const STAGES: AccountStage[] = ['new', 'contacted', 'engaged', 'meeting', 'won', 'lost'];
+
+const STAGE_COLOR: Record<AccountStage, string> = {
+  new: C.faint,
+  contacted: C.blue,
+  engaged: C.amber,
+  meeting: C.green,
+  won: C.green,
+  lost: C.red,
+};
+
+const OUTCOME_ICON: Record<string, string> = {
+  no_answer: '📵', voicemail: '📬', gatekeeper: '🚪', callback: '🔁',
+  meeting_booked: '✅', not_interested: '❌', note: '📝',
+};
 
 export default function AccountDetailPage() {
   const router = useRouter();
@@ -33,10 +52,12 @@ export default function AccountDetailPage() {
   const [leads, setLeads] = useState<AccountLead[]>([]);
   const [positioning, setPositioning] = useState<AgencyPositioning>(EMPTY_POSITIONING);
   const [pitchByLead, setPitchByLead] = useState<Record<string, PitchRecord | null>>({});
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [enriching, setEnriching] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showLead, setShowLead] = useState(false);
+  const [logLead, setLogLead] = useState<AccountLead | null | 'account'>(null);
   const [leadForm, setLeadForm] = useState({ name: '', role: '', seniority: 'Manager' as LeadSeniority, email: '', phone: '', linkedin: '' });
 
   useEffect(() => {
@@ -44,9 +65,14 @@ export default function AccountDetailPage() {
       try {
         const acc = await accountsDb.getAccount(id);
         setAccount(acc);
-        const [ls, pos] = await Promise.all([accountsDb.getLeads(id), accountsDb.getPositioning()]);
+        const [ls, pos, acts] = await Promise.all([
+          accountsDb.getLeads(id),
+          accountsDb.getPositioning(),
+          accountsDb.getActivities(id),
+        ]);
         setLeads(ls);
         if (pos) setPositioning(pos);
+        setActivities(acts);
         const pitches: Record<string, PitchRecord | null> = {};
         await Promise.all(ls.map(async (l) => (pitches[l.id] = await accountsDb.getLatestPitch(l.id))));
         setPitchByLead(pitches);
@@ -55,6 +81,12 @@ export default function AccountDetailPage() {
       }
     })();
   }, [id]);
+
+  async function setStage(stage: AccountStage) {
+    if (!account) return;
+    await accountsDb.updateAccount(account.id, { stage });
+    setAccount({ ...account, stage });
+  }
 
   async function enrich() {
     if (!account) return;
@@ -90,7 +122,6 @@ export default function AccountDetailPage() {
     setShowLead(false);
   }
 
-  // Voeg een gevonden contactpersoon toe als lead en haal 'm uit de suggestielijst.
   async function addPersonAsLead(person: SuggestedPerson) {
     if (!account) return;
     await addLead({ name: person.name, role: person.role, seniority: 'Other', linkedin: person.linkedin ?? '' });
@@ -115,6 +146,12 @@ export default function AccountDetailPage() {
     }
   }
 
+  function handleActivitySaved(newStage?: AccountStage) {
+    if (newStage && account) setAccount({ ...account, stage: newStage });
+    accountsDb.getActivities(id).then(setActivities);
+    setLogLead(null);
+  }
+
   if (loading) return <div className="p-8 text-sm" style={{ color: C.muted }}>{t('Loading...', 'Laden...')}</div>;
   if (!account) return <div className="p-8 text-sm" style={{ color: C.muted }}>{t('Account not found.', 'Account niet gevonden.')}</div>;
 
@@ -123,6 +160,7 @@ export default function AccountDetailPage() {
   const linkedinUrl = account.linkedin
     ? account.linkedin.startsWith('http') ? account.linkedin : `https://${account.linkedin}`
     : null;
+  const currentStage = account.stage ?? 'new';
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
@@ -172,7 +210,6 @@ export default function AccountDetailPage() {
                 disabled={deleting}
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-50"
                 style={{ border: `1px solid ${C.border}`, color: '#C0392B' }}
-                title={t('Only admins can delete', 'Alleen admins kunnen verwijderen')}
               >
                 <Trash2 size={14} /> {t('Delete', 'Verwijderen')}
               </button>
@@ -180,8 +217,26 @@ export default function AccountDetailPage() {
           </div>
         </div>
 
+        {/* Stage selector */}
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {STAGES.map((s) => (
+            <button
+              key={s}
+              onClick={() => setStage(s)}
+              className="rounded-full px-3 py-1 text-xs font-medium capitalize transition-all"
+              style={{
+                background: currentStage === s ? STAGE_COLOR[s] : 'transparent',
+                color: currentStage === s ? 'white' : C.muted,
+                border: `1px solid ${currentStage === s ? STAGE_COLOR[s] : C.border}`,
+              }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
         {/* Buying score */}
-        <div className="mt-5 flex items-center gap-4 rounded-xl p-4" style={{ background: C.bg }}>
+        <div className="mt-4 flex items-center gap-4 rounded-xl p-4" style={{ background: C.bg }}>
           <div className="flex items-center gap-2">
             <Gauge size={18} style={{ color: scoreColor(score.label) }} />
             <div>
@@ -212,7 +267,7 @@ export default function AccountDetailPage() {
         )}
       </div>
 
-      {/* Key people gevonden bij enrichment */}
+      {/* Key people */}
       {(account.keyPeople?.length ?? 0) > 0 && (
         <div className="mt-4 rounded-2xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide" style={{ color: C.muted }}>
@@ -244,10 +299,11 @@ export default function AccountDetailPage() {
           className="mt-4 block w-full rounded-xl p-3 text-left text-sm"
           style={{ background: '#FEF3C7', color: '#92400E' }}
         >
-          {t('Set up your agency positioning (niche, services, differentiator, proof points) for sharper pitches. Click here to do it now.', 'Stel je bureau-positionering in (niche, diensten, differentiator, proof points) voor scherpere pitches. Klik hier om dit nu te doen.')}
+          {t('Set up your agency positioning for sharper pitches. Click here.', 'Stel je bureau-positionering in voor scherpere pitches. Klik hier.')}
         </button>
       )}
 
+      {/* Leads */}
       <div className="mt-6 flex items-center justify-between">
         <h2 className="text-lg font-semibold" style={{ color: C.primary }}>
           {t('Leads', 'Leads')}
@@ -267,22 +323,27 @@ export default function AccountDetailPage() {
             <div key={lead.id} className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-medium" style={{ color: C.primary }}>
-                    {lead.name}
-                  </span>
+                  <span className="font-medium" style={{ color: C.primary }}>{lead.name}</span>
                   <span className="ml-2 text-sm" style={{ color: C.muted }}>
-                    {lead.role}
-                    {lead.seniority ? ` · ${lead.seniority}` : ''}
+                    {lead.role}{lead.seniority ? ` · ${lead.seniority}` : ''}
                   </span>
                 </div>
-                <button
-                  onClick={() => dialer.loadLead(lead.name, lead.phone)}
-                  className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium"
-                  style={{ border: `1px solid ${C.border}`, color: lead.phone ? C.primary : C.muted }}
-                  title={lead.phone ? `${t('Call', 'Bel')} ${lead.phone}` : t('No number known, loads empty in the dialer', 'Geen nummer bekend, laadt leeg in de dialer')}
-                >
-                  <Phone size={13} /> {t('Call', 'Bellen')}
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setLogLead(lead)}
+                    className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium"
+                    style={{ border: `1px solid ${C.border}`, color: C.primary }}
+                  >
+                    <ClipboardList size={13} /> {t('Log', 'Log')}
+                  </button>
+                  <button
+                    onClick={() => dialer.loadLead(lead.name, lead.phone)}
+                    className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium"
+                    style={{ border: `1px solid ${C.border}`, color: lead.phone ? C.primary : C.muted }}
+                  >
+                    <Phone size={13} /> {t('Call', 'Bellen')}
+                  </button>
+                </div>
               </div>
               <PitchPanel account={account} lead={lead} positioning={positioning} initialPitch={pitchByLead[lead.id] ?? null} />
             </div>
@@ -290,35 +351,75 @@ export default function AccountDetailPage() {
         )}
       </div>
 
+      {/* Activity history */}
+      {activities.length > 0 && (
+        <div className="mt-8">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-base font-semibold" style={{ color: C.primary }}>{t('Activity log', 'Activiteiten')}</h2>
+            <button
+              onClick={() => setLogLead('account')}
+              className="inline-flex items-center gap-1 text-xs"
+              style={{ color: C.primary }}
+            >
+              <ClipboardList size={13} /> {t('Log activity', 'Log activiteit')}
+            </button>
+          </div>
+          <div className="space-y-2">
+            {activities.slice(0, 8).map((act) => (
+              <div key={act.id} className="flex items-start gap-3 rounded-lg p-3" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+                <span className="text-base leading-none mt-0.5">{OUTCOME_ICON[act.outcome] ?? '📋'}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 text-xs" style={{ color: C.muted }}>
+                    <span className="capitalize font-medium" style={{ color: C.primary }}>{act.type}</span>
+                    <span>·</span>
+                    <span>{act.outcome.replace(/_/g, ' ')}</span>
+                    {act.nextStepDate && (
+                      <span className="ml-auto" style={{ color: C.amber }}>→ {act.nextStepDate}</span>
+                    )}
+                  </div>
+                  {act.note && <p className="mt-1 text-xs" style={{ color: C.muted }}>{act.note}</p>}
+                  <p className="mt-0.5 text-xs" style={{ color: C.faint }}>
+                    {new Date(act.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activities.length === 0 && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setLogLead('account')}
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
+            style={{ border: `1px solid ${C.border}`, color: C.muted }}
+          >
+            <ClipboardList size={14} /> {t('Log first activity', 'Log eerste activiteit')}
+          </button>
+        </div>
+      )}
+
+      {/* Add lead modal */}
       {showLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={() => setShowLead(false)}>
           <div className="w-full max-w-md rounded-2xl p-6" style={{ background: C.surface }} onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold" style={{ color: C.primary }}>
-                {t('Add lead', 'Lead toevoegen')}
-              </h3>
-              <button onClick={() => setShowLead(false)}>
-                <X size={18} style={{ color: C.muted }} />
-              </button>
+              <h3 className="text-lg font-semibold" style={{ color: C.primary }}>{t('Add lead', 'Lead toevoegen')}</h3>
+              <button onClick={() => setShowLead(false)}><X size={18} style={{ color: C.muted }} /></button>
             </div>
             <div className="space-y-3">
               <LField label={t('Name *', 'Naam *')} value={leadForm.name} onChange={(v) => setLeadForm({ ...leadForm, name: v })} />
               <LField label={t('Role *', 'Rol *')} value={leadForm.role} onChange={(v) => setLeadForm({ ...leadForm, role: v })} />
               <div>
-                <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>
-                  {t('Seniority', 'Seniority')}
-                </label>
+                <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>{t('Seniority', 'Seniority')}</label>
                 <select
                   value={leadForm.seniority}
                   onChange={(e) => setLeadForm({ ...leadForm, seniority: e.target.value as LeadSeniority })}
                   className="w-full rounded-lg px-3 py-2 text-sm outline-none"
                   style={{ border: `1px solid ${C.border}` }}
                 >
-                  {SENIORITIES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
+                  {SENIORITIES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <LField label={t('Email', 'E-mail')} value={leadForm.email} onChange={(v) => setLeadForm({ ...leadForm, email: v })} />
@@ -335,6 +436,17 @@ export default function AccountDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Log activity modal */}
+      {logLead !== null && (
+        <LogActivityModal
+          accountId={account.id}
+          currentStage={currentStage}
+          lead={logLead === 'account' ? undefined : logLead}
+          onClose={() => setLogLead(null)}
+          onSaved={handleActivitySaved}
+        />
+      )}
     </div>
   );
 }
@@ -342,9 +454,7 @@ export default function AccountDetailPage() {
 function LField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>
-        {label}
-      </label>
+      <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>{label}</label>
       <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={{ border: `1px solid ${C.border}` }} />
     </div>
   );

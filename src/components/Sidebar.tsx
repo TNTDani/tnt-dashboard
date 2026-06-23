@@ -25,6 +25,7 @@ const NAV_GROUPS = [
     label: "Pipeline",
     items: [
       { href: "/", icon: LayoutDashboard, label: "Dashboard", exact: true },
+      { href: "/today", icon: Clock, label: "Today", exact: true },
       { href: "/pipeline", icon: Users, label: "Pipeline", exact: true },
       { href: "/calendar", icon: CalendarDays, label: "Agenda", exact: true },
     ],

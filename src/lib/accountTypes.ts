@@ -1,6 +1,4 @@
 // src/lib/accountTypes.ts
-// Domeintypes voor de BD/pitch-laag. CamelCase in TS, snake_case in Supabase
-// (zie accountsDb.ts voor de mapping), net als bij Client in types.ts.
 
 export type SignalType =
   | 'open_role'
@@ -18,7 +16,6 @@ export interface Signal {
   date?: string;
 }
 
-/** A relevant contact discovered during enrichment (HR, hiring manager, talent lead). */
 export interface SuggestedPerson {
   name: string;
   role: string;
@@ -27,10 +24,8 @@ export interface SuggestedPerson {
 }
 
 export interface ProofPoint {
-  /** "soortgelijk SaaS-bedrijf, 120 fte" of een echte klantnaam als die genoemd mag worden */
   label: string;
   result: string;
-  /** false = naam NIET noemen, val terug op "soortgelijke bedrijven" */
   named: boolean;
 }
 
@@ -45,6 +40,31 @@ export interface AgencyPositioning {
   updatedAt?: string;
 }
 
+export type AccountStage = 'new' | 'contacted' | 'engaged' | 'meeting' | 'won' | 'lost';
+
+export type ActivityType = 'call' | 'email' | 'linkedin' | 'meeting' | 'note';
+
+export type ActivityOutcome =
+  | 'no_answer'
+  | 'voicemail'
+  | 'gatekeeper'
+  | 'callback'
+  | 'meeting_booked'
+  | 'not_interested'
+  | 'note';
+
+export interface Activity {
+  id: string;
+  accountId: string;
+  leadId?: string;
+  type: ActivityType;
+  outcome: ActivityOutcome;
+  note?: string;
+  nextStepDate?: string;
+  createdAt: string;
+  createdBy?: string;
+}
+
 export interface Account {
   id: string;
   companyName: string;
@@ -55,10 +75,10 @@ export interface Account {
   linkedin?: string;
   description?: string;
   notes: string;
+  stage?: AccountStage;
   signals: Signal[];
   keyPeople: SuggestedPerson[];
   enrichedAt?: string;
-  /** gezet zodra dit account een Client wordt */
   convertedClientId?: string | null;
   createdAt: string;
   updatedAt: string;
