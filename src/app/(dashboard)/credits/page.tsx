@@ -1,12 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Zap, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { C } from '@/lib/ui';
 import { CREDIT_PACKS } from '@/lib/stripe';
 
 export default function CreditsPage() {
+  return (
+    <Suspense>
+      <CreditsContent />
+    </Suspense>
+  );
+}
+
+function CreditsContent() {
   const searchParams = useSearchParams();
   const success = searchParams.get('success') === '1';
   const cancelled = searchParams.get('cancelled') === '1';
