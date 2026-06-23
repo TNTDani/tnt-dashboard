@@ -33,7 +33,7 @@ interface LiveVacancy {
 
 const SENIORITIES: LeadSeniority[] = ['C-level', 'Director', 'Manager', 'Lead', 'Other'];
 const EMPTY_POSITIONING: AgencyPositioning = { agencyName: '', repName: '', niche: '', services: [], differentiator: '', proofPoints: [] };
-const STAGES: AccountStage[] = ['new', 'contacted', 'engaged', 'meeting', 'won', 'lost'];
+const STAGES: AccountStage[] = ['new', 'contacted', 'engaged', 'meeting', 'client', 'dormant', 'lost'];
 
 const STAGE_COLOR: Record<AccountStage, string> = {
   new: C.faint,
@@ -41,6 +41,8 @@ const STAGE_COLOR: Record<AccountStage, string> = {
   engaged: C.amber,
   meeting: C.green,
   won: C.green,
+  client: C.green,
+  dormant: C.faint,
   lost: C.red,
 };
 

@@ -9,14 +9,36 @@ import { accountsDb } from '@/lib/accountsDb';
 import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
 import { useT } from '@/lib/i18n';
 import MergeAccountsModal from '@/components/MergeAccountsModal';
+import { isClient } from '@/lib/accountTypes';
 import type { Account, AccountStage } from '@/lib/accountTypes';
 
 const SIZES: NonNullable<Account['size']>[] = ['startup', 'small', 'medium', 'large', 'enterprise'];
-const STAGES: AccountStage[] = ['new', 'contacted', 'engaged', 'meeting', 'won', 'lost'];
+
+// 'won' kept for board compat with legacy rows; not shown as a chip
+const BOARD_STAGES: AccountStage[] = ['new', 'contacted', 'engaged', 'meeting', 'client', 'dormant', 'lost'];
+
 const STAGE_COLOR: Record<AccountStage, string> = {
-  new: C.faint, contacted: C.blue, engaged: C.amber, meeting: C.green, won: C.green, lost: C.red,
+  new: C.faint,
+  contacted: C.blue,
+  engaged: C.amber,
+  meeting: C.green,
+  won: C.green,
+  client: C.green,
+  dormant: C.faint,
+  lost: C.red,
 };
+
+const PROSPECT_CHIPS: AccountStage[] = ['new', 'contacted', 'engaged', 'meeting', 'lost'];
+const CLIENT_CHIPS: AccountStage[] = ['client', 'dormant', 'lost'];
+
+type Segment = 'all' | 'prospects' | 'clients';
+
 const EMPTY = { companyName: '', website: '', sector: '', size: 'medium' as Account['size'], location: '', linkedin: '', description: '', notes: '' };
+
+function accountHref(a: Account): string {
+  if (isClient(a) && a.convertedClientId) return `/clients/${a.convertedClientId}`;
+  return `/accounts/${a.id}`;
+}
 
 export default function AccountsPage() {
   const t = useT();
@@ -27,6 +49,8 @@ export default function AccountsPage() {
   const [hiringCounts, setHiringCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [segment, setSegment] = useState<Segment>('all');
+  const [stageFilter, setStageFilter] = useState<AccountStage | null>(null);
   const [view, setView] = useState<'list' | 'board'>('list');
   const [showForm, setShowForm] = useState(false);
   const [showMerge, setShowMerge] = useState(false);
@@ -60,15 +84,37 @@ export default function AccountsPage() {
     }
   }
 
-  const filtered = accounts.filter((a) => a.companyName.toLowerCase().includes(search.toLowerCase()));
+  const prospectCount = accounts.filter((a) => !isClient(a)).length;
+  const clientCount = accounts.filter((a) => isClient(a)).length;
+
+  const chipStages = segment === 'clients' ? CLIENT_CHIPS : segment === 'prospects' ? PROSPECT_CHIPS : [...PROSPECT_CHIPS, 'client' as AccountStage, 'dormant' as AccountStage];
+
+  function setSegmentAndClear(s: Segment) {
+    setSegment(s);
+    setStageFilter(null);
+  }
+
+  const filtered = accounts.filter((a) => {
+    if (!a.companyName.toLowerCase().includes(search.toLowerCase())) return false;
+    if (segment === 'prospects' && isClient(a)) return false;
+    if (segment === 'clients' && !isClient(a)) return false;
+    if (stageFilter) {
+      const stage = a.stage ?? 'new';
+      // 'won' is treated as 'client' in the filter
+      const normalised = (stage === 'won' ? 'client' : stage) as AccountStage;
+      if (normalised !== stageFilter) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
+      {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold" style={{ color: C.primary }}>Accounts</h1>
           <p className="text-sm" style={{ color: C.muted }}>
-            {t('Prospect companies in your BD pipeline', 'Prospect-bedrijven in je BD-pijplijn')}
+            {t('Prospect companies and active clients', 'Prospect-bedrijven en actieve klanten')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -84,6 +130,44 @@ export default function AccountsPage() {
             <Plus size={16} /> {t('New account', 'Nieuw account')}
           </button>
         </div>
+      </div>
+
+      {/* Segment tabs */}
+      <div className="mb-3 inline-flex items-center gap-1 rounded-xl p-1" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+        {(['all', 'prospects', 'clients'] as Segment[]).map((seg) => {
+          const label =
+            seg === 'all' ? t('All', 'Alles') :
+            seg === 'prospects' ? t(`Prospects (${prospectCount})`, `Prospects (${prospectCount})`) :
+            t(`Clients (${clientCount})`, `Klanten (${clientCount})`);
+          return (
+            <button
+              key={seg}
+              onClick={() => setSegmentAndClear(seg)}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+              style={{ background: segment === seg ? C.primary : 'transparent', color: segment === seg ? 'white' : C.muted }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Stage chips */}
+      <div className="mb-4 flex flex-wrap items-center gap-1.5">
+        {chipStages.map((s) => (
+          <button
+            key={s}
+            onClick={() => setStageFilter(stageFilter === s ? null : s)}
+            className="rounded-full px-2.5 py-1 text-xs font-medium capitalize transition-colors"
+            style={{
+              background: stageFilter === s ? `${STAGE_COLOR[s]}15` : 'transparent',
+              border: `1px solid ${stageFilter === s ? STAGE_COLOR[s] : C.border}`,
+              color: stageFilter === s ? STAGE_COLOR[s] : C.muted,
+            }}
+          >
+            {t(s, s)}
+          </button>
+        ))}
       </div>
 
       {/* Search + view toggle */}
@@ -124,11 +208,13 @@ export default function AccountsPage() {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            {filtered.map((a) => <AccountCard key={a.id} account={a} onClick={() => router.push(`/accounts/${a.id}`)} t={t} hiringCounts={hiringCounts} />)}
+            {filtered.map((a) => (
+              <AccountCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts} />
+            ))}
           </div>
         )
       ) : (
-        <BoardView accounts={filtered} onCardClick={(id) => router.push(`/accounts/${id}`)} t={t} />
+        <BoardView accounts={filtered} onCardClick={(a) => router.push(accountHref(a))} t={t} />
       )}
 
       {showForm && (
@@ -171,6 +257,7 @@ export default function AccountsPage() {
   );
 }
 
+// ── Token helper (same normalisation as the API) ────────────────────────────────
 function hiringToken(name: string): string {
   const token = name
     .toLowerCase()
@@ -186,10 +273,20 @@ function hiringToken(name: string): string {
   return token ?? '';
 }
 
-function AccountCard({ account, onClick, t, hiringCounts }: { account: Account; onClick: () => void; t: (en: string, nl: string) => string; hiringCounts: Record<string, number> }) {
+// ── AccountCard ─────────────────────────────────────────────────────────────────
+function AccountCard({ account, onClick, t, hiringCounts }: {
+  account: Account;
+  onClick: () => void;
+  t: (en: string, nl: string) => string;
+  hiringCounts: Record<string, number>;
+}) {
+  const client = isClient(account);
   const score = computeBuyingScore(account.signals);
   const stage = account.stage ?? 'new';
+  // Normalise legacy 'won' → 'client' for display
+  const displayStage = stage === 'won' ? 'client' : stage;
   const openRoles = hiringCounts[hiringToken(account.companyName)] ?? 0;
+
   return (
     <button onClick={onClick} className="rounded-xl p-4 text-left transition hover:shadow-sm" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
       <div className="flex items-start justify-between">
@@ -203,22 +300,36 @@ function AccountCard({ account, onClick, t, hiringCounts }: { account: Account; 
               <Briefcase size={11} /> {openRoles}
             </span>
           )}
-          {account.signals.length > 0 && (
+          {!client && account.signals.length > 0 && (
             <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs" style={{ background: C.pill, color: C.pillText }}>
               <Radar size={11} /> {account.signals.length}
             </span>
           )}
-          <span className="rounded-full px-2 py-0.5 text-xs capitalize" style={{ background: `${STAGE_COLOR[stage]}20`, color: STAGE_COLOR[stage] }}>
-            {stage}
+          <span className="rounded-full px-2 py-0.5 text-xs capitalize" style={{ background: `${STAGE_COLOR[displayStage]}20`, color: STAGE_COLOR[displayStage] }}>
+            {t(displayStage, displayStage)}
           </span>
         </div>
       </div>
-      <div className="mt-2 flex items-center gap-2">
-        <div className="h-1.5 w-16 overflow-hidden rounded-full" style={{ background: C.border }}>
-          <div className="h-full rounded-full" style={{ width: `${score.score}%`, background: scoreColor(score.label) }} />
+
+      {client ? (
+        // Client row: no buying score — show a neutral delivery indicator
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-xs" style={{ color: C.muted }}>
+            {openRoles > 0
+              ? t(`${openRoles} open role${openRoles !== 1 ? 's' : ''} on boards`, `${openRoles} open vacature${openRoles !== 1 ? 's' : ''} op boards`)
+              : t('No open roles on job boards', 'Geen open vacatures op boards')}
+          </span>
         </div>
-        <span className="text-xs" style={{ color: scoreColor(score.label) }}>{t('Buying score', 'Koopkans')} {score.score}</span>
-      </div>
+      ) : (
+        // Prospect row: buying score bar
+        <div className="mt-2 flex items-center gap-2">
+          <div className="h-1.5 w-16 overflow-hidden rounded-full" style={{ background: C.border }}>
+            <div className="h-full rounded-full" style={{ width: `${score.score}%`, background: scoreColor(score.label) }} />
+          </div>
+          <span className="text-xs" style={{ color: scoreColor(score.label) }}>{t('Buying score', 'Koopkans')} {score.score}</span>
+        </div>
+      )}
+
       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs" style={{ color: C.muted }}>
         {account.sector && <span>{account.sector}</span>}
         {account.location && <span className="inline-flex items-center gap-1"><MapPin size={11} /> {account.location}</span>}
@@ -227,16 +338,31 @@ function AccountCard({ account, onClick, t, hiringCounts }: { account: Account; 
   );
 }
 
-function BoardView({ accounts, onCardClick, t }: { accounts: Account[]; onCardClick: (id: string) => void; t: (en: string, nl: string) => string }) {
-  const byStage = Object.fromEntries(STAGES.map((s) => [s, accounts.filter((a) => (a.stage ?? 'new') === s)]));
+// ── BoardView ───────────────────────────────────────────────────────────────────
+function BoardView({ accounts, onCardClick, t }: {
+  accounts: Account[];
+  onCardClick: (a: Account) => void;
+  t: (en: string, nl: string) => string;
+}) {
+  const byStage = Object.fromEntries(
+    BOARD_STAGES.map((s) => [
+      s,
+      accounts.filter((a) => {
+        const stage = a.stage ?? 'new';
+        // normalise legacy 'won' into the 'client' column
+        return (stage === 'won' ? 'client' : stage) === s;
+      }),
+    ]),
+  );
+
   return (
     <div className="flex gap-3 overflow-x-auto pb-4">
-      {STAGES.map((stage) => {
+      {BOARD_STAGES.map((stage) => {
         const items = byStage[stage];
         return (
           <div key={stage} className="w-56 shrink-0">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-semibold capitalize" style={{ color: STAGE_COLOR[stage] }}>{stage}</span>
+              <span className="text-xs font-semibold capitalize" style={{ color: STAGE_COLOR[stage] }}>{t(stage, stage)}</span>
               <span className="text-xs" style={{ color: C.faint }}>{items.length}</span>
             </div>
             <div className="space-y-2">
@@ -245,16 +371,18 @@ function BoardView({ accounts, onCardClick, t }: { accounts: Account[]; onCardCl
                 return (
                   <button
                     key={a.id}
-                    onClick={() => onCardClick(a.id)}
+                    onClick={() => onCardClick(a)}
                     className="w-full rounded-xl p-3 text-left transition hover:shadow-sm"
                     style={{ background: C.surface, border: `1px solid ${C.border}` }}
                   >
                     <div className="flex items-start justify-between gap-1">
                       <span className="text-sm font-medium leading-snug" style={{ color: C.primary }}>{a.companyName}</span>
-                      <span className="text-xs font-semibold shrink-0" style={{ color: scoreColor(score.label) }}>{score.score}</span>
+                      {!isClient(a) && (
+                        <span className="text-xs font-semibold shrink-0" style={{ color: scoreColor(score.label) }}>{score.score}</span>
+                      )}
                     </div>
                     {a.sector && <p className="mt-1 text-xs" style={{ color: C.muted }}>{a.sector}</p>}
-                    {a.signals.length > 0 && (
+                    {!isClient(a) && a.signals.length > 0 && (
                       <span className="mt-1.5 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs" style={{ background: C.pill, color: C.pillText }}>
                         <Radar size={10} /> {a.signals.length}
                       </span>

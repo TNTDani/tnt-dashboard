@@ -35,7 +35,6 @@ const NAV_GROUPS = [
     label: "People",
     items: [
       { href: "/candidates", icon: UserCircle, label: "Candidates", exact: false },
-      { href: "/clients", icon: Building2, label: "Clients", exact: false },
       { href: "/accounts", icon: Target, label: "Accounts", exact: false },
       { href: "/vacancies", icon: Briefcase, label: "Vacancies", exact: true },
     ],

@@ -40,7 +40,13 @@ export interface AgencyPositioning {
   updatedAt?: string;
 }
 
-export type AccountStage = 'new' | 'contacted' | 'engaged' | 'meeting' | 'won' | 'lost';
+export type AccountStage = 'new' | 'contacted' | 'engaged' | 'meeting' | 'won' | 'lost' | 'client' | 'dormant';
+
+/** True when an account represents an active/former client.
+ *  'won' is a legacy alias kept for backward compat with existing rows. */
+export function isClient(account: { stage?: AccountStage; convertedClientId?: string | null }): boolean {
+  return account.stage === 'client' || account.stage === 'won' || account.stage === 'dormant' || !!account.convertedClientId;
+}
 
 export type ActivityType = 'call' | 'email' | 'linkedin' | 'meeting' | 'note';
 
