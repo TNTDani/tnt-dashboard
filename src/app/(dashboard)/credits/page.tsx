@@ -20,12 +20,16 @@ function CreditsContent() {
   const cancelled = searchParams.get('cancelled') === '1';
 
   const [balance, setBalance] = useState<number | null>(null);
+  const [unlimited, setUnlimited] = useState(false);
   const [loadingPack, setLoadingPack] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/credits/balance')
       .then((r) => r.json())
-      .then((d) => setBalance(d.balance ?? 0))
+      .then((d) => {
+        setUnlimited(d.unlimited ?? false);
+        setBalance(d.unlimited ? null : (d.balance ?? 0));
+      })
       .catch(() => setBalance(0));
   }, [success]);
 
@@ -73,13 +77,20 @@ function CreditsContent() {
         <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: C.muted }}>Current balance</p>
         <div className="flex items-end gap-2">
           <span className="text-4xl font-bold tabular-nums" style={{ color: C.primary }}>
-            {balance === null ? '—' : balance.toLocaleString()}
+            {unlimited ? '∞' : balance === null ? '—' : balance.toLocaleString()}
           </span>
           <span className="mb-1 text-sm" style={{ color: C.muted }}>credits</span>
         </div>
       </div>
 
       {/* Packs */}
+      {unlimited ? (
+        <div className="rounded-2xl p-6 text-center" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+          <p className="text-sm font-medium" style={{ color: C.muted }}>
+            Your account has unlimited credits — no purchase needed.
+          </p>
+        </div>
+      ) : (
       <div className="grid gap-4 sm:grid-cols-3">
         {CREDIT_PACKS.map((pack) => (
           <div
@@ -114,9 +125,13 @@ function CreditsContent() {
         ))}
       </div>
 
-      <p className="mt-6 text-xs text-center" style={{ color: C.faint }}>
-        Payments are processed by Stripe. Credits are added instantly after payment confirmation.
-      </p>
+      )}
+
+      {!unlimited && (
+        <p className="mt-6 text-xs text-center" style={{ color: C.faint }}>
+          Payments are processed by Stripe. Credits are added instantly after payment confirmation.
+        </p>
+      )}
     </div>
   );
 }
