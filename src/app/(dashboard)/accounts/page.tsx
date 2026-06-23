@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban } from 'lucide-react';
+import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase } from 'lucide-react';
 import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
 import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
@@ -24,6 +24,7 @@ export default function AccountsPage() {
   const { data: session } = useSession();
   const isAdmin = ['owner', 'admin'].includes(session?.user?.role ?? '');
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [hiringCounts, setHiringCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [view, setView] = useState<'list' | 'board'>('list');
@@ -38,6 +39,13 @@ export default function AccountsPage() {
   }, []);
 
   useEffect(() => { reload(); }, [reload]);
+
+  useEffect(() => {
+    fetch('/api/accounts/hiring-signals')
+      .then((r) => r.json())
+      .then((d) => setHiringCounts(d))
+      .catch(() => {});
+  }, []);
 
   async function create() {
     if (!form.companyName.trim()) return;
@@ -116,7 +124,7 @@ export default function AccountsPage() {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
-            {filtered.map((a) => <AccountCard key={a.id} account={a} onClick={() => router.push(`/accounts/${a.id}`)} t={t} />)}
+            {filtered.map((a) => <AccountCard key={a.id} account={a} onClick={() => router.push(`/accounts/${a.id}`)} t={t} hiringCounts={hiringCounts} />)}
           </div>
         )
       ) : (
@@ -163,9 +171,25 @@ export default function AccountsPage() {
   );
 }
 
-function AccountCard({ account, onClick, t }: { account: Account; onClick: () => void; t: (en: string, nl: string) => string }) {
+function hiringToken(name: string): string {
+  const token = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(
+      /\b(bv|nv|ltd|inc|llc|gmbh|ag|corp|group|holding|solutions|technologies|tech|systems|nederland|netherlands|nl)\b/g,
+      ' ',
+    )
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .find((t) => t.length >= 3);
+  return token ?? '';
+}
+
+function AccountCard({ account, onClick, t, hiringCounts }: { account: Account; onClick: () => void; t: (en: string, nl: string) => string; hiringCounts: Record<string, number> }) {
   const score = computeBuyingScore(account.signals);
   const stage = account.stage ?? 'new';
+  const openRoles = hiringCounts[hiringToken(account.companyName)] ?? 0;
   return (
     <button onClick={onClick} className="rounded-xl p-4 text-left transition hover:shadow-sm" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
       <div className="flex items-start justify-between">
@@ -174,6 +198,11 @@ function AccountCard({ account, onClick, t }: { account: Account; onClick: () =>
           <span className="font-medium" style={{ color: C.primary }}>{account.companyName}</span>
         </div>
         <div className="flex items-center gap-1.5">
+          {openRoles > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs" style={{ background: 'rgba(59,130,246,0.1)', color: C.blue }} title={`${openRoles} open role(s) on job boards`}>
+              <Briefcase size={11} /> {openRoles}
+            </span>
+          )}
           {account.signals.length > 0 && (
             <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs" style={{ background: C.pill, color: C.pillText }}>
               <Radar size={11} /> {account.signals.length}

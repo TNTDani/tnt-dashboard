@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Plus, X, Radar, Globe, MapPin, UserPlus, Loader2,
-  Link2, Phone, Trash2, UserCheck, Gauge, ClipboardList,
+  Link2, Phone, Trash2, UserCheck, Gauge, ClipboardList, Briefcase, ExternalLink,
 } from 'lucide-react';
 import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
@@ -17,8 +17,19 @@ import PitchPanel from '@/components/PitchPanel';
 import LogActivityModal from '@/components/LogActivityModal';
 import type {
   Account, AccountLead, AgencyPositioning, LeadSeniority, PitchRecord,
-  SuggestedPerson, AccountStage, Activity,
+  SuggestedPerson, AccountStage, Activity, Signal,
 } from '@/lib/accountTypes';
+
+interface LiveVacancy {
+  id: string;
+  title: string;
+  company: string;
+  source: string;
+  location: string;
+  url: string;
+  category: string;
+  postedAt: string;
+}
 
 const SENIORITIES: LeadSeniority[] = ['C-level', 'Director', 'Manager', 'Lead', 'Other'];
 const EMPTY_POSITIONING: AgencyPositioning = { agencyName: '', repName: '', niche: '', services: [], differentiator: '', proofPoints: [] };
@@ -53,6 +64,8 @@ export default function AccountDetailPage() {
   const [positioning, setPositioning] = useState<AgencyPositioning>(EMPTY_POSITIONING);
   const [pitchByLead, setPitchByLead] = useState<Record<string, PitchRecord | null>>({});
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [liveVacancies, setLiveVacancies] = useState<LiveVacancy[]>([]);
+  const [pushingSignals, setPushingSignals] = useState(false);
   const [loading, setLoading] = useState(true);
   const [enriching, setEnriching] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -76,6 +89,11 @@ export default function AccountDetailPage() {
         const pitches: Record<string, PitchRecord | null> = {};
         await Promise.all(ls.map(async (l) => (pitches[l.id] = await accountsDb.getLatestPitch(l.id))));
         setPitchByLead(pitches);
+        // Load live vacancies from job boards (non-blocking)
+        fetch(`/api/accounts/${id}/live-vacancies`)
+          .then((r) => r.json())
+          .then((d) => setLiveVacancies(d.listings ?? []))
+          .catch(() => {});
       } finally {
         setLoading(false);
       }
@@ -150,6 +168,31 @@ export default function AccountDetailPage() {
     if (newStage && account) setAccount({ ...account, stage: newStage });
     accountsDb.getActivities(id).then(setActivities);
     setLogLead(null);
+  }
+
+  async function pushVacanciesAsSignals() {
+    if (!account || liveVacancies.length === 0) return;
+    setPushingSignals(true);
+    try {
+      const newSignals: Signal[] = liveVacancies.map((v) => ({
+        type: 'open_role' as const,
+        summary: v.title,
+        source: v.source,
+        date: v.postedAt ? v.postedAt.split('T')[0] : undefined,
+      }));
+      const existing = account.signals ?? [];
+      const existingSummaries = new Set(existing.map((s) => s.summary));
+      const toAdd = newSignals.filter((s) => !existingSummaries.has(s.summary));
+      if (toAdd.length === 0) { toast.success(t('Already in signals', 'Al in signalen')); return; }
+      const merged = [...existing, ...toAdd];
+      await accountsDb.updateAccount(account.id, { signals: merged, enrichedAt: new Date().toISOString() });
+      setAccount({ ...account, signals: merged });
+      toast.success(`${toAdd.length} ${t('signal(s) added', 'signaal/signalen toegevoegd')}`);
+    } catch {
+      toast.error(t('Failed to add signals', 'Signalen toevoegen mislukt'));
+    } finally {
+      setPushingSignals(false);
+    }
   }
 
   if (loading) return <div className="p-8 text-sm" style={{ color: C.muted }}>{t('Loading...', 'Laden...')}</div>;
@@ -261,6 +304,54 @@ export default function AccountDetailPage() {
                 <span key={i} className="rounded-lg px-2.5 py-1 text-xs" style={{ background: C.bg, color: C.primary }} title={s.summary}>
                   {s.type.replace('_', ' ')}: {s.summary.slice(0, 60)}
                 </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Live vacancies from job boards */}
+        {liveVacancies.length > 0 && (
+          <div className="mt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide" style={{ color: C.muted }}>
+                <Briefcase size={12} />
+                {t('Open roles on job boards', 'Open rollen op jobboards')}
+                <span className="rounded-full px-1.5 py-0.5 text-xs font-semibold" style={{ background: C.pill, color: C.pillText }}>
+                  {liveVacancies.length}
+                </span>
+              </span>
+              <button
+                onClick={pushVacanciesAsSignals}
+                disabled={pushingSignals}
+                className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium disabled:opacity-50"
+                style={{ border: `1px solid ${C.border}`, color: C.primary }}
+              >
+                {pushingSignals ? <Loader2 size={11} className="animate-spin" /> : <Radar size={11} />}
+                {t('Add all as signals', 'Voeg toe als signalen')}
+              </button>
+            </div>
+            <div className="space-y-1">
+              {liveVacancies.slice(0, 8).map((v) => (
+                <div
+                  key={v.id}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
+                  style={{ background: C.bg }}
+                >
+                  <span className="flex-1 truncate font-medium" style={{ color: C.primary }}>{v.title}</span>
+                  <span className="rounded-full px-2 py-0.5 capitalize" style={{ background: 'rgba(45,74,45,0.08)', color: C.muted }}>
+                    {v.category}
+                  </span>
+                  <span style={{ color: C.faint }}>{v.source}</span>
+                  <a
+                    href={v.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ color: C.primary }}
+                  >
+                    <ExternalLink size={11} />
+                  </a>
+                </div>
               ))}
             </div>
           </div>
