@@ -22,13 +22,26 @@ export function requireAgencyId(): string {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-async function replaceAll(table: string, rows: Record<string, unknown>[]): Promise<void> {
+// syncAll replaces the old delete-then-insert replaceAll.
+// Strategy: upsert first (data is never absent), then delete orphans.
+// If the second step fails the table still has valid data; the next save will
+// clean up the orphans. UUIDs are [0-9a-f-] only so the id list is safe.
+async function syncAll(table: string, rows: Record<string, unknown>[]): Promise<void> {
   const agencyId = requireAgencyId();
-  const { error: delError } = await supabase.from(table).delete().eq('agency_id', agencyId);
+  if (rows.length === 0) {
+    const { error } = await supabase.from(table).delete().eq('agency_id', agencyId);
+    if (error) throw error;
+    return;
+  }
+  const { error: upsertError } = await supabase.from(table).upsert(rows, { onConflict: 'id' });
+  if (upsertError) throw upsertError;
+  const ids = rows.map((r) => r.id as string);
+  const { error: delError } = await supabase
+    .from(table)
+    .delete()
+    .eq('agency_id', agencyId)
+    .not('id', 'in', `(${ids.join(',')})`);
   if (delError) throw delError;
-  if (rows.length === 0) return;
-  const { error: insError } = await supabase.from(table).insert(rows);
-  if (insError) throw insError;
 }
 
 // ---------------------------------------------------------------------------
@@ -514,7 +527,7 @@ export const db = {
     return (data ?? []).map(rowToCandidate);
   },
   saveCandidates: async (data: Candidate[]): Promise<void> => {
-    await replaceAll('candidates', data.map(candidateToRow));
+    await syncAll('candidates', data.map(candidateToRow));
   },
 
   // CandidateProfiles
@@ -525,7 +538,7 @@ export const db = {
     return (data ?? []).map(rowToProfile);
   },
   saveCandidateProfiles: async (data: CandidateProfile[]): Promise<void> => {
-    await replaceAll('candidate_profiles', data.map(profileToRow));
+    await syncAll('candidate_profiles', data.map(profileToRow));
   },
 
   // Clients
@@ -536,7 +549,7 @@ export const db = {
     return (data ?? []).map(rowToClient);
   },
   saveClients: async (data: Client[]): Promise<void> => {
-    await replaceAll('clients', data.map(clientToRow));
+    await syncAll('clients', data.map(clientToRow));
   },
 
   // Vacancies
@@ -547,7 +560,7 @@ export const db = {
     return (data ?? []).map(rowToVacancy);
   },
   saveVacancies: async (data: Vacancy[]): Promise<void> => {
-    await replaceAll('vacancies', data.map(vacancyToRow));
+    await syncAll('vacancies', data.map(vacancyToRow));
   },
 
   // Placements
@@ -558,7 +571,7 @@ export const db = {
     return (data ?? []).map(rowToPlacement);
   },
   savePlacements: async (data: Placement[]): Promise<void> => {
-    await replaceAll('placements', data.map(placementToRow));
+    await syncAll('placements', data.map(placementToRow));
   },
 
   // FollowUps
@@ -569,7 +582,7 @@ export const db = {
     return (data ?? []).map(rowToFollowUp);
   },
   saveFollowUps: async (data: FollowUp[]): Promise<void> => {
-    await replaceAll('follow_ups', data.map(followUpToRow));
+    await syncAll('follow_ups', data.map(followUpToRow));
   },
 
   // ScreeningResults
@@ -580,7 +593,7 @@ export const db = {
     return (data ?? []).map(rowToScreening);
   },
   saveScreenings: async (data: ScreeningResult[]): Promise<void> => {
-    await replaceAll('screening_results', data.map(screeningToRow));
+    await syncAll('screening_results', data.map(screeningToRow));
   },
 
   // SourcingStrategies
@@ -591,7 +604,7 @@ export const db = {
     return (data ?? []).map(rowToSourcing);
   },
   saveSourcingStrategies: async (data: SourcingStrategy[]): Promise<void> => {
-    await replaceAll('sourcing_strategies', data.map(sourcingToRow));
+    await syncAll('sourcing_strategies', data.map(sourcingToRow));
   },
 
   // WeeklyReports
@@ -602,7 +615,7 @@ export const db = {
     return (data ?? []).map(rowToReport);
   },
   saveWeeklyReports: async (data: WeeklyReport[]): Promise<void> => {
-    await replaceAll('weekly_reports', data.map(reportToRow));
+    await syncAll('weekly_reports', data.map(reportToRow));
   },
 
   // CandidateVacancyMatches (individual upsert/delete — no replaceAll)
