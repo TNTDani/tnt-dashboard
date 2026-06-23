@@ -3,7 +3,23 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase, LayoutGrid, Check } from 'lucide-react';
+import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase, LayoutGrid, Check, Download } from 'lucide-react';
+
+function exportAccountsCsv(rows: Account[]) {
+  const headers = ['Company', 'Website', 'Sector', 'Size', 'Location', 'Stage', 'Notes'];
+  const lines = [
+    headers.join(','),
+    ...rows.map(a => [
+      a.companyName, a.website ?? '', a.sector ?? '', a.size ?? '',
+      a.location ?? '', a.stage ?? 'new', a.notes ?? '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')),
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const el = document.createElement('a');
+  el.href = url; el.download = 'accounts.csv'; el.click();
+  URL.revokeObjectURL(url);
+}
 import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
 import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
@@ -54,6 +70,20 @@ export default function AccountsPage() {
   // ── Drag state ────────────────────────────────────────────────────────────────
   const [draggingIds, setDraggingIds] = useState<string[]>([]);
   const [dropTarget, setDropTarget] = useState<Segment | null>(null);
+
+  const agencyId = session?.user?.agencyId as string | undefined;
+
+  // Persist + restore segment tab
+  useEffect(() => {
+    if (!agencyId) return;
+    const saved = localStorage.getItem(`accounts_segment_${agencyId}`) as Segment | null;
+    if (saved && ['all', 'prospects', 'clients'].includes(saved)) setSegment(saved);
+  }, [agencyId]);
+
+  useEffect(() => {
+    if (!agencyId) return;
+    localStorage.setItem(`accounts_segment_${agencyId}`, segment);
+  }, [agencyId, segment]);
 
   const reload = useCallback(() => {
     setLoading(true);
@@ -208,6 +238,9 @@ export default function AccountsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => exportAccountsCsv(filtered)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium" style={{ border: `1px solid ${C.border}`, color: C.primary }} title="Export to CSV">
+            <Download size={15} />
+          </button>
           {isAdmin && accounts.length >= 2 && (
             <button onClick={() => setShowMerge(true)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium" style={{ border: `1px solid ${C.border}`, color: C.primary }}>
               <GitMerge size={15} /> {t('Merge', 'Samenvoegen')}

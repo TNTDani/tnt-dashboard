@@ -7,7 +7,24 @@ import { CandidateProfile, TimelineEntry } from '@/lib/types';
 import { db, initDb } from '@/lib/db';
 import { geocodePostalCode, haversineDistance } from '@/lib/geocoding';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2, Euro, ChevronUp, ChevronDown, Mail, ArrowRight } from 'lucide-react';
+import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2, Euro, ChevronUp, ChevronDown, Mail, ArrowRight, Download } from 'lucide-react';
+
+function exportCsv(rows: CandidateProfile[]) {
+  const headers = ['First name', 'Last name', 'Email', 'Phone', 'Location', 'Job title', 'Branch', 'Status', 'Salary expectation', 'LinkedIn'];
+  const lines = [
+    headers.join(','),
+    ...rows.map(c => [
+      c.firstName, c.lastName, c.email, c.phone ?? '',
+      c.location ?? '', c.jobTitle, c.branch, c.status,
+      c.salaryExpectation ?? '', c.linkedin ?? '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')),
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'candidates.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
 import { motion, AnimatePresence } from 'motion/react';
 
 const BRANCHES = ['IT', 'Finance', 'Marketing', 'Sales', 'Engineering', 'Healthcare', 'Legal', 'HR', 'Other'];
@@ -64,6 +81,32 @@ export default function CandidatesPage() {
   const [distanceFilter, setDistanceFilter] = useState<Map<string, number>>(new Map());
 
   const agencyId = session?.user?.agencyId;
+
+  // Load persisted filters
+  useEffect(() => {
+    if (!agencyId) return;
+    try {
+      const saved = localStorage.getItem(`filters_candidates_${agencyId}`);
+      if (saved) {
+        const f = JSON.parse(saved);
+        if (f.branch) setFilterBranch(f.branch);
+        if (f.jobTitle) setFilterJobTitle(f.jobTitle);
+        if (f.location) setFilterLocation(f.location);
+        if (f.status) setFilterStatus(f.status);
+        if (f.sortKey) setSortKey(f.sortKey);
+        if (f.sortDir) setSortDir(f.sortDir);
+      }
+    } catch { /* ignore */ }
+  }, [agencyId]);
+
+  // Persist filters on change
+  useEffect(() => {
+    if (!agencyId) return;
+    localStorage.setItem(`filters_candidates_${agencyId}`, JSON.stringify({
+      branch: filterBranch, jobTitle: filterJobTitle, location: filterLocation,
+      status: filterStatus, sortKey, sortDir,
+    }));
+  }, [agencyId, filterBranch, filterJobTitle, filterLocation, filterStatus, sortKey, sortDir]);
 
   useEffect(() => {
     if (!agencyId) return;
@@ -224,6 +267,15 @@ export default function CandidatesPage() {
             {candidates.length}
           </span>
         </div>
+        <motion.button
+          whileTap={{ scale: 0.96 }}
+          onClick={() => exportCsv(filtered)}
+          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+          style={{ border: '1px solid rgba(45,74,45,0.2)', color: '#2D4A2D' }}
+          title="Export to CSV"
+        >
+          <Download size={15} />
+        </motion.button>
         <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => setShowAdd(true)}

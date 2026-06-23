@@ -5,8 +5,25 @@ import { motion, AnimatePresence } from "motion/react";
 import { Placement } from "@/lib/types";
 import { db } from "@/lib/db";
 import {
-  Trophy, Pencil, X, Check, FileText, Banknote, Clock, Search,
+  Trophy, Pencil, X, Check, FileText, Banknote, Clock, Search, Download,
 } from "lucide-react";
+
+function exportCsv(rows: Placement[]) {
+  const headers = ['Candidate', 'Job title', 'Vacancy', 'Company', 'Placement date', 'Salary', 'Fee %', 'Fee amount', 'Payment status', 'Notes'];
+  const lines = [
+    headers.join(','),
+    ...rows.map(p => [
+      p.candidateName, p.jobTitle, p.vacancyTitle ?? '', p.company ?? '',
+      p.placementDate, p.grossAnnualSalary, p.feePercentage, p.feeAmount,
+      p.paymentStatus, p.notes ?? '',
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')),
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'placements.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -146,9 +163,19 @@ export default function PlacementsPage() {
   return (
     <div>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#2D4A2D]">Placements</h1>
-        <p className="text-[#6B7280] text-sm mt-1">Track fees and payment status for every confirmed placement</p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#2D4A2D]">Placements</h1>
+          <p className="text-[#6B7280] text-sm mt-1">Track fees and payment status for every confirmed placement</p>
+        </div>
+        <button
+          onClick={() => exportCsv(filtered)}
+          className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+          style={{ border: '1px solid rgba(45,74,45,0.2)', color: '#2D4A2D' }}
+          title="Export to CSV"
+        >
+          <Download size={15} /> Export
+        </button>
       </div>
 
       {/* ── Stats row ──────────────────────────────────────────────────────── */}

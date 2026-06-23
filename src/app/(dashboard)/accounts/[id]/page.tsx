@@ -19,6 +19,9 @@ import type {
   Account, AccountLead, AgencyPositioning, LeadSeniority, PitchRecord,
   SuggestedPerson, AccountStage, Activity, Signal,
 } from '@/lib/accountTypes';
+import { isClient } from '@/lib/accountTypes';
+import { db, initDb } from '@/lib/db';
+import type { Vacancy, CandidateVacancyMatch } from '@/lib/types';
 
 interface LiveVacancy {
   id: string;
@@ -56,12 +59,15 @@ export default function AccountDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: session } = useSession();
   const isAdmin = ['owner', 'admin'].includes(session?.user?.role ?? '');
+  const agencyId = session?.user?.agencyId as string | undefined;
   const dialer = useDialer();
   const t = useT();
   const scoreLabelText = (k: string) =>
     k === 'high' ? t('High', 'Hoog') : k === 'medium' ? t('Medium', 'Gemiddeld') : k === 'low' ? t('Low', 'Laag') : t('No signal', 'Geen signaal');
 
   const [account, setAccount] = useState<Account | null>(null);
+  const [clientVacancies, setClientVacancies] = useState<Vacancy[]>([]);
+  const [matchesByVac, setMatchesByVac] = useState<Record<string, CandidateVacancyMatch[]>>({});
   const [leads, setLeads] = useState<AccountLead[]>([]);
   const [positioning, setPositioning] = useState<AgencyPositioning>(EMPTY_POSITIONING);
   const [pitchByLead, setPitchByLead] = useState<Record<string, PitchRecord | null>>({});
@@ -101,6 +107,22 @@ export default function AccountDetailPage() {
       }
     })();
   }, [id]);
+
+  useEffect(() => {
+    if (!account || !agencyId || !isClient(account)) return;
+    initDb(agencyId);
+    db.getVacancies().then((vacs) => {
+      const linked = vacs.filter(
+        (v) => v.company.toLowerCase() === account.companyName.toLowerCase(),
+      );
+      setClientVacancies(linked);
+      Promise.all(linked.map((v) => db.getMatchesByVacancy(v.id))).then((all) => {
+        const byVac: Record<string, CandidateVacancyMatch[]> = {};
+        linked.forEach((v, i) => { byVac[v.id] = all[i]; });
+        setMatchesByVac(byVac);
+      });
+    });
+  }, [account, agencyId]);
 
   async function setStage(stage: AccountStage) {
     if (!account) return;
@@ -527,6 +549,50 @@ export default function AccountDetailPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Client delivery section */}
+      {isClient(account) && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold mb-3" style={{ color: C.primary }}>
+            Client delivery
+          </h2>
+          {clientVacancies.length === 0 ? (
+            <p className="text-sm" style={{ color: C.muted }}>
+              No vacancies linked to this client yet. Add vacancies on the Vacancies page and set the company name to &ldquo;{account.companyName}&rdquo;.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {clientVacancies.map((vac) => {
+                const matches = matchesByVac[vac.id] ?? [];
+                const active = matches.filter((m) => m.status === 'active' || m.status === 'on-hold');
+                const placed = matches.filter((m) => m.status === 'placed');
+                const statusLabel: Record<string, string> = { open: 'Active', 'on-hold': 'On hold', closed: 'Filled' };
+                const statusColor: Record<string, string> = { open: C.green, 'on-hold': C.amber, closed: C.faint };
+                return (
+                  <div key={vac.id} className="rounded-xl p-4 flex items-start justify-between gap-4" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate" style={{ color: C.primary }}>{vac.title}</p>
+                      <p className="text-xs mt-0.5 capitalize" style={{ color: C.muted }}>
+                        {vac.stage.replace(/_/g, ' ')}
+                      </p>
+                      {(active.length > 0 || placed.length > 0) && (
+                        <p className="text-xs mt-1.5" style={{ color: C.muted }}>
+                          {active.length > 0 && `${active.length} in pipeline`}
+                          {active.length > 0 && placed.length > 0 && ' · '}
+                          {placed.length > 0 && `${placed.length} placed`}
+                        </p>
+                      )}
+                    </div>
+                    <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: `${statusColor[vac.status]}22`, color: statusColor[vac.status] }}>
+                      {statusLabel[vac.status] ?? vac.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
