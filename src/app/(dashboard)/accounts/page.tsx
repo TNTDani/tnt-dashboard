@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase, LayoutGrid } from 'lucide-react';
+import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase, LayoutGrid, Check } from 'lucide-react';
 import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
 import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
@@ -13,19 +13,11 @@ import { isClient } from '@/lib/accountTypes';
 import type { Account, AccountStage } from '@/lib/accountTypes';
 
 const SIZES: NonNullable<Account['size']>[] = ['startup', 'small', 'medium', 'large', 'enterprise'];
-
-// 'won' kept for board compat with legacy rows; not shown as a chip
 const BOARD_STAGES: AccountStage[] = ['new', 'contacted', 'engaged', 'meeting', 'client', 'dormant', 'lost'];
 
 const STAGE_COLOR: Record<AccountStage, string> = {
-  new: C.faint,
-  contacted: C.blue,
-  engaged: C.amber,
-  meeting: C.green,
-  won: C.green,
-  client: C.green,
-  dormant: C.faint,
-  lost: C.red,
+  new: C.faint, contacted: C.blue, engaged: C.amber, meeting: C.green,
+  won: C.green, client: C.green, dormant: C.faint, lost: C.red,
 };
 
 const PROSPECT_CHIPS: AccountStage[] = ['new', 'contacted', 'engaged', 'meeting', 'lost'];
@@ -56,7 +48,11 @@ export default function AccountsPage() {
   const [showMerge, setShowMerge] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
+
+  // ── Multi-select ──────────────────────────────────────────────────────────────
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  // ── Drag state ────────────────────────────────────────────────────────────────
+  const [draggingIds, setDraggingIds] = useState<string[]>([]);
   const [dropTarget, setDropTarget] = useState<Segment | null>(null);
 
   const reload = useCallback(() => {
@@ -89,50 +85,14 @@ export default function AccountsPage() {
   const prospectCount = accounts.filter((a) => !isClient(a)).length;
   const clientCount = accounts.filter((a) => isClient(a)).length;
 
-  const chipStages = segment === 'clients' ? CLIENT_CHIPS : segment === 'prospects' ? PROSPECT_CHIPS : [...PROSPECT_CHIPS, 'client' as AccountStage, 'dormant' as AccountStage];
+  const chipStages = segment === 'clients' ? CLIENT_CHIPS
+    : segment === 'prospects' ? PROSPECT_CHIPS
+    : [...PROSPECT_CHIPS, 'client' as AccountStage, 'dormant' as AccountStage];
 
   function setSegmentAndClear(s: Segment) {
     setSegment(s);
     setStageFilter(null);
-  }
-
-  // ── Drag-and-drop ────────────────────────────────────────────────────────────
-  function dragStageFor(account: Account, target: Segment): AccountStage | null {
-    if (target === 'prospects' && isClient(account)) return 'new';
-    if (target === 'clients' && !isClient(account)) return 'client';
-    return null;
-  }
-
-  function handleDragStart(e: React.DragEvent, id: string) {
-    setDraggingId(id);
-    e.dataTransfer.effectAllowed = 'move';
-  }
-
-  function handleDragEnd() {
-    setDraggingId(null);
-    setDropTarget(null);
-  }
-
-  function handleDragOver(e: React.DragEvent, seg: Segment) {
-    if (!draggingId) return;
-    const account = accounts.find((a) => a.id === draggingId);
-    if (!account || !dragStageFor(account, seg)) return;
-    e.preventDefault();
-    setDropTarget(seg);
-  }
-
-  function handleDrop(e: React.DragEvent, seg: Segment) {
-    e.preventDefault();
-    setDropTarget(null);
-    if (!draggingId) return;
-    const account = accounts.find((a) => a.id === draggingId);
-    if (!account) return;
-    const newStage = dragStageFor(account, seg);
-    if (!newStage) return;
-    setDraggingId(null);
-    // Optimistic update — revert on error
-    setAccounts((prev) => prev.map((a) => a.id === account.id ? { ...a, stage: newStage } : a));
-    accountsDb.updateAccount(account.id, { stage: newStage }).catch(() => reload());
+    setSelected(new Set());
   }
 
   const filtered = accounts.filter((a) => {
@@ -141,12 +101,101 @@ export default function AccountsPage() {
     if (segment === 'clients' && !isClient(a)) return false;
     if (stageFilter) {
       const stage = a.stage ?? 'new';
-      // 'won' is treated as 'client' in the filter
-      const normalised = (stage === 'won' ? 'client' : stage) as AccountStage;
-      if (normalised !== stageFilter) return false;
+      if ((stage === 'won' ? 'client' : stage) !== stageFilter) return false;
     }
     return true;
   });
+
+  // ── Selection helpers ─────────────────────────────────────────────────────────
+  function toggleSelect(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    e.preventDefault();
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function selectAll() {
+    setSelected(new Set(filtered.map((a) => a.id)));
+  }
+
+  function clearSelection() {
+    setSelected(new Set());
+  }
+
+  // ── Drag-and-drop ─────────────────────────────────────────────────────────────
+  function dragStageFor(account: Account, target: Segment): AccountStage | null {
+    if (target === 'prospects' && isClient(account)) return 'new';
+    if (target === 'clients' && !isClient(account)) return 'client';
+    return null;
+  }
+
+  function handleDragStart(e: React.DragEvent, id: string) {
+    // Drag the whole selection if the card is part of it, otherwise just this card
+    const ids = selected.has(id) && selected.size > 1 ? [...selected] : [id];
+    setDraggingIds(ids);
+    e.dataTransfer.effectAllowed = 'move';
+
+    // Custom drag ghost showing count when >1
+    if (ids.length > 1) {
+      const ghost = document.createElement('div');
+      ghost.textContent = `${ids.length} accounts`;
+      ghost.style.cssText = 'position:fixed;top:-100px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:white;background:#2D4A2D;white-space:nowrap;';
+      document.body.appendChild(ghost);
+      e.dataTransfer.setDragImage(ghost, ghost.offsetWidth / 2, 20);
+      setTimeout(() => document.body.removeChild(ghost), 0);
+    }
+  }
+
+  function handleDragEnd() {
+    setDraggingIds([]);
+    setDropTarget(null);
+  }
+
+  function anyCanDrop(ids: string[], target: Segment): boolean {
+    return ids.some((id) => {
+      const a = accounts.find((acc) => acc.id === id);
+      return a ? dragStageFor(a, target) !== null : false;
+    });
+  }
+
+  function handleDragOver(e: React.DragEvent, seg: Segment) {
+    if (!draggingIds.length) return;
+    if (!anyCanDrop(draggingIds, seg)) return;
+    e.preventDefault();
+    setDropTarget(seg);
+  }
+
+  function handleDrop(e: React.DragEvent, seg: Segment) {
+    e.preventDefault();
+    setDropTarget(null);
+    if (!draggingIds.length) return;
+
+    const updates: { id: string; stage: AccountStage }[] = [];
+    for (const id of draggingIds) {
+      const account = accounts.find((a) => a.id === id);
+      if (!account) continue;
+      const newStage = dragStageFor(account, seg);
+      if (newStage) updates.push({ id, stage: newStage });
+    }
+
+    if (!updates.length) return;
+    setDraggingIds([]);
+    setSelected(new Set());
+
+    // Optimistic update — revert all on error
+    setAccounts((prev) =>
+      prev.map((a) => {
+        const u = updates.find((x) => x.id === a.id);
+        return u ? { ...a, stage: u.stage } : a;
+      }),
+    );
+    Promise.all(updates.map((u) => accountsDb.updateAccount(u.id, { stage: u.stage }))).catch(() => reload());
+  }
+
+  const anyDragging = draggingIds.length > 0;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
@@ -173,34 +222,60 @@ export default function AccountsPage() {
         </div>
       </div>
 
-      {/* Segment tabs — also drop targets */}
-      <div className="mb-3 inline-flex items-center gap-1 rounded-xl p-1" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
-        {(['all', 'prospects', 'clients'] as Segment[]).map((seg) => {
-          const label =
-            seg === 'all' ? t('All', 'Alles') :
-            seg === 'prospects' ? t(`Prospects (${prospectCount})`, `Prospects (${prospectCount})`) :
-            t(`Clients (${clientCount})`, `Klanten (${clientCount})`);
-          const isActive = segment === seg;
-          const isOver = dropTarget === seg;
-          return (
+      {/* Segment tabs + select-all bar */}
+      <div className="mb-3 flex items-center gap-3 flex-wrap">
+        <div className="inline-flex items-center gap-1 rounded-xl p-1" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+          {(['all', 'prospects', 'clients'] as Segment[]).map((seg) => {
+            const label =
+              seg === 'all' ? t('All', 'Alles') :
+              seg === 'prospects' ? t(`Prospects (${prospectCount})`, `Prospects (${prospectCount})`) :
+              t(`Clients (${clientCount})`, `Klanten (${clientCount})`);
+            const isActive = segment === seg;
+            const isOver = dropTarget === seg;
+            return (
+              <button
+                key={seg}
+                onClick={() => setSegmentAndClear(seg)}
+                onDragOver={(e) => handleDragOver(e, seg)}
+                onDragLeave={() => setDropTarget(null)}
+                onDrop={(e) => handleDrop(e, seg)}
+                className="rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+                style={{
+                  background: isOver ? C.blue : isActive ? C.primary : 'transparent',
+                  color: isOver || isActive ? 'white' : C.muted,
+                  outline: isOver ? `2px solid ${C.blue}` : undefined,
+                  transform: isOver ? 'scale(1.05)' : undefined,
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Select-all / selection count */}
+        {view !== 'board' && filtered.length > 0 && (
+          <div className="flex items-center gap-2">
             <button
-              key={seg}
-              onClick={() => setSegmentAndClear(seg)}
-              onDragOver={(e) => handleDragOver(e, seg)}
-              onDragLeave={() => setDropTarget(null)}
-              onDrop={(e) => handleDrop(e, seg)}
-              className="rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
-              style={{
-                background: isOver ? C.blue : isActive ? C.primary : 'transparent',
-                color: isOver || isActive ? 'white' : C.muted,
-                outline: isOver ? `2px solid ${C.blue}` : undefined,
-                transform: isOver ? 'scale(1.05)' : undefined,
-              }}
+              onClick={selected.size === filtered.length ? clearSelection : selectAll}
+              className="text-xs px-2.5 py-1.5 rounded-lg transition-colors"
+              style={{ border: `1px solid ${C.border}`, color: selected.size === filtered.length ? C.primary : C.muted }}
             >
-              {label}
+              {selected.size === filtered.length
+                ? t('Deselect all', 'Alles deselecteren')
+                : t('Select all', 'Alles selecteren')}
             </button>
-          );
-        })}
+            {selected.size > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-2.5 py-1" style={{ background: `${C.primary}15`, color: C.primary }}>
+                <Check size={11} />
+                {t(`${selected.size} selected`, `${selected.size} geselecteerd`)}
+                <button onClick={clearSelection} className="ml-0.5 hover:opacity-60">
+                  <X size={10} />
+                </button>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Stage chips */}
@@ -255,14 +330,20 @@ export default function AccountsPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           {filtered.map((a) => (
             <AccountCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts}
-              dragging={draggingId === a.id} onDragStart={(e) => handleDragStart(e, a.id)} onDragEnd={handleDragEnd} />
+              selected={selected.has(a.id)} anySelected={selected.size > 0}
+              dragging={draggingIds.includes(a.id)} anyDragging={anyDragging}
+              onSelect={(e) => toggleSelect(e, a.id)}
+              onDragStart={(e) => handleDragStart(e, a.id)} onDragEnd={handleDragEnd} />
           ))}
         </div>
       ) : view === 'grid' ? (
         <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {filtered.map((a) => (
             <GridCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts}
-              dragging={draggingId === a.id} onDragStart={(e) => handleDragStart(e, a.id)} onDragEnd={handleDragEnd} />
+              selected={selected.has(a.id)} anySelected={selected.size > 0}
+              dragging={draggingIds.includes(a.id)} anyDragging={anyDragging}
+              onSelect={(e) => toggleSelect(e, a.id)}
+              onDragStart={(e) => handleDragStart(e, a.id)} onDragEnd={handleDragEnd} />
           ))}
         </div>
       ) : (
@@ -309,47 +390,69 @@ export default function AccountsPage() {
   );
 }
 
-// ── Token helper (same normalisation as the API) ────────────────────────────────
+// ── Token helper ──────────────────────────────────────────────────────────────
 function hiringToken(name: string): string {
   const token = name
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(
-      /\b(bv|nv|ltd|inc|llc|gmbh|ag|corp|group|holding|solutions|technologies|tech|systems|nederland|netherlands|nl)\b/g,
-      ' ',
-    )
-    .replace(/\s+/g, ' ')
-    .trim()
-    .split(' ')
-    .find((t) => t.length >= 3);
+    .replace(/\b(bv|nv|ltd|inc|llc|gmbh|ag|corp|group|holding|solutions|technologies|tech|systems|nederland|netherlands|nl)\b/g, ' ')
+    .replace(/\s+/g, ' ').trim().split(' ').find((t) => t.length >= 3);
   return token ?? '';
 }
 
-type DragProps = {
-  dragging?: boolean;
-  onDragStart?: (e: React.DragEvent) => void;
-  onDragEnd?: () => void;
-};
-
-// ── GridCard (compact, 4-per-row) ──────────────────────────────────────────────
-function GridCard({ account, onClick, t, hiringCounts, dragging, onDragStart, onDragEnd }: {
+// ── Shared card props ─────────────────────────────────────────────────────────
+type CardProps = {
   account: Account;
   onClick: () => void;
   t: (en: string, nl: string) => string;
   hiringCounts: Record<string, number>;
-} & DragProps) {
+  selected?: boolean;
+  anySelected?: boolean;
+  dragging?: boolean;
+  anyDragging?: boolean;
+  onSelect?: (e: React.MouseEvent) => void;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragEnd?: () => void;
+};
+
+// ── Checkbox ─────────────────────────────────────────────────────────────────
+function Checkbox({ checked, onSelect, show }: { checked: boolean; onSelect?: (e: React.MouseEvent) => void; show: boolean }) {
+  return (
+    <div
+      onClick={onSelect}
+      className="flex-shrink-0 w-4 h-4 rounded flex items-center justify-center transition-opacity"
+      style={{
+        opacity: show ? 1 : 0,
+        background: checked ? C.primary : 'white',
+        border: `1.5px solid ${checked ? C.primary : C.border}`,
+        cursor: 'pointer',
+      }}
+    >
+      {checked && <Check size={9} color="white" strokeWidth={3} />}
+    </div>
+  );
+}
+
+// ── GridCard ──────────────────────────────────────────────────────────────────
+function GridCard({ account, onClick, t, hiringCounts, selected, anySelected, dragging, anyDragging, onSelect, onDragStart, onDragEnd }: CardProps) {
   const client = isClient(account);
   const score = computeBuyingScore(account.signals);
   const stage = account.stage ?? 'new';
   const displayStage = stage === 'won' ? 'client' : stage;
   const openRoles = hiringCounts[hiringToken(account.companyName)] ?? 0;
+  const showCheckbox = !!anySelected || !!selected;
 
   return (
     <button draggable onClick={onClick} onDragStart={onDragStart} onDragEnd={onDragEnd}
-      className="rounded-xl p-3 text-left transition hover:shadow-sm cursor-grab active:cursor-grabbing"
-      style={{ background: C.surface, border: `1px solid ${C.border}`, opacity: dragging ? 0.4 : 1 }}>
+      className="rounded-xl p-3 text-left transition hover:shadow-sm cursor-grab active:cursor-grabbing group"
+      style={{
+        background: selected ? `${C.primary}08` : C.surface,
+        border: `1px solid ${selected ? C.primary : C.border}`,
+        opacity: (dragging || (anyDragging && selected)) ? 0.35 : 1,
+      }}>
       <div className="flex items-start justify-between gap-1 mb-2">
         <div className="flex items-center gap-1.5 min-w-0">
+          <Checkbox checked={!!selected} onSelect={onSelect} show={showCheckbox} />
           <Building2 size={14} style={{ color: C.primary, flexShrink: 0 }} />
           <span className="text-sm font-medium truncate" style={{ color: C.primary }}>{account.companyName}</span>
         </div>
@@ -357,55 +460,42 @@ function GridCard({ account, onClick, t, hiringCounts, dragging, onDragStart, on
           {t(displayStage, displayStage)}
         </span>
       </div>
-
       <div className="flex items-center gap-2 flex-wrap">
-        {openRoles > 0 && (
-          <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: C.blue }}>
-            <Briefcase size={10} /> {openRoles}
-          </span>
-        )}
-        {!client && (
-          <span className="text-[10px]" style={{ color: scoreColor(score.label) }}>{score.score}</span>
-        )}
-        {account.signals.length > 0 && !client && (
-          <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: C.muted }}>
-            <Radar size={10} /> {account.signals.length}
-          </span>
-        )}
-        {account.sector && (
-          <span className="text-[10px] truncate" style={{ color: C.muted }}>{account.sector}</span>
-        )}
+        {openRoles > 0 && <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: C.blue }}><Briefcase size={10} /> {openRoles}</span>}
+        {!client && <span className="text-[10px]" style={{ color: scoreColor(score.label) }}>{score.score}</span>}
+        {!client && account.signals.length > 0 && <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: C.muted }}><Radar size={10} /> {account.signals.length}</span>}
+        {account.sector && <span className="text-[10px] truncate" style={{ color: C.muted }}>{account.sector}</span>}
       </div>
     </button>
   );
 }
 
-// ── AccountCard ─────────────────────────────────────────────────────────────────
-function AccountCard({ account, onClick, t, hiringCounts, dragging, onDragStart, onDragEnd }: {
-  account: Account;
-  onClick: () => void;
-  t: (en: string, nl: string) => string;
-  hiringCounts: Record<string, number>;
-} & DragProps) {
+// ── AccountCard ───────────────────────────────────────────────────────────────
+function AccountCard({ account, onClick, t, hiringCounts, selected, anySelected, dragging, anyDragging, onSelect, onDragStart, onDragEnd }: CardProps) {
   const client = isClient(account);
   const score = computeBuyingScore(account.signals);
   const stage = account.stage ?? 'new';
-  // Normalise legacy 'won' → 'client' for display
   const displayStage = stage === 'won' ? 'client' : stage;
   const openRoles = hiringCounts[hiringToken(account.companyName)] ?? 0;
+  const showCheckbox = !!anySelected || !!selected;
 
   return (
     <button draggable onClick={onClick} onDragStart={onDragStart} onDragEnd={onDragEnd}
-      className="rounded-xl p-4 text-left transition hover:shadow-sm cursor-grab active:cursor-grabbing"
-      style={{ background: C.surface, border: `1px solid ${C.border}`, opacity: dragging ? 0.4 : 1 }}>
+      className="rounded-xl p-4 text-left transition hover:shadow-sm cursor-grab active:cursor-grabbing group"
+      style={{
+        background: selected ? `${C.primary}08` : C.surface,
+        border: `1px solid ${selected ? C.primary : C.border}`,
+        opacity: (dragging || (anyDragging && selected)) ? 0.35 : 1,
+      }}>
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
+          <Checkbox checked={!!selected} onSelect={onSelect} show={showCheckbox} />
           <Building2 size={18} style={{ color: C.primary }} />
           <span className="font-medium" style={{ color: C.primary }}>{account.companyName}</span>
         </div>
         <div className="flex items-center gap-1.5">
           {openRoles > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs" style={{ background: 'rgba(59,130,246,0.1)', color: C.blue }} title={`${openRoles} open role(s) on job boards`}>
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs" style={{ background: 'rgba(59,130,246,0.1)', color: C.blue }}>
               <Briefcase size={11} /> {openRoles}
             </span>
           )}
@@ -421,7 +511,6 @@ function AccountCard({ account, onClick, t, hiringCounts, dragging, onDragStart,
       </div>
 
       {client ? (
-        // Client row: no buying score — show a neutral delivery indicator
         <div className="mt-2 flex items-center gap-2">
           <span className="text-xs" style={{ color: C.muted }}>
             {openRoles > 0
@@ -430,7 +519,6 @@ function AccountCard({ account, onClick, t, hiringCounts, dragging, onDragStart,
           </span>
         </div>
       ) : (
-        // Prospect row: buying score bar
         <div className="mt-2 flex items-center gap-2">
           <div className="h-1.5 w-16 overflow-hidden rounded-full" style={{ background: C.border }}>
             <div className="h-full rounded-full" style={{ width: `${score.score}%`, background: scoreColor(score.label) }} />
@@ -447,23 +535,14 @@ function AccountCard({ account, onClick, t, hiringCounts, dragging, onDragStart,
   );
 }
 
-// ── BoardView ───────────────────────────────────────────────────────────────────
-function BoardView({ accounts, onCardClick, t }: {
-  accounts: Account[];
-  onCardClick: (a: Account) => void;
-  t: (en: string, nl: string) => string;
-}) {
+// ── BoardView ─────────────────────────────────────────────────────────────────
+function BoardView({ accounts, onCardClick, t }: { accounts: Account[]; onCardClick: (a: Account) => void; t: (en: string, nl: string) => string }) {
   const byStage = Object.fromEntries(
-    BOARD_STAGES.map((s) => [
-      s,
-      accounts.filter((a) => {
-        const stage = a.stage ?? 'new';
-        // normalise legacy 'won' into the 'client' column
-        return (stage === 'won' ? 'client' : stage) === s;
-      }),
-    ]),
+    BOARD_STAGES.map((s) => [s, accounts.filter((a) => {
+      const stage = a.stage ?? 'new';
+      return (stage === 'won' ? 'client' : stage) === s;
+    })]),
   );
-
   return (
     <div className="flex gap-3 overflow-x-auto pb-4">
       {BOARD_STAGES.map((stage) => {
@@ -478,17 +557,10 @@ function BoardView({ accounts, onCardClick, t }: {
               {items.map((a) => {
                 const score = computeBuyingScore(a.signals);
                 return (
-                  <button
-                    key={a.id}
-                    onClick={() => onCardClick(a)}
-                    className="w-full rounded-xl p-3 text-left transition hover:shadow-sm"
-                    style={{ background: C.surface, border: `1px solid ${C.border}` }}
-                  >
+                  <button key={a.id} onClick={() => onCardClick(a)} className="w-full rounded-xl p-3 text-left transition hover:shadow-sm" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
                     <div className="flex items-start justify-between gap-1">
                       <span className="text-sm font-medium leading-snug" style={{ color: C.primary }}>{a.companyName}</span>
-                      {!isClient(a) && (
-                        <span className="text-xs font-semibold shrink-0" style={{ color: scoreColor(score.label) }}>{score.score}</span>
-                      )}
+                      {!isClient(a) && <span className="text-xs font-semibold shrink-0" style={{ color: scoreColor(score.label) }}>{score.score}</span>}
                     </div>
                     {a.sector && <p className="mt-1 text-xs" style={{ color: C.muted }}>{a.sector}</p>}
                     {!isClient(a) && a.signals.length > 0 && (
