@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { anthropic, FAST_MODEL } from "@/lib/anthropic";
 import { VacancyListing } from "@/lib/types";
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 interface CandidateInput {
   jobTitle: string;
@@ -53,7 +51,7 @@ Return ONLY a raw JSON array, no markdown, no explanation:
 [{"listingId":"<exact id>","score":85,"reason":"Matches 4/5 skills, remote-friendly, salary likely aligned"}]`;
 
   const response = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
+    model: FAST_MODEL,
     max_tokens: 2000,
     messages: [{ role: "user", content: prompt }],
   });

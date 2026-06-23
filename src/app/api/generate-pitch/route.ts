@@ -6,35 +6,8 @@ import { anthropic } from '@/lib/anthropic';
 import { PITCH_MODEL, buildPitchSystemPrompt, buildPitchUserPrompt, parsePitch } from '@/lib/pitchPrompt';
 import { requireCaller } from '@/lib/apiAuth';
 import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
+import { fetchWebsiteText } from '@/lib/website';
 import type { Account, AccountLead, AgencyPositioning } from '@/lib/accountTypes';
-
-function normalizeUrl(website: string): string {
-  let url = website.trim();
-  if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
-  return url.replace(/\/$/, '');
-}
-
-async function fetchWebsiteText(website: string): Promise<string> {
-  try {
-    const res = await fetch(normalizeUrl(website), {
-      headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'text/html' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return '';
-    const html = await res.text();
-    return html
-      .replace(/<script[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<head[\s\S]*?<\/head>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&[a-z]+;/gi, ' ')
-      .replace(/\s{3,}/g, '\n')
-      .trim()
-      .slice(0, 8000);
-  } catch {
-    return '';
-  }
-}
 
 export async function POST(req: NextRequest) {
   try {

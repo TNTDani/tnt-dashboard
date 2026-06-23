@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
+import { anthropic, MODEL } from "@/lib/anthropic";
 import { Vacancy, CandidateProfile } from "@/lib/types";
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export interface CandidateMatch {
   candidateId: string;
@@ -65,7 +63,7 @@ Score calibration:
 - 0–39: Poor fit, key requirements missing`;
 
     const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: MODEL,
       max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],
     });

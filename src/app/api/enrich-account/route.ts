@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { anthropic, MODEL, textOf, usageOf } from '@/lib/anthropic';
 import { requireCaller } from '@/lib/apiAuth';
 import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
+import { normalizeUrl } from '@/lib/website';
 import type { Signal, SuggestedPerson } from '@/lib/accountTypes';
 
 export const maxDuration = 60;
@@ -40,12 +41,6 @@ function parseResult(text: string): EnrichResult {
   } catch {
     return { signals: [], people: [] };
   }
-}
-
-function normalizeUrl(website: string): string {
-  let url = website.trim();
-  if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
-  return url.replace(/\/$/, '');
 }
 
 async function fetchText(url: string): Promise<string> {

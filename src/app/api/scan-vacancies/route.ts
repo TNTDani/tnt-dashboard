@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { anthropic, MODEL } from '@/lib/anthropic';
 
 export interface ScannedVacancy {
   title: string;
@@ -155,7 +153,7 @@ Rules:
 - Maximum 50 vacancies`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: MODEL,
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
     });

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import { anthropic, MODEL } from '@/lib/anthropic';
 import { ProcessedCV, Vacancy } from '@/lib/types';
-
-const client = new Anthropic();
 
 export interface InterviewQuestion {
   category: 'technical' | 'gap' | 'behavioural' | 'culture';
@@ -64,8 +62,8 @@ Return ONLY a valid JSON array. No markdown, no explanation, just the array:
 
 Categories must be exactly: "technical", "gap", "behavioural", or "culture".`;
 
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+    const message = await anthropic.messages.create({
+      model: MODEL,
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
     });

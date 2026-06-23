@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import type Anthropic from "@anthropic-ai/sdk";
+import { anthropic, MODEL } from "@/lib/anthropic";
 
 const EXTRACT_PROMPT = `You are an expert CV analyst for Orchard, a specialist tech recruitment firm.
 
@@ -73,8 +72,8 @@ export async function POST(req: NextRequest) {
       }];
     }
 
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
+    const response = await anthropic.messages.create({
+      model: MODEL,
       max_tokens: 4096,
       messages,
     });

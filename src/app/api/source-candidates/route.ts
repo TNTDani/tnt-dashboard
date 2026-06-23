@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { anthropic, MODEL } from "@/lib/anthropic";
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,8 +42,8 @@ Requirements:
 - Outreach messages should feel personal, not generic
 - Consider profiles from: traditional backgrounds, career switchers, self-taught, agency vs in-house, different countries/remote, different company sizes`;
 
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
+    const response = await anthropic.messages.create({
+      model: MODEL,
       max_tokens: 4096,
       messages: [{ role: "user", content: prompt }],
     });

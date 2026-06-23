@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+import { anthropic, MODEL } from '@/lib/anthropic';
 
 async function fetchPage(url: string): Promise<string | null> {
   try {
@@ -83,7 +81,7 @@ Rules:
 - Return null for any field you cannot confidently extract`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: MODEL,
       max_tokens: 512,
       messages: [{ role: 'user', content: prompt }],
     });
