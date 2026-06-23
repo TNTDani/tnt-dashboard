@@ -14,7 +14,7 @@ import {
   LayoutDashboard, FileText, Users, Briefcase, UserCircle,
   Building2, Calculator, Mail, ListChecks, Trophy, Inbox,
   BarChart2, LogOut, Radar, Clock, CalendarDays, ChevronLeft,
-  Zap, ChevronDown, Shield, Target,
+  Zap, ChevronDown, Shield, Target, CreditCard,
 } from "lucide-react";
 
 // ── Nav groups — workflow-oriented ────────────────────────────────────────────
@@ -60,6 +60,7 @@ const NAV_GROUPS = [
       { href: "/vacancy-monitor", icon: Radar, label: "Vacancy Monitor", exact: true },
       { href: "/fee-calculator", icon: Calculator, label: "Fee Calculator", exact: false },
       { href: "/tickets", icon: Inbox, label: "Tickets", exact: false },
+      { href: "/credits", icon: CreditCard, label: "Credits", exact: true },
     ],
   },
 ];
@@ -316,10 +317,19 @@ function SidebarContent({
   const { data: session } = useSession();
   const [followUpCount, setFollowUpCount] = useState(0);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
 
   useEffect(() => {
     setRecentItems(storage.getRecentItems().slice(0, 4));
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    fetch('/api/credits/balance')
+      .then((r) => r.json())
+      .then((d) => setCreditBalance(d.balance ?? 0))
+      .catch(() => {});
+  }, [session]);
 
   useEffect(() => {
     const recalc = () => {
@@ -517,6 +527,28 @@ function SidebarContent({
             </span>
           )}
         </motion.button>
+
+        <AnimatePresence initial={false}>
+          {!collapsed && creditBalance !== null && (
+            <motion.div key="credits" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              <Link
+                href="/credits"
+                className="flex items-center justify-between px-3 py-1.5 rounded-lg transition-colors"
+                style={{ background: "rgba(45,74,45,0.05)" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(45,74,45,0.10)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(45,74,45,0.05)"; }}
+              >
+                <span className="flex items-center gap-1.5 text-xs" style={{ color: "#5a6a60" }}>
+                  <CreditCard size={11} />
+                  Credits
+                </span>
+                <span className="text-xs font-semibold tabular-nums" style={{ color: "#2D4A2D" }}>
+                  {creditBalance.toLocaleString()}
+                </span>
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence initial={false}>
           {!collapsed && (

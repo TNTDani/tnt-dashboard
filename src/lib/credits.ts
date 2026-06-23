@@ -80,3 +80,8 @@ export async function chargeCredits(p: ChargeInput): Promise<{ ok: boolean; bala
 export async function refundCredits(agencyId: string, credits: number): Promise<void> {
   await changeBalance(agencyId, -credits);
 }
+
+/** Bijschrijven van credits (bijv. na Stripe-aankoop). */
+export async function addCredits(agencyId: string, credits: number): Promise<number> {
+  return changeBalance(agencyId, -credits);
+}
