@@ -56,6 +56,8 @@ export default function AccountsPage() {
   const [showMerge, setShowMerge] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<Segment | null>(null);
 
   const reload = useCallback(() => {
     setLoading(true);
@@ -92,6 +94,45 @@ export default function AccountsPage() {
   function setSegmentAndClear(s: Segment) {
     setSegment(s);
     setStageFilter(null);
+  }
+
+  // ── Drag-and-drop ────────────────────────────────────────────────────────────
+  function dragStageFor(account: Account, target: Segment): AccountStage | null {
+    if (target === 'prospects' && isClient(account)) return 'new';
+    if (target === 'clients' && !isClient(account)) return 'client';
+    return null;
+  }
+
+  function handleDragStart(e: React.DragEvent, id: string) {
+    setDraggingId(id);
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragEnd() {
+    setDraggingId(null);
+    setDropTarget(null);
+  }
+
+  function handleDragOver(e: React.DragEvent, seg: Segment) {
+    if (!draggingId) return;
+    const account = accounts.find((a) => a.id === draggingId);
+    if (!account || !dragStageFor(account, seg)) return;
+    e.preventDefault();
+    setDropTarget(seg);
+  }
+
+  function handleDrop(e: React.DragEvent, seg: Segment) {
+    e.preventDefault();
+    setDropTarget(null);
+    if (!draggingId) return;
+    const account = accounts.find((a) => a.id === draggingId);
+    if (!account) return;
+    const newStage = dragStageFor(account, seg);
+    if (!newStage) return;
+    setDraggingId(null);
+    // Optimistic update — revert on error
+    setAccounts((prev) => prev.map((a) => a.id === account.id ? { ...a, stage: newStage } : a));
+    accountsDb.updateAccount(account.id, { stage: newStage }).catch(() => reload());
   }
 
   const filtered = accounts.filter((a) => {
@@ -132,19 +173,29 @@ export default function AccountsPage() {
         </div>
       </div>
 
-      {/* Segment tabs */}
+      {/* Segment tabs — also drop targets */}
       <div className="mb-3 inline-flex items-center gap-1 rounded-xl p-1" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
         {(['all', 'prospects', 'clients'] as Segment[]).map((seg) => {
           const label =
             seg === 'all' ? t('All', 'Alles') :
             seg === 'prospects' ? t(`Prospects (${prospectCount})`, `Prospects (${prospectCount})`) :
             t(`Clients (${clientCount})`, `Klanten (${clientCount})`);
+          const isActive = segment === seg;
+          const isOver = dropTarget === seg;
           return (
             <button
               key={seg}
               onClick={() => setSegmentAndClear(seg)}
-              className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
-              style={{ background: segment === seg ? C.primary : 'transparent', color: segment === seg ? 'white' : C.muted }}
+              onDragOver={(e) => handleDragOver(e, seg)}
+              onDragLeave={() => setDropTarget(null)}
+              onDrop={(e) => handleDrop(e, seg)}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium transition-all"
+              style={{
+                background: isOver ? C.blue : isActive ? C.primary : 'transparent',
+                color: isOver || isActive ? 'white' : C.muted,
+                outline: isOver ? `2px solid ${C.blue}` : undefined,
+                transform: isOver ? 'scale(1.05)' : undefined,
+              }}
             >
               {label}
             </button>
@@ -203,13 +254,15 @@ export default function AccountsPage() {
       ) : view === 'list' ? (
         <div className="grid gap-3 sm:grid-cols-2">
           {filtered.map((a) => (
-            <AccountCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts} />
+            <AccountCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts}
+              dragging={draggingId === a.id} onDragStart={(e) => handleDragStart(e, a.id)} onDragEnd={handleDragEnd} />
           ))}
         </div>
       ) : view === 'grid' ? (
         <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {filtered.map((a) => (
-            <GridCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts} />
+            <GridCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts}
+              dragging={draggingId === a.id} onDragStart={(e) => handleDragStart(e, a.id)} onDragEnd={handleDragEnd} />
           ))}
         </div>
       ) : (
@@ -272,13 +325,19 @@ function hiringToken(name: string): string {
   return token ?? '';
 }
 
+type DragProps = {
+  dragging?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragEnd?: () => void;
+};
+
 // ── GridCard (compact, 4-per-row) ──────────────────────────────────────────────
-function GridCard({ account, onClick, t, hiringCounts }: {
+function GridCard({ account, onClick, t, hiringCounts, dragging, onDragStart, onDragEnd }: {
   account: Account;
   onClick: () => void;
   t: (en: string, nl: string) => string;
   hiringCounts: Record<string, number>;
-}) {
+} & DragProps) {
   const client = isClient(account);
   const score = computeBuyingScore(account.signals);
   const stage = account.stage ?? 'new';
@@ -286,7 +345,9 @@ function GridCard({ account, onClick, t, hiringCounts }: {
   const openRoles = hiringCounts[hiringToken(account.companyName)] ?? 0;
 
   return (
-    <button onClick={onClick} className="rounded-xl p-3 text-left transition hover:shadow-sm" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+    <button draggable onClick={onClick} onDragStart={onDragStart} onDragEnd={onDragEnd}
+      className="rounded-xl p-3 text-left transition hover:shadow-sm cursor-grab active:cursor-grabbing"
+      style={{ background: C.surface, border: `1px solid ${C.border}`, opacity: dragging ? 0.4 : 1 }}>
       <div className="flex items-start justify-between gap-1 mb-2">
         <div className="flex items-center gap-1.5 min-w-0">
           <Building2 size={14} style={{ color: C.primary, flexShrink: 0 }} />
@@ -320,12 +381,12 @@ function GridCard({ account, onClick, t, hiringCounts }: {
 }
 
 // ── AccountCard ─────────────────────────────────────────────────────────────────
-function AccountCard({ account, onClick, t, hiringCounts }: {
+function AccountCard({ account, onClick, t, hiringCounts, dragging, onDragStart, onDragEnd }: {
   account: Account;
   onClick: () => void;
   t: (en: string, nl: string) => string;
   hiringCounts: Record<string, number>;
-}) {
+} & DragProps) {
   const client = isClient(account);
   const score = computeBuyingScore(account.signals);
   const stage = account.stage ?? 'new';
@@ -334,7 +395,9 @@ function AccountCard({ account, onClick, t, hiringCounts }: {
   const openRoles = hiringCounts[hiringToken(account.companyName)] ?? 0;
 
   return (
-    <button onClick={onClick} className="rounded-xl p-4 text-left transition hover:shadow-sm" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+    <button draggable onClick={onClick} onDragStart={onDragStart} onDragEnd={onDragEnd}
+      className="rounded-xl p-4 text-left transition hover:shadow-sm cursor-grab active:cursor-grabbing"
+      style={{ background: C.surface, border: `1px solid ${C.border}`, opacity: dragging ? 0.4 : 1 }}>
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <Building2 size={18} style={{ color: C.primary }} />
