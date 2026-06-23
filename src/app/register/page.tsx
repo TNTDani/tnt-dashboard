@@ -317,6 +317,10 @@ export default function RegisterPage() {
             Already have an account?{" "}
             <Link href="/login" style={{ color: "#2D4A2D", textDecoration: "none", fontWeight: 500 }}>Sign in →</Link>
           </div>
+          <div style={{ textAlign: "center", fontSize: 11.5, color: "#aab8b0", marginTop: 10 }}>
+            By creating an account you agree to our{" "}
+            <Link href="/terms" style={{ color: "#5a6a60", textDecoration: "underline" }}>Terms of Service</Link>.
+          </div>
         </motion.div>
       </main>
 

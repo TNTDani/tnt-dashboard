@@ -317,6 +317,7 @@ function SidebarContent({
   const [followUpCount, setFollowUpCount] = useState(0);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [creditUnlimited, setCreditUnlimited] = useState(false);
 
   useEffect(() => {
     setRecentItems(storage.getRecentItems().slice(0, 4));
@@ -326,7 +327,10 @@ function SidebarContent({
     if (!session) return;
     fetch('/api/credits/balance')
       .then((r) => r.json())
-      .then((d) => setCreditBalance(d.balance ?? 0))
+      .then((d) => {
+        setCreditUnlimited(d.unlimited ?? false);
+        setCreditBalance(d.unlimited ? null : (d.balance ?? 0));
+      })
       .catch(() => {});
   }, [session]);
 
@@ -528,7 +532,7 @@ function SidebarContent({
         </motion.button>
 
         <AnimatePresence initial={false}>
-          {!collapsed && creditBalance !== null && (
+          {!collapsed && (creditBalance !== null || creditUnlimited) && (
             <motion.div key="credits" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
               <Link
                 href="/credits"
@@ -541,8 +545,8 @@ function SidebarContent({
                   <CreditCard size={11} />
                   Credits
                 </span>
-                <span className="text-xs font-semibold tabular-nums" style={{ color: "#2D4A2D" }}>
-                  {creditBalance.toLocaleString()}
+                <span className="text-xs font-semibold" style={{ color: "#2D4A2D" }}>
+                  {creditUnlimited ? '∞' : creditBalance!.toLocaleString()}
                 </span>
               </Link>
             </motion.div>
@@ -551,9 +555,10 @@ function SidebarContent({
 
         <AnimatePresence initial={false}>
           {!collapsed && (
-            <motion.p key="version" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="text-[10px] tracking-widest uppercase px-3 pt-1" style={{ color: "#8a9a90" }}>
-              Orchard · v3
-            </motion.p>
+            <motion.div key="version" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center justify-between px-3 pt-1">
+              <span className="text-[10px] tracking-widest uppercase" style={{ color: "#8a9a90" }}>Orchard · v3</span>
+              <Link href="/terms" className="text-[10px]" style={{ color: "#aab8b0", textDecoration: "underline" }}>Terms</Link>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
