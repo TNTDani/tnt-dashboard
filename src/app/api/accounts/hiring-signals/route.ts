@@ -5,7 +5,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireCaller } from '@/lib/apiAuth';
-import { searchToken } from '../[accountId]/live-vacancies/route';
+
+function searchToken(name: string): string {
+  const token = name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(
+      /\b(bv|nv|ltd|inc|llc|gmbh|ag|corp|group|holding|solutions|technologies|tech|systems|nederland|netherlands|nl)\b/g,
+      ' ',
+    )
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .find((t) => t.length >= 3);
+  return token ?? '';
+}
 
 export async function GET(req: NextRequest) {
   const auth = await requireCaller(req);

@@ -7,7 +7,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { requireCaller } from '@/lib/apiAuth';
 
 /** Extracts the first meaningful token from a company name for fuzzy matching. */
-export function searchToken(name: string): string {
+function searchToken(name: string): string {
   const token = name
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
