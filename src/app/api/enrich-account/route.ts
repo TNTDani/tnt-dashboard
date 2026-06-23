@@ -1,28 +1,32 @@
 // src/app/api/enrich-account/route.ts
-// POST -> verzamelt verkoopsignalen EN relevante contactpersonen (HR, hiring managers,
-// talent leads) voor een account. Probeert eerst de web_search-tool; valt anders terug
-// op de bedrijfswebsite. Geeft altijd { signals: [...], people: [...] } terug.
+// POST -> verkoopsignalen + contactpersonen via web_search (val terug op website).
+// Gemeterd: deep (web search) kost meer credits dan quick (alleen website).
 
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
+import { anthropic, MODEL, textOf, usageOf } from '@/lib/anthropic';
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 import type { Signal, SuggestedPerson } from '@/lib/accountTypes';
 
 export const maxDuration = 60;
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const MODEL = 'claude-sonnet-4-6';
 
 const SCHEMA = `Antwoord UITSLUITEND met een JSON-object (niets erna, geen markdown):
 {
   "signals": [ { "type": "open_role" | "funding" | "acquisition" | "leadership_change" | "expansion" | "competitor" | "other", "summary": string, "source": string, "date": string } ],
   "people": [ { "name": string, "role": string, "source": string, "linkedin": string } ]
 }
-Bij "people": alleen mensen die relevant zijn voor een recruitmentbureau (HR, talent acquisition, hiring managers, oprichters bij kleine bedrijven). Verzin geen namen.`;
+Bij "people": alleen mensen relevant voor een recruitmentbureau (HR, talent acquisition, hiring managers, oprichters bij kleine bedrijven). Verzin geen namen.`;
 
 interface EnrichResult {
   signals: Signal[];
   people: SuggestedPerson[];
 }
+interface Usage {
+  inputTokens: number;
+  outputTokens: number;
+  webSearches: number;
+}
+const ZERO: Usage = { inputTokens: 0, outputTokens: 0, webSearches: 0 };
 
 function parseResult(text: string): EnrichResult {
   const match = text.match(/\{[\s\S]*\}\s*$/) ?? text.match(/\{[\s\S]*\}/);
@@ -36,13 +40,6 @@ function parseResult(text: string): EnrichResult {
   } catch {
     return { signals: [], people: [] };
   }
-}
-
-function textOf(content: Anthropic.Messages.ContentBlock[]): string {
-  return content
-    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-    .map((b) => b.text)
-    .join('\n');
 }
 
 function normalizeUrl(website: string): string {
@@ -71,7 +68,7 @@ async function fetchText(url: string): Promise<string> {
   }
 }
 
-async function viaWebSearch(who: string): Promise<EnrichResult> {
+async function viaWebSearch(who: string): Promise<{ result: EnrichResult; usage: Usage }> {
   const response = await anthropic.messages.create({
     model: MODEL,
     max_tokens: 2048,
@@ -87,10 +84,10 @@ ${SCHEMA}`,
       },
     ],
   });
-  return parseResult(textOf(response.content));
+  return { result: parseResult(textOf(response.content)), usage: usageOf(response) };
 }
 
-async function viaWebsite(companyName: string, website: string): Promise<EnrichResult> {
+async function viaWebsite(companyName: string, website: string): Promise<{ result: EnrichResult; usage: Usage }> {
   const base = normalizeUrl(website);
   const [home, careers, team] = await Promise.all([
     fetchText(base),
@@ -98,7 +95,7 @@ async function viaWebsite(companyName: string, website: string): Promise<EnrichR
     fetchText(base + '/team').then((t) => t || fetchText(base + '/about') || fetchText(base + '/over-ons')),
   ]);
   const siteText = (home + '\n' + careers + '\n' + team).slice(0, 14000);
-  if (!siteText.trim()) return { signals: [], people: [] };
+  if (!siteText.trim()) return { result: { signals: [], people: [] }, usage: ZERO };
   const response = await anthropic.messages.create({
     model: MODEL,
     max_tokens: 1536,
@@ -114,11 +111,23 @@ ${SCHEMA}`,
       },
     ],
   });
-  return parseResult(textOf(response.content));
+  return { result: parseResult(textOf(response.content)), usage: usageOf(response) };
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    // Saldo-check op de duurste variant (deep).
+    if ((await getBalance(agencyId)) < CREDIT_COST.enrich_deep) {
+      return NextResponse.json(
+        { error: `Insufficient credits. Enrichment costs up to ${CREDIT_COST.enrich_deep} credits.` },
+        { status: 402 },
+      );
+    }
+
     const { companyName, website, location }: { companyName: string; website?: string; location?: string } =
       await req.json();
     if (!companyName) return NextResponse.json({ error: 'Missing companyName' }, { status: 400 });
@@ -126,11 +135,25 @@ export async function POST(req: NextRequest) {
     const who = `${companyName}${location ? ` (${location})` : ''}${website ? `, website ${website}` : ''}`;
 
     let result: EnrichResult = { signals: [], people: [] };
+    let usage: Usage = ZERO;
     try {
-      result = await viaWebSearch(who);
+      ({ result, usage } = await viaWebSearch(who));
     } catch (e) {
       console.warn('web_search unavailable, falling back to website scrape:', String(e));
-      if (website) result = await viaWebsite(companyName, website);
+      if (website) ({ result, usage } = await viaWebsite(companyName, website));
+    }
+
+    // Alleen afschrijven als er echt een AI-call is gedaan. Deep (web search) vs quick.
+    if (usage.inputTokens > 0 || usage.outputTokens > 0) {
+      await chargeCredits({
+        agencyId,
+        userEmail: email,
+        feature: usage.webSearches > 0 ? 'enrich_deep' : 'enrich_quick',
+        model: MODEL,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        webSearches: usage.webSearches,
+      });
     }
 
     return NextResponse.json(result);

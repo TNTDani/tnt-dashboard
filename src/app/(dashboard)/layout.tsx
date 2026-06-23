@@ -10,7 +10,9 @@ import OfflineBanner from "@/components/OfflineBanner";
 import InstallBanner from "@/components/InstallBanner";
 import { SidebarProvider, useSidebar } from "@/lib/sidebar-context";
 import { DialerProvider } from "@/lib/dialer-context";
+import { I18nProvider } from "@/lib/i18n";
 import Dialer from "@/components/Dialer";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { initDb } from "@/lib/db";
 import {
   Menu, Search as SearchIcon, X, Plus, FileText, Zap,
@@ -228,6 +230,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 
         {/* Right: search */}
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <button
             className="md:hidden p-1.5 rounded-lg transition-colors active:bg-[rgba(45,74,45,0.08)]"
             style={{ color: "#6B7280" }}
@@ -275,11 +278,13 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <DialerProvider>
-        <LayoutInner>{children}</LayoutInner>
-        <Dialer />
-      </DialerProvider>
-    </SidebarProvider>
+    <I18nProvider>
+      <SidebarProvider>
+        <DialerProvider>
+          <LayoutInner>{children}</LayoutInner>
+          <Dialer />
+        </DialerProvider>
+      </SidebarProvider>
+    </I18nProvider>
   );
 }

@@ -1,48 +1,70 @@
 // src/lib/pitchPrompt.ts
-// Bouwt de prompt voor de cold call pitch in de vaste Challenger + SPICED-structuur.
-// Geparametriseerd op de positionering van het bureau (multi-tenant).
+// Builds the cold-call pitch prompt in the fixed Challenger + SPICED structure.
+// Parameterised on the agency's positioning (multi-tenant) and the output language.
 
 import type { Account, AccountLead, AgencyPositioning, GeneratedPitch } from './accountTypes';
 
-export const PITCH_MODEL = 'claude-sonnet-4-6'; // zelfde als generate-cold-email; bump gerust naar nieuwere Sonnet
+export const PITCH_MODEL = 'claude-sonnet-4-6';
 export const METHODOLOGY_VERSION = 'challenger-spiced-v1';
 
-export function buildPitchSystemPrompt(): string {
-  return `Je bent een ervaren sales-copywriter die cold call pitches schrijft voor recruitmentbureaus.
-Je werkt volgens de Challenger Sale en SPICED. Je schrijft in het Nederlands.
+// Languages offered for the pitch output.
+export const PITCH_LANGUAGES: { code: string; label: string }[] = [
+  { code: 'English', label: 'English' },
+  { code: 'Dutch', label: 'Nederlands' },
+  { code: 'German', label: 'Deutsch' },
+  { code: 'French', label: 'Français' },
+  { code: 'Spanish', label: 'Español' },
+];
 
-== HARDE REGELS ==
-- Antwoord UITSLUITEND met geldige JSON volgens het schema onderaan. Geen markdown, geen codeblok-fences, geen tekst eromheen.
-- Geen em-dashes. Gebruik komma's, punten of een dubbele punt.
-- Bullets/opsommingen alleen waar de inhoud echt opsommend is.
-- Verzin NOOIT een referentieklant. Gebruik alleen de aangeleverde proof points. Is er geen passende, gebruik dan letterlijk "soortgelijke bedrijven". Een proof point met "named": false noem je niet bij naam.
-- Kies EEN hoofdpijn, op basis van de signalen en de persona.
-- Hooks en challenger-vragen blijven vers en komen nooit dubbel voor binnen de pitch.
-- De challenger-reframe brengt een inzicht dat de persona zelf nog niet benoemd had.
-- Voor een recruitmentbureau is het sterkste signaal de hiring-druk: open vacatures, groei, overnames, leiderschapswissel. Laat de gekozen pijn daarop aansluiten.
+// Free heuristic: guess the pitch language from the account's location (no API call).
+// Not stored data like universities/posts, just the company's country, which is the
+// strongest cheap signal we already have.
+export function suggestPitchLanguage(account: Pick<Account, 'location'>): string {
+  const loc = (account.location ?? '').toLowerCase();
+  if (/(netherlands|nederland|amsterdam|rotterdam|utrecht|den haag|eindhoven|\bnl\b)/.test(loc)) return 'Dutch';
+  if (/(belgi|belgium|brussel|antwerp|gent|flanders|vlaanderen)/.test(loc)) return 'Dutch';
+  if (/(germany|deutschland|berlin|munich|münchen|hamburg|cologne|köln|frankfurt)/.test(loc)) return 'German';
+  if (/(france|paris|lyon|marseille|toulouse)/.test(loc)) return 'French';
+  if (/(spain|españa|madrid|barcelona|valencia|sevilla)/.test(loc)) return 'Spanish';
+  return 'English';
+}
 
-== DE VASTE STRUCTUUR (vul elk veld) ==
-1. analysis: bedrijfstype, het gekozen signaal, de persona en waarom, de gekozen hoofdpijn, de gekozen referentie (proof point of "soortgelijke bedrijven"), en waar de reframe landt. Hook en "redelijk op orde"-branch pakken NIET hetzelfde punt.
-2. summaryLine: 1 regel die de insteek samenvat.
-3. opener: "Hoi [voornaam], je spreekt met [repName] van [agencyName]..." kort en menselijk.
-4. hook: teach + provoke in 1-2 zinnen, met een flip aan het eind ("of zeg jij juist dat dat al strak loopt?") gevolgd door bewuste stilte.
+export function buildPitchSystemPrompt(language = 'English'): string {
+  return `You are an experienced sales copywriter who writes cold-call pitches for recruitment agencies.
+You work according to the Challenger Sale and SPICED. Write ALL output (every field, the pitch and the riedel) in ${language}.
+
+== HARD RULES ==
+- Respond ONLY with valid JSON matching the schema below. No markdown, no code fences, no text around it.
+- No em-dashes. Use commas, periods or a colon.
+- Bullets/lists only where the content is genuinely a list.
+- NEVER invent a reference client. Use only the supplied proof points. If none fits, use the literal phrase for "similar companies" in ${language}. A proof point with "named": false must not be named.
+- Pick ONE primary pain, based on the signals and the persona.
+- Keep hooks and challenger questions fresh; never repeat one within the pitch.
+- The challenger reframe brings an insight the persona has not named themselves.
+- For a recruitment agency the strongest signal is hiring pressure: open roles, growth, acquisitions, leadership changes. Anchor the chosen pain there.
+
+== THE FIXED STRUCTURE (fill every field) ==
+1. analysis: company type, the chosen signal, the persona and why, the chosen primary pain, the chosen reference (a proof point or "similar companies"), and where the reframe lands. The hook and the "somewhat in order" branch must NOT use the same point.
+2. summaryLine: one line summarising the angle.
+3. opener: "Hi [first name], this is [repName] from [agencyName]..." short and human, in ${language}.
+4. hook: teach + provoke in 1-2 sentences, with a flip at the end ("or would you say it already runs smoothly?") followed by deliberate silence.
 5/6/7. branches:
-   - yes: bij "ja, dat speelt" -> bevestigingsvraag, dan doorvragen op hun huidige aanpak.
-   - somewhatOk: bij "redelijk op orde" -> een NIEUW punt dat op de Situatie-vraag landt, geen herhaling van de hook.
-   - no: bij "nee" -> korte value/pitch + meteen de eerste doorvraag.
-8. spicedFunnel: reeks {beat, question} in deze volgorde:
-   - Situation (cijfer: aantal open rollen / time-to-hire)
-   - Situation (huidige aanpak: intern team, andere bureaus, job boards)
-   - Pain (schone, neutrale vraag)
-   - Impact (de challenger-reframe met het nieuwe inzicht)
-   - Compelling Event (waarom nu, push op urgentie, geen "ooit")
-   - Decision (wie beslist, hoe ziet het proces eruit)
-9. finalChallenge: 1 confronterende vraag.
-10. close: bewijs (proof point of "soortgelijke bedrijven") + kleine, tijdgebonden meeting-ask.
-11. alternativePains: 2-3 andere pijnen, elk {pain, solution, reference}.
-12. handoffChecklist: wat de recruiter na de call vastlegt (aantal rollen, beslisser, huidige leveranciers, fee-verwachting, timing).
-13. strategicNotes: korte tactische punten (multithreaden, naamverwarring checken, vervolgstap).
-+ riedel: de schone gesproken versie van opener t/m meeting-ask als natuurlijke Nederlandse monoloog, zonder labels.
+   - yes: on "yes, that's a thing" -> confirming question, then probe how they handle it now.
+   - somewhatOk: on "fairly in order" -> a NEW point landing on the Situation question, not a repeat of the hook.
+   - no: on "no" -> short value/pitch + immediately the first probing question.
+8. spicedFunnel: a sequence of {beat, question}:
+   - Situation (number: open roles / time-to-hire)
+   - Situation (current approach: internal team, other agencies, job boards)
+   - Pain (clean, neutral question)
+   - Impact (the challenger reframe with the new insight)
+   - Compelling Event (why now, push urgency, accept no "someday")
+   - Decision (who decides, what the process looks like)
+9. finalChallenge: one confronting question.
+10. close: proof (a proof point or "similar companies") + a small, time-bound meeting ask.
+11. alternativePains: 2-3 other pains, each {pain, solution, reference}.
+12. handoffChecklist: what the recruiter records after the call (number of roles, decision-maker, current suppliers, fee expectation, timing).
+13. strategicNotes: short tactical points (multithreading, check for name confusion, next step).
++ riedel: the clean spoken version of opener through meeting-ask as a natural ${language} monologue, no labels.
 
 == JSON SCHEMA ==
 {
@@ -66,41 +88,44 @@ export function buildPitchUserPrompt(input: {
   account: Account;
   lead: AccountLead;
   websiteText?: string;
+  language?: string;
 }): string {
-  const { positioning, account, lead, websiteText } = input;
+  const { positioning, account, lead, websiteText, language = 'English' } = input;
 
   const proof = positioning.proofPoints.length
     ? positioning.proofPoints
-        .map((p) => `- ${p.named ? p.label : `(naam NIET gebruiken) ${p.label}`}: ${p.result}`)
+        .map((p) => `- ${p.named ? p.label : `(do NOT use the name) ${p.label}`}: ${p.result}`)
         .join('\n')
-    : '- (geen proof points aangeleverd, gebruik "soortgelijke bedrijven")';
+    : '- (no proof points supplied, use "similar companies")';
 
   const signals = account.signals.length
     ? account.signals.map((s) => `- [${s.type}] ${s.summary}${s.date ? ` (${s.date})` : ''}`).join('\n')
-    : '- (geen signalen, baseer je op het bedrijfsprofiel/website hieronder)';
+    : '- (no signals, base it on the company profile/website below)';
 
-  return `== BUREAU (de verkoper) ==
-Naam: ${positioning.agencyName || '(niet ingesteld)'}
-Recruiter die belt: ${positioning.repName || '(niet ingesteld)'}
-Niche: ${positioning.niche || '(niet ingesteld)'}
-Diensten: ${positioning.services.join(', ') || '(niet ingesteld)'}
-Differentiator / reframe-kern: ${positioning.differentiator || '(niet ingesteld)'}
+  return `OUTPUT LANGUAGE: ${language}
+
+== AGENCY (the seller) ==
+Name: ${positioning.agencyName || '(not set)'}
+Recruiter calling: ${positioning.repName || '(not set)'}
+Niche: ${positioning.niche || '(not set)'}
+Services: ${positioning.services.join(', ') || '(not set)'}
+Differentiator / reframe core: ${positioning.differentiator || '(not set)'}
 ${positioning.tone ? `Tone of voice: ${positioning.tone}\n` : ''}Proof points:
 ${proof}
 
-== ACCOUNT (het prospect-bedrijf) ==
-Naam: ${account.companyName}
-${account.sector ? `Branche: ${account.sector}\n` : ''}${account.size ? `Omvang: ${account.size}\n` : ''}${account.location ? `Locatie: ${account.location}\n` : ''}${account.description ? `Profiel: ${account.description}\n` : ''}${account.notes ? `Notities: ${account.notes}\n` : ''}Signalen:
+== ACCOUNT (the prospect company) ==
+Name: ${account.companyName}
+${account.sector ? `Industry: ${account.sector}\n` : ''}${account.size ? `Size: ${account.size}\n` : ''}${account.location ? `Location: ${account.location}\n` : ''}${account.description ? `Profile: ${account.description}\n` : ''}${account.notes ? `Notes: ${account.notes}\n` : ''}Signals:
 ${signals}
-${websiteText ? `\nWebsite-tekst (voor extra context):\n${websiteText}\n` : ''}
-== LEAD (de persona die gebeld wordt) ==
-Naam: ${lead.name}
-Rol: ${lead.role}${lead.seniority ? ` (${lead.seniority})` : ''}
+${websiteText ? `\nWebsite text (extra context):\n${websiteText}\n` : ''}
+== LEAD (the persona being called) ==
+Name: ${lead.name}
+Role: ${lead.role}${lead.seniority ? ` (${lead.seniority})` : ''}
 
-Genereer nu de pitch. Kies de meest passende hoofdpijn op basis van de signalen en de rol van de lead. Antwoord uitsluitend met de JSON.`;
+Generate the pitch now. Pick the most relevant primary pain based on the signals and the lead's role. Write all output in ${language}. Respond with the JSON only.`;
 }
 
-/** Strip fences en parse. Gooit als het geen geldige JSON is. */
+/** Strip fences and parse. Throws if not valid JSON. */
 export function parsePitch(text: string): GeneratedPitch {
   const clean = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').replace(/```/g, '').trim();
   return JSON.parse(clean) as GeneratedPitch;

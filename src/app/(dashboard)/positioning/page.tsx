@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowLeft, Plus, X, Save, Trash2 } from 'lucide-react';
 import { C } from '@/lib/ui';
+import { useT } from '@/lib/i18n';
 import { accountsDb } from '@/lib/accountsDb';
 import type { AgencyPositioning, ProofPoint } from '@/lib/accountTypes';
 
@@ -19,6 +20,7 @@ const EMPTY: AgencyPositioning = {
 };
 
 export default function PositioningPage() {
+  const t = useT();
   const router = useRouter();
   const [p, setP] = useState<AgencyPositioning>(EMPTY);
   const [loading, setLoading] = useState(true);
@@ -55,16 +57,16 @@ export default function PositioningPage() {
         ...p,
         proofPoints: p.proofPoints.filter((pp) => pp.label.trim() || pp.result.trim()),
       });
-      toast.success('Positionering opgeslagen');
+      toast.success(t('Positioning saved', 'Positionering opgeslagen'));
       router.push('/accounts');
     } catch {
-      toast.error('Opslaan mislukt');
+      toast.error(t('Save failed', 'Opslaan mislukt'));
     } finally {
       setSaving(false);
     }
   }
 
-  if (loading) return <div className="p-8 text-sm" style={{ color: C.muted }}>Laden...</div>;
+  if (loading) return <div className="p-8 text-sm" style={{ color: C.muted }}>{t('Loading...', 'Laden...')}</div>;
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-8">
@@ -73,22 +75,22 @@ export default function PositioningPage() {
       </button>
 
       <h1 className="text-2xl font-semibold" style={{ color: C.primary }}>
-        Bureau-positionering
+        {t('Agency positioning', 'Bureau-positionering')}
       </h1>
       <p className="mb-6 text-sm" style={{ color: C.muted }}>
-        Dit stuurt elke gegenereerde pitch. Hoe scherper, hoe beter de pitch.
+        {t('This drives every generated pitch. The sharper it is, the better the pitch.', 'Dit stuurt elke gegenereerde pitch. Hoe scherper, hoe beter de pitch.')}
       </p>
 
       <div className="space-y-5">
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Bureaunaam" value={p.agencyName} onChange={(v) => setP({ ...p, agencyName: v })} />
-          <Field label="Naam recruiter (in de opener)" value={p.repName} onChange={(v) => setP({ ...p, repName: v })} />
+          <Field label={t('Agency name', 'Bureaunaam')} value={p.agencyName} onChange={(v) => setP({ ...p, agencyName: v })} />
+          <Field label={t('Recruiter name (in the opener)', 'Naam recruiter (in de opener)')} value={p.repName} onChange={(v) => setP({ ...p, repName: v })} />
         </div>
 
-        <Field label="Niche" value={p.niche} onChange={(v) => setP({ ...p, niche: v })} placeholder="bijv. tech & engineering werving in NL" />
+        <Field label={t('Niche', 'Niche')} value={p.niche} onChange={(v) => setP({ ...p, niche: v })} placeholder={t('e.g. tech & engineering recruitment in NL', 'bijv. tech & engineering werving in NL')} />
 
         <div>
-          <Label>Diensten</Label>
+          <Label>{t('Services', 'Diensten')}</Label>
           <div className="mb-2 flex flex-wrap gap-2">
             {p.services.map((s, i) => (
               <span key={i} className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs" style={{ background: C.pill, color: C.pillText }}>
@@ -104,7 +106,7 @@ export default function PositioningPage() {
               value={serviceInput}
               onChange={(e) => setServiceInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addService())}
-              placeholder="bijv. werving & selectie"
+              placeholder={t('e.g. search & selection', 'bijv. werving & selectie')}
               className="flex-1 rounded-lg px-3 py-2 text-sm outline-none"
               style={{ border: `1px solid ${C.border}` }}
             />
@@ -115,12 +117,12 @@ export default function PositioningPage() {
         </div>
 
         <div>
-          <Label>Differentiator / reframe-kern</Label>
+          <Label>{t('Differentiator / reframe core', 'Differentiator / reframe-kern')}</Label>
           <textarea
             value={p.differentiator}
             onChange={(e) => setP({ ...p, differentiator: e.target.value })}
             rows={3}
-            placeholder="Het inzicht dat je verkoopt. Bijv: split ATS/CRM-tools knippen de band tussen kandidaat en klant door, daar zit juist de waarde van een bureau."
+            placeholder={t('The insight you sell. E.g. split ATS/CRM tools cut the bond between candidate and client, which is exactly where an agency adds value.', 'Het inzicht dat je verkoopt. Bijv: split ATS/CRM-tools knippen de band tussen kandidaat en klant door, daar zit juist de waarde van een bureau.')}
             className="w-full rounded-lg px-3 py-2 text-sm outline-none"
             style={{ border: `1px solid ${C.border}` }}
           />
@@ -128,9 +130,9 @@ export default function PositioningPage() {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <Label>Proof points</Label>
+            <Label>{t('Proof points', 'Proof points')}</Label>
             <button onClick={addProof} className="inline-flex items-center gap-1 text-xs" style={{ color: C.primary }}>
-              <Plus size={13} /> toevoegen
+              <Plus size={13} /> {t('add', 'toevoegen')}
             </button>
           </div>
           <p className="mb-2 text-xs" style={{ color: C.muted }}>
@@ -143,14 +145,14 @@ export default function PositioningPage() {
                   <input
                     value={pp.label}
                     onChange={(e) => updateProof(i, { label: e.target.value })}
-                    placeholder="Label, bijv. SaaS-scaleup 120 fte"
+                    placeholder={t('Label, e.g. SaaS scale-up 120 FTE', 'Label, bijv. SaaS-scaleup 120 fte')}
                     className="rounded-lg px-3 py-2 text-sm outline-none"
                     style={{ border: `1px solid ${C.border}` }}
                   />
                   <input
                     value={pp.result}
                     onChange={(e) => updateProof(i, { result: e.target.value })}
-                    placeholder="Resultaat, bijv. 3 senior devs in 5 weken"
+                    placeholder={t('Result, e.g. 3 senior devs in 5 weeks', 'Resultaat, bijv. 3 senior devs in 5 weken')}
                     className="rounded-lg px-3 py-2 text-sm outline-none"
                     style={{ border: `1px solid ${C.border}` }}
                   />
@@ -169,7 +171,7 @@ export default function PositioningPage() {
           </div>
         </div>
 
-        <Field label="Tone of voice (optioneel)" value={p.tone ?? ''} onChange={(v) => setP({ ...p, tone: v })} placeholder="bijv. direct, warm, geen verkooppraat" />
+        <Field label={t('Tone of voice (optional)', 'Tone of voice (optioneel)')} value={p.tone ?? ''} onChange={(v) => setP({ ...p, tone: v })} placeholder={t('e.g. direct, warm, no sales fluff', 'bijv. direct, warm, geen verkooppraat')} />
 
         <button
           onClick={save}
@@ -177,7 +179,7 @@ export default function PositioningPage() {
           className="inline-flex items-center gap-1.5 rounded-lg px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
           style={{ background: C.primary }}
         >
-          <Save size={15} /> {saving ? 'Opslaan...' : 'Opslaan'}
+          <Save size={15} /> {saving ? t('Saving...', 'Opslaan...') : t('Save', 'Opslaan')}
         </button>
       </div>
     </div>

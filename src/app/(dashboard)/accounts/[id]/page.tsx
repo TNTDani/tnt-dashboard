@@ -12,6 +12,7 @@ import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
 import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
 import { useDialer } from '@/lib/dialer-context';
+import { useT } from '@/lib/i18n';
 import PitchPanel from '@/components/PitchPanel';
 import type { Account, AccountLead, AgencyPositioning, LeadSeniority, PitchRecord, SuggestedPerson } from '@/lib/accountTypes';
 
@@ -24,6 +25,9 @@ export default function AccountDetailPage() {
   const { data: session } = useSession();
   const isAdmin = ['owner', 'admin'].includes(session?.user?.role ?? '');
   const dialer = useDialer();
+  const t = useT();
+  const scoreLabelText = (k: string) =>
+    k === 'high' ? t('High', 'Hoog') : k === 'medium' ? t('Medium', 'Gemiddeld') : k === 'low' ? t('Low', 'Laag') : t('No signal', 'Geen signaal');
 
   const [account, setAccount] = useState<Account | null>(null);
   const [leads, setLeads] = useState<AccountLead[]>([]);
@@ -61,16 +65,16 @@ export default function AccountDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ website: account.website, companyName: account.companyName, location: account.location }),
       });
-      if (!res.ok) throw new Error('Verrijken mislukt');
+      if (!res.ok) throw new Error(t('Enrichment failed', 'Verrijken mislukt'));
       const data = await res.json();
       const signals = Array.isArray(data.signals) ? data.signals : [];
       const people: SuggestedPerson[] = Array.isArray(data.people) ? data.people : [];
       const enrichedAt = new Date().toISOString();
       await accountsDb.updateAccount(account.id, { signals, keyPeople: people, enrichedAt });
       setAccount({ ...account, signals, keyPeople: people, enrichedAt });
-      toast.success(`${signals.length} signaal(en), ${people.length} contact(en)`);
+      toast.success(`${signals.length} ${t('signal(s)', 'signaal(en)')}, ${people.length} ${t('contact(s)', 'contact(en)')}`);
     } catch {
-      toast.error('Verrijken mislukt');
+      toast.error(t('Enrichment failed', 'Verrijken mislukt'));
     } finally {
       setEnriching(false);
     }
@@ -93,26 +97,26 @@ export default function AccountDetailPage() {
     const keyPeople = (account.keyPeople ?? []).filter((p) => p.name !== person.name);
     await accountsDb.updateAccount(account.id, { keyPeople });
     setAccount({ ...account, keyPeople });
-    toast.success(`${person.name} toegevoegd als lead`);
+    toast.success(`${person.name} ${t('added as lead', 'toegevoegd als lead')}`);
   }
 
   async function deleteAccount() {
     if (!account) return;
-    if (!confirm(`"${account.companyName}" verwijderen? Dit verwijdert ook de leads en pitches.`)) return;
+    if (!confirm(t(`Delete "${account.companyName}"? This also removes its leads and pitches.`, `"${account.companyName}" verwijderen? Dit verwijdert ook de leads en pitches.`))) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/accounts/${account.id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error((await res.json()).error || 'Verwijderen mislukt');
-      toast.success('Account verwijderd');
+      if (!res.ok) throw new Error((await res.json()).error || t('Delete failed', 'Verwijderen mislukt'));
+      toast.success(t('Account deleted', 'Account verwijderd'));
       router.push('/accounts');
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Verwijderen mislukt');
+      toast.error(e instanceof Error ? e.message : t('Delete failed', 'Verwijderen mislukt'));
       setDeleting(false);
     }
   }
 
-  if (loading) return <div className="p-8 text-sm" style={{ color: C.muted }}>Laden...</div>;
-  if (!account) return <div className="p-8 text-sm" style={{ color: C.muted }}>Account niet gevonden.</div>;
+  if (loading) return <div className="p-8 text-sm" style={{ color: C.muted }}>{t('Loading...', 'Laden...')}</div>;
+  if (!account) return <div className="p-8 text-sm" style={{ color: C.muted }}>{t('Account not found.', 'Account niet gevonden.')}</div>;
 
   const positioningSet = positioning.agencyName || positioning.differentiator;
   const score = computeBuyingScore(account.signals);
@@ -160,7 +164,7 @@ export default function AccountDetailPage() {
               style={{ border: `1px solid ${C.border}`, color: C.primary }}
             >
               {enriching ? <Loader2 size={14} className="animate-spin" /> : <Radar size={14} />}
-              {enriching ? 'Zoeken...' : 'Verrijk signalen'}
+              {enriching ? t('Searching...', 'Zoeken...') : t('Enrich signals', 'Verrijk signalen')}
             </button>
             {isAdmin && (
               <button
@@ -168,22 +172,22 @@ export default function AccountDetailPage() {
                 disabled={deleting}
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium disabled:opacity-50"
                 style={{ border: `1px solid ${C.border}`, color: '#C0392B' }}
-                title="Alleen admins kunnen verwijderen"
+                title={t('Only admins can delete', 'Alleen admins kunnen verwijderen')}
               >
-                <Trash2 size={14} /> Verwijderen
+                <Trash2 size={14} /> {t('Delete', 'Verwijderen')}
               </button>
             )}
           </div>
         </div>
 
-        {/* Koopkans-score */}
+        {/* Buying score */}
         <div className="mt-5 flex items-center gap-4 rounded-xl p-4" style={{ background: C.bg }}>
           <div className="flex items-center gap-2">
             <Gauge size={18} style={{ color: scoreColor(score.label) }} />
             <div>
-              <div className="text-xs" style={{ color: C.muted }}>Koopkans</div>
+              <div className="text-xs" style={{ color: C.muted }}>{t('Buying score', 'Koopkans')}</div>
               <div className="text-lg font-semibold" style={{ color: scoreColor(score.label) }}>
-                {score.score} <span className="text-sm font-normal">· {score.label}</span>
+                {score.score} <span className="text-sm font-normal">· {scoreLabelText(score.label)}</span>
               </div>
             </div>
           </div>
@@ -195,7 +199,7 @@ export default function AccountDetailPage() {
         {(account.signals?.length ?? 0) > 0 && (
           <div className="mt-4 space-y-2">
             <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: C.muted }}>
-              Signalen
+              {t('Signals', 'Signalen')}
             </span>
             <div className="flex flex-wrap gap-2">
               {(account.signals ?? []).map((s, i) => (
@@ -212,7 +216,7 @@ export default function AccountDetailPage() {
       {(account.keyPeople?.length ?? 0) > 0 && (
         <div className="mt-4 rounded-2xl p-5" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide" style={{ color: C.muted }}>
-            Gevonden contactpersonen
+            {t('Found contacts', 'Gevonden contactpersonen')}
           </h2>
           <div className="space-y-2">
             {(account.keyPeople ?? []).map((p, i) => (
@@ -226,7 +230,7 @@ export default function AccountDetailPage() {
                   className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium"
                   style={{ border: `1px solid ${C.border}`, color: C.primary }}
                 >
-                  <UserCheck size={13} /> Als lead
+                  <UserCheck size={13} /> {t('As lead', 'Als lead')}
                 </button>
               </div>
             ))}
@@ -240,23 +244,23 @@ export default function AccountDetailPage() {
           className="mt-4 block w-full rounded-xl p-3 text-left text-sm"
           style={{ background: '#FEF3C7', color: '#92400E' }}
         >
-          Stel je bureau-positionering in (niche, diensten, differentiator, proof points) voor scherpere pitches. Klik hier om dit nu te doen.
+          {t('Set up your agency positioning (niche, services, differentiator, proof points) for sharper pitches. Click here to do it now.', 'Stel je bureau-positionering in (niche, diensten, differentiator, proof points) voor scherpere pitches. Klik hier om dit nu te doen.')}
         </button>
       )}
 
       <div className="mt-6 flex items-center justify-between">
         <h2 className="text-lg font-semibold" style={{ color: C.primary }}>
-          Leads
+          {t('Leads', 'Leads')}
         </h2>
         <button onClick={() => setShowLead(true)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-white" style={{ background: C.primary }}>
-          <UserPlus size={15} /> Lead toevoegen
+          <UserPlus size={15} /> {t('Add lead', 'Lead toevoegen')}
         </button>
       </div>
 
       <div className="mt-3 space-y-4">
         {leads.length === 0 ? (
           <p className="text-sm" style={{ color: C.muted }}>
-            Nog geen leads. Voeg een contactpersoon toe om een pitch te genereren.
+            {t('No leads yet. Add a contact to generate a pitch.', 'Nog geen leads. Voeg een contactpersoon toe om een pitch te genereren.')}
           </p>
         ) : (
           leads.map((lead) => (
@@ -275,9 +279,9 @@ export default function AccountDetailPage() {
                   onClick={() => dialer.loadLead(lead.name, lead.phone)}
                   className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium"
                   style={{ border: `1px solid ${C.border}`, color: lead.phone ? C.primary : C.muted }}
-                  title={lead.phone ? `Bel ${lead.phone}` : 'Geen nummer bekend, laadt leeg in de dialer'}
+                  title={lead.phone ? `${t('Call', 'Bel')} ${lead.phone}` : t('No number known, loads empty in the dialer', 'Geen nummer bekend, laadt leeg in de dialer')}
                 >
-                  <Phone size={13} /> Bellen
+                  <Phone size={13} /> {t('Call', 'Bellen')}
                 </button>
               </div>
               <PitchPanel account={account} lead={lead} positioning={positioning} initialPitch={pitchByLead[lead.id] ?? null} />
@@ -291,18 +295,18 @@ export default function AccountDetailPage() {
           <div className="w-full max-w-md rounded-2xl p-6" style={{ background: C.surface }} onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold" style={{ color: C.primary }}>
-                Lead toevoegen
+                {t('Add lead', 'Lead toevoegen')}
               </h3>
               <button onClick={() => setShowLead(false)}>
                 <X size={18} style={{ color: C.muted }} />
               </button>
             </div>
             <div className="space-y-3">
-              <LField label="Naam *" value={leadForm.name} onChange={(v) => setLeadForm({ ...leadForm, name: v })} />
-              <LField label="Rol *" value={leadForm.role} onChange={(v) => setLeadForm({ ...leadForm, role: v })} />
+              <LField label={t('Name *', 'Naam *')} value={leadForm.name} onChange={(v) => setLeadForm({ ...leadForm, name: v })} />
+              <LField label={t('Role *', 'Rol *')} value={leadForm.role} onChange={(v) => setLeadForm({ ...leadForm, role: v })} />
               <div>
                 <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>
-                  Seniority
+                  {t('Seniority', 'Seniority')}
                 </label>
                 <select
                   value={leadForm.seniority}
@@ -317,15 +321,15 @@ export default function AccountDetailPage() {
                   ))}
                 </select>
               </div>
-              <LField label="E-mail" value={leadForm.email} onChange={(v) => setLeadForm({ ...leadForm, email: v })} />
-              <LField label="Telefoon" value={leadForm.phone} onChange={(v) => setLeadForm({ ...leadForm, phone: v })} />
+              <LField label={t('Email', 'E-mail')} value={leadForm.email} onChange={(v) => setLeadForm({ ...leadForm, email: v })} />
+              <LField label={t('Phone', 'Telefoon')} value={leadForm.phone} onChange={(v) => setLeadForm({ ...leadForm, phone: v })} />
             </div>
             <div className="mt-5 flex items-center gap-2">
               <button onClick={() => addLead()} disabled={!leadForm.name.trim() || !leadForm.role.trim()} className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50" style={{ background: C.primary }}>
-                <Plus size={14} /> Toevoegen
+                <Plus size={14} /> {t('Add', 'Toevoegen')}
               </button>
               <button onClick={() => setShowLead(false)} className="rounded-lg px-4 py-2 text-sm" style={{ color: C.muted }}>
-                Annuleren
+                {t('Cancel', 'Annuleren')}
               </button>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal,
 import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
 import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
+import { useT } from '@/lib/i18n';
 import MergeAccountsModal from '@/components/MergeAccountsModal';
 import type { Account } from '@/lib/accountTypes';
 
@@ -14,6 +15,7 @@ const SIZES: NonNullable<Account['size']>[] = ['startup', 'small', 'medium', 'la
 const EMPTY = { companyName: '', website: '', sector: '', size: 'medium' as Account['size'], location: '', linkedin: '', description: '', notes: '' };
 
 export default function AccountsPage() {
+  const t = useT();
   const router = useRouter();
   const { data: session } = useSession();
   const isAdmin = ['owner', 'admin'].includes(session?.user?.role ?? '');
@@ -61,7 +63,7 @@ export default function AccountsPage() {
             Accounts
           </h1>
           <p className="text-sm" style={{ color: C.muted }}>
-            Prospect-bedrijven in je BD-pijplijn
+            {t('Prospect companies in your BD pipeline', 'Prospect-bedrijven in je BD-pijplijn')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -71,7 +73,7 @@ export default function AccountsPage() {
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
               style={{ border: `1px solid ${C.border}`, color: C.primary }}
             >
-              <GitMerge size={15} /> Samenvoegen
+              <GitMerge size={15} /> {t('Merge', 'Samenvoegen')}
             </button>
           )}
           <button
@@ -79,14 +81,14 @@ export default function AccountsPage() {
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium"
             style={{ border: `1px solid ${C.border}`, color: C.primary }}
           >
-            <SlidersHorizontal size={15} /> Positionering
+            <SlidersHorizontal size={15} /> {t('Positioning', 'Positionering')}
           </button>
           <button
             onClick={() => setShowForm(true)}
             className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white"
             style={{ background: C.primary }}
           >
-            <Plus size={16} /> Nieuw account
+            <Plus size={16} /> {t('New account', 'Nieuw account')}
           </button>
         </div>
       </div>
@@ -96,18 +98,18 @@ export default function AccountsPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Zoek op bedrijfsnaam"
+          placeholder={t('Search by company name', 'Zoek op bedrijfsnaam')}
           className="w-full bg-transparent text-sm outline-none"
         />
       </div>
 
       {loading ? (
         <p className="text-sm" style={{ color: C.muted }}>
-          Laden...
+          {t('Loading...', 'Laden...')}
         </p>
       ) : filtered.length === 0 ? (
         <div className="rounded-xl p-8 text-center text-sm" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted }}>
-          Nog geen accounts. Voeg je eerste prospect-bedrijf toe.
+          {t('No accounts yet. Add your first prospect company.', 'Nog geen accounts. Voeg je eerste prospect-bedrijf toe.')}
         </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -139,7 +141,7 @@ export default function AccountsPage() {
                       <div className="h-full rounded-full" style={{ width: `${sc.score}%`, background: scoreColor(sc.label) }} />
                     </div>
                     <span className="text-xs" style={{ color: scoreColor(sc.label) }}>
-                      Koopkans {sc.score}
+                      {t('Buying score', 'Koopkans')} {sc.score}
                     </span>
                   </div>
                 );
@@ -162,20 +164,20 @@ export default function AccountsPage() {
           <div className="w-full max-w-md rounded-2xl p-6" style={{ background: C.surface }} onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold" style={{ color: C.primary }}>
-                Nieuw account
+                {t('New account', 'Nieuw account')}
               </h2>
               <button onClick={() => setShowForm(false)}>
                 <X size={18} style={{ color: C.muted }} />
               </button>
             </div>
             <div className="space-y-3">
-              <Field label="Bedrijfsnaam *" value={form.companyName} onChange={(v) => setForm({ ...form, companyName: v })} />
-              <Field label="Website" value={form.website} onChange={(v) => setForm({ ...form, website: v })} placeholder="bijv. bedrijf.nl" />
+              <Field label={t('Company name *', 'Bedrijfsnaam *')} value={form.companyName} onChange={(v) => setForm({ ...form, companyName: v })} />
+              <Field label="Website" value={form.website} onChange={(v) => setForm({ ...form, website: v })} placeholder={t('e.g. company.com', 'bijv. bedrijf.nl')} />
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Branche" value={form.sector} onChange={(v) => setForm({ ...form, sector: v })} />
+                <Field label={t('Industry', 'Branche')} value={form.sector} onChange={(v) => setForm({ ...form, sector: v })} />
                 <div>
                   <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>
-                    Omvang
+                    {t('Size', 'Omvang')}
                   </label>
                   <select
                     value={form.size}
@@ -191,8 +193,8 @@ export default function AccountsPage() {
                   </select>
                 </div>
               </div>
-              <Field label="Locatie" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
-              <Field label="LinkedIn-pagina" value={form.linkedin} onChange={(v) => setForm({ ...form, linkedin: v })} placeholder="bijv. linkedin.com/company/..." />
+              <Field label={t('Location', 'Locatie')} value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
+              <Field label={t('LinkedIn page', 'LinkedIn-pagina')} value={form.linkedin} onChange={(v) => setForm({ ...form, linkedin: v })} placeholder={t('e.g. linkedin.com/company/...', 'bijv. linkedin.com/company/...')} />
             </div>
             <div className="mt-5 flex items-center gap-2">
               <button
@@ -201,10 +203,10 @@ export default function AccountsPage() {
                 className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
                 style={{ background: C.primary }}
               >
-                <Sparkles size={14} /> {saving ? 'Opslaan...' : 'Aanmaken'}
+                <Sparkles size={14} /> {saving ? t('Saving...', 'Opslaan...') : t('Create', 'Aanmaken')}
               </button>
               <button onClick={() => setShowForm(false)} className="rounded-lg px-4 py-2 text-sm" style={{ color: C.muted }}>
-                Annuleren
+                {t('Cancel', 'Annuleren')}
               </button>
             </div>
           </div>
