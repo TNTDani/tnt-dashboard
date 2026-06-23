@@ -4,9 +4,16 @@
 
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  typescript: true,
-});
+let _stripe: Stripe | undefined;
+
+/** Returns a lazily-initialised Stripe client. Safe to import at build time. */
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY is not set');
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { typescript: true });
+  }
+  return _stripe;
+}
 
 export interface CreditPack {
   id: string;
