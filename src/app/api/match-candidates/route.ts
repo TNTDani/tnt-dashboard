@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { anthropic, MODEL } from "@/lib/anthropic";
 import { Vacancy, CandidateProfile } from "@/lib/types";
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 
 export interface CandidateMatch {
   candidateId: string;
@@ -13,6 +15,17 @@ export interface CandidateMatch {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    if ((await getBalance(agencyId)) < CREDIT_COST.candidate_match) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This action costs ${CREDIT_COST.candidate_match} credits.` },
+        { status: 402 },
+      );
+    }
+
     const {
       vacancy,
       candidates,
@@ -74,6 +87,15 @@ Score calibration:
 
     // Sort by score descending
     matches.sort((a, b) => b.score - a.score);
+
+    await chargeCredits({
+      agencyId,
+      userEmail: email,
+      feature: 'candidate_match',
+      model: MODEL,
+      inputTokens: message.usage.input_tokens,
+      outputTokens: message.usage.output_tokens,
+    });
 
     return NextResponse.json({ matches });
   } catch (err: unknown) {

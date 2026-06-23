@@ -14,6 +14,9 @@ export const CREDIT_COST = {
   candidate_match: 2,
   screen: 2,
   questions: 2,
+  source_candidates: 3,
+  scan_vacancies: 1,
+  match_vacancies: 1,
 } as const;
 
 export type Feature = keyof typeof CREDIT_COST;

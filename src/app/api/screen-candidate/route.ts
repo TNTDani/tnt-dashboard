@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { anthropic, MODEL } from "@/lib/anthropic";
 import { Vacancy, ProcessedCV } from "@/lib/types";
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    if ((await getBalance(agencyId)) < CREDIT_COST.screen) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This action costs ${CREDIT_COST.screen} credits.` },
+        { status: 402 },
+      );
+    }
+
     const { cv, vacancy }: { cv: ProcessedCV; vacancy: Vacancy } = await req.json();
 
     const prompt = `You are a senior recruiter at Orchard. Score this candidate against the vacancy below.
@@ -67,6 +80,15 @@ SCORING RULES — follow these precisely:
     const text = response.content[0].type === "text" ? response.content[0].text : "";
     const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
     const result = JSON.parse(clean);
+
+    await chargeCredits({
+      agencyId,
+      userEmail: email,
+      feature: 'screen',
+      model: MODEL,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
 
     return NextResponse.json({ success: true, result });
   } catch (err) {

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { anthropic, MODEL } from '@/lib/anthropic';
+import { anthropic, FAST_MODEL } from '@/lib/anthropic';
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 
 export interface ScannedVacancy {
   title: string;
@@ -90,6 +92,17 @@ function stripHtml(html: string, pageUrl: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    if ((await getBalance(agencyId)) < CREDIT_COST.scan_vacancies) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This action costs ${CREDIT_COST.scan_vacancies} credits.` },
+        { status: 402 },
+      );
+    }
+
     const { website, companyName }: { website: string; companyName: string } = await req.json();
 
     if (!website) {
@@ -153,7 +166,7 @@ Rules:
 - Maximum 50 vacancies`;
 
     const response = await anthropic.messages.create({
-      model: MODEL,
+      model: FAST_MODEL,
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
     });
@@ -165,6 +178,15 @@ Rules:
     try {
       const parsed = JSON.parse(clean);
       vacancies = Array.isArray(parsed.vacancies) ? parsed.vacancies : [];
+
+      await chargeCredits({
+        agencyId,
+        userEmail: email,
+        feature: 'scan_vacancies',
+        model: FAST_MODEL,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      });
     } catch {
       // Claude returned something unparseable — return empty
     }

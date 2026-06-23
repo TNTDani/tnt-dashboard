@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { anthropic, MODEL } from '@/lib/anthropic';
 import { ProcessedCV, Vacancy } from '@/lib/types';
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 
 export interface InterviewQuestion {
   category: 'technical' | 'gap' | 'behavioural' | 'culture';
@@ -10,6 +12,17 @@ export interface InterviewQuestion {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    if ((await getBalance(agencyId)) < CREDIT_COST.questions) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This action costs ${CREDIT_COST.questions} credits.` },
+        { status: 402 },
+      );
+    }
+
     const {
       cv,
       vacancy,
@@ -73,6 +86,15 @@ Categories must be exactly: "technical", "gap", "behavioural", or "culture".`;
     // Strip any markdown code fences if present
     const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
     const questions: InterviewQuestion[] = JSON.parse(cleaned);
+
+    await chargeCredits({
+      agencyId,
+      userEmail: email,
+      feature: 'questions',
+      model: MODEL,
+      inputTokens: message.usage.input_tokens,
+      outputTokens: message.usage.output_tokens,
+    });
 
     return NextResponse.json({ success: true, questions });
   } catch (err: any) {

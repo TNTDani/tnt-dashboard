@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { anthropic, MODEL } from '@/lib/anthropic';
+import { anthropic, FAST_MODEL } from '@/lib/anthropic';
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 
 async function fetchPage(url: string): Promise<string | null> {
   try {
@@ -42,6 +44,17 @@ function stripHtml(html: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    if ((await getBalance(agencyId)) < CREDIT_COST.vacancy_parse) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This action costs ${CREDIT_COST.vacancy_parse} credits.` },
+        { status: 402 },
+      );
+    }
+
     const { url }: { url: string } = await req.json();
 
     if (!url?.startsWith('http')) {
@@ -81,7 +94,7 @@ Rules:
 - Return null for any field you cannot confidently extract`;
 
     const response = await anthropic.messages.create({
-      model: MODEL,
+      model: FAST_MODEL,
       max_tokens: 512,
       messages: [{ role: 'user', content: prompt }],
     });
@@ -89,6 +102,15 @@ Rules:
     const text = response.content[0].type === 'text' ? response.content[0].text : '';
     const clean = text.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '').trim();
     const result = JSON.parse(clean);
+
+    await chargeCredits({
+      agencyId,
+      userEmail: email,
+      feature: 'vacancy_parse',
+      model: FAST_MODEL,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
 
     return NextResponse.json({ success: true, result });
   } catch (err) {

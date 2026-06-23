@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { anthropic, MODEL } from '@/lib/anthropic';
 import { fetchWebsiteText } from '@/lib/website';
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 
 const SIGNATURE = `Met vriendelijke groet / Kind regards,
 
@@ -9,6 +11,17 @@ info@orchard.io`;
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    if ((await getBalance(agencyId)) < CREDIT_COST.cold_email) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This action costs ${CREDIT_COST.cold_email} credits.` },
+        { status: 402 },
+      );
+    }
+
     const {
       contactName,
       contactRole,
@@ -80,6 +93,15 @@ Return ONLY valid JSON (no markdown):
     } catch {
       return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });
     }
+
+    await chargeCredits({
+      agencyId,
+      userEmail: email,
+      feature: 'cold_email',
+      model: MODEL,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
 
     return NextResponse.json({ subject, body });
   } catch (err) {

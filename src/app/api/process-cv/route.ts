@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Anthropic from "@anthropic-ai/sdk";
-import { anthropic, MODEL } from "@/lib/anthropic";
+import { anthropic, FAST_MODEL } from "@/lib/anthropic";
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 
 const EXTRACT_PROMPT = `You are an expert CV analyst for Orchard, a specialist tech recruitment firm.
 
@@ -40,6 +42,17 @@ Return ONLY this JSON structure (no markdown, no explanation):
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    if ((await getBalance(agencyId)) < CREDIT_COST.cv_parse) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This action costs ${CREDIT_COST.cv_parse} credits.` },
+        { status: 402 },
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File;
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -73,7 +86,7 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await anthropic.messages.create({
-      model: MODEL,
+      model: FAST_MODEL,
       max_tokens: 4096,
       messages,
     });
@@ -82,6 +95,15 @@ export async function POST(req: NextRequest) {
     // Strip any markdown code fences if present
     const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
     const data = JSON.parse(clean);
+
+    await chargeCredits({
+      agencyId,
+      userEmail: email,
+      feature: 'cv_parse',
+      model: FAST_MODEL,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
 
     return NextResponse.json({ success: true, data });
   } catch (err) {

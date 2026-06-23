@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { anthropic, FAST_MODEL } from "@/lib/anthropic";
 import { VacancyListing } from "@/lib/types";
+import { requireCaller } from '@/lib/apiAuth';
+import { getBalance, chargeCredits, CREDIT_COST } from '@/lib/credits';
 
 interface CandidateInput {
   jobTitle: string;
@@ -18,7 +20,7 @@ export interface ScoreResult {
 
 const BATCH_SIZE = 12;
 
-async function scoreBatch(candidate: CandidateInput, batch: VacancyListing[]): Promise<ScoreResult[]> {
+async function scoreBatch(candidate: CandidateInput, batch: VacancyListing[]): Promise<{ scores: ScoreResult[]; inputTokens: number; outputTokens: number }> {
   const listingsText = batch.map((l) =>
     `ID: ${l.id}\nTitle: ${l.title}\nCompany: ${l.company}\nLocation: ${l.location}\nDescription: ${l.description.slice(0, 300)}`
   ).join("\n---\n");
@@ -58,15 +60,28 @@ Return ONLY a raw JSON array, no markdown, no explanation:
 
   const text = response.content[0].type === "text" ? response.content[0].text : "[]";
   const clean = text.replace(/^```json\n?/, "").replace(/^```\n?/, "").replace(/\n?```$/, "").trim();
+  const inputTokens = response.usage.input_tokens;
+  const outputTokens = response.usage.output_tokens;
   try {
-    return JSON.parse(clean) as ScoreResult[];
+    return { scores: JSON.parse(clean) as ScoreResult[], inputTokens, outputTokens };
   } catch {
-    return batch.map((l) => ({ listingId: l.id, score: 0, reason: "Scoring unavailable" }));
+    return { scores: batch.map((l) => ({ listingId: l.id, score: 0, reason: "Scoring unavailable" })), inputTokens, outputTokens };
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await requireCaller(req);
+    if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const { agencyId, email } = auth.caller;
+
+    if ((await getBalance(agencyId)) < CREDIT_COST.match_vacancies) {
+      return NextResponse.json(
+        { error: `Insufficient credits. This action costs ${CREDIT_COST.match_vacancies} credits.` },
+        { status: 402 },
+      );
+    }
+
     const { candidate, listings } = await req.json() as {
       candidate: CandidateInput;
       listings: VacancyListing[];
@@ -80,7 +95,18 @@ export async function POST(req: NextRequest) {
     }
 
     const batchResults = await Promise.all(batches.map((b) => scoreBatch(candidate, b)));
-    const matches = batchResults.flat();
+    const matches = batchResults.flatMap((r) => r.scores);
+    const totalInputTokens = batchResults.reduce((sum, r) => sum + r.inputTokens, 0);
+    const totalOutputTokens = batchResults.reduce((sum, r) => sum + r.outputTokens, 0);
+
+    await chargeCredits({
+      agencyId,
+      userEmail: email,
+      feature: 'match_vacancies',
+      model: FAST_MODEL,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
+    });
 
     return NextResponse.json({ matches });
   } catch (err) {
