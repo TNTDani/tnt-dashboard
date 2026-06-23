@@ -276,10 +276,10 @@ export default function ClientDetailPage() {
     return (
       <div className="p-6 lg:p-8">
         <button
-          onClick={() => router.push('/clients')}
+          onClick={() => router.push('/accounts')}
           className="flex items-center gap-2 text-[#6B7280] hover:text-[#2D4A2D] text-sm mb-6 transition-colors"
         >
-          <ArrowLeft size={15} /> Clients
+          <ArrowLeft size={15} /> Accounts
         </button>
         <div className="text-center py-20">
           <Building2 size={40} className="mx-auto mb-3 text-[rgba(45,74,45,0.20)]" />
@@ -295,7 +295,7 @@ export default function ClientDetailPage() {
     <div className="p-6 lg:p-8">
       {/* Back button */}
       <button
-        onClick={() => router.push('/clients')}
+        onClick={() => router.push('/accounts')}
         className="flex items-center gap-1.5 text-[#6B7280] hover:text-[#2D4A2D] text-sm mb-6 transition-colors group"
       >
         <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />

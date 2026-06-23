@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase } from 'lucide-react';
+import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase, LayoutGrid } from 'lucide-react';
 import { C } from '@/lib/ui';
 import { accountsDb } from '@/lib/accountsDb';
 import { computeBuyingScore, scoreColor } from '@/lib/buyingScore';
@@ -51,7 +51,7 @@ export default function AccountsPage() {
   const [search, setSearch] = useState('');
   const [segment, setSegment] = useState<Segment>('all');
   const [stageFilter, setStageFilter] = useState<AccountStage | null>(null);
-  const [view, setView] = useState<'list' | 'board'>('list');
+  const [view, setView] = useState<'list' | 'grid' | 'board'>('list');
   const [showForm, setShowForm] = useState(false);
   const [showMerge, setShowMerge] = useState(false);
   const [form, setForm] = useState(EMPTY);
@@ -182,18 +182,13 @@ export default function AccountsPage() {
           />
         </div>
         <div className="flex rounded-lg overflow-hidden" style={{ border: `1px solid ${C.border}` }}>
-          <button
-            onClick={() => setView('list')}
-            className="px-3 py-2"
-            style={{ background: view === 'list' ? C.primary : 'transparent', color: view === 'list' ? 'white' : C.muted }}
-          >
+          <button onClick={() => setView('list')} className="px-3 py-2" style={{ background: view === 'list' ? C.primary : 'transparent', color: view === 'list' ? 'white' : C.muted }}>
             <LayoutList size={15} />
           </button>
-          <button
-            onClick={() => setView('board')}
-            className="px-3 py-2"
-            style={{ background: view === 'board' ? C.primary : 'transparent', color: view === 'board' ? 'white' : C.muted }}
-          >
+          <button onClick={() => setView('grid')} className="px-3 py-2" style={{ background: view === 'grid' ? C.primary : 'transparent', color: view === 'grid' ? 'white' : C.muted }}>
+            <LayoutGrid size={15} />
+          </button>
+          <button onClick={() => setView('board')} className="px-3 py-2" style={{ background: view === 'board' ? C.primary : 'transparent', color: view === 'board' ? 'white' : C.muted }}>
             <Kanban size={15} />
           </button>
         </div>
@@ -201,18 +196,22 @@ export default function AccountsPage() {
 
       {loading ? (
         <p className="text-sm" style={{ color: C.muted }}>{t('Loading...', 'Laden...')}</p>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-xl p-8 text-center text-sm" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted }}>
+          {t('No accounts yet. Add your first prospect company.', 'Nog geen accounts. Voeg je eerste prospect-bedrijf toe.')}
+        </div>
       ) : view === 'list' ? (
-        filtered.length === 0 ? (
-          <div className="rounded-xl p-8 text-center text-sm" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.muted }}>
-            {t('No accounts yet. Add your first prospect company.', 'Nog geen accounts. Voeg je eerste prospect-bedrijf toe.')}
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {filtered.map((a) => (
-              <AccountCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts} />
-            ))}
-          </div>
-        )
+        <div className="grid gap-3 sm:grid-cols-2">
+          {filtered.map((a) => (
+            <AccountCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts} />
+          ))}
+        </div>
+      ) : view === 'grid' ? (
+        <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          {filtered.map((a) => (
+            <GridCard key={a.id} account={a} onClick={() => router.push(accountHref(a))} t={t} hiringCounts={hiringCounts} />
+          ))}
+        </div>
       ) : (
         <BoardView accounts={filtered} onCardClick={(a) => router.push(accountHref(a))} t={t} />
       )}
@@ -271,6 +270,53 @@ function hiringToken(name: string): string {
     .split(' ')
     .find((t) => t.length >= 3);
   return token ?? '';
+}
+
+// ── GridCard (compact, 4-per-row) ──────────────────────────────────────────────
+function GridCard({ account, onClick, t, hiringCounts }: {
+  account: Account;
+  onClick: () => void;
+  t: (en: string, nl: string) => string;
+  hiringCounts: Record<string, number>;
+}) {
+  const client = isClient(account);
+  const score = computeBuyingScore(account.signals);
+  const stage = account.stage ?? 'new';
+  const displayStage = stage === 'won' ? 'client' : stage;
+  const openRoles = hiringCounts[hiringToken(account.companyName)] ?? 0;
+
+  return (
+    <button onClick={onClick} className="rounded-xl p-3 text-left transition hover:shadow-sm" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+      <div className="flex items-start justify-between gap-1 mb-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Building2 size={14} style={{ color: C.primary, flexShrink: 0 }} />
+          <span className="text-sm font-medium truncate" style={{ color: C.primary }}>{account.companyName}</span>
+        </div>
+        <span className="rounded-full px-1.5 py-0.5 text-[10px] capitalize shrink-0" style={{ background: `${STAGE_COLOR[displayStage]}20`, color: STAGE_COLOR[displayStage] }}>
+          {t(displayStage, displayStage)}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        {openRoles > 0 && (
+          <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: C.blue }}>
+            <Briefcase size={10} /> {openRoles}
+          </span>
+        )}
+        {!client && (
+          <span className="text-[10px]" style={{ color: scoreColor(score.label) }}>{score.score}</span>
+        )}
+        {account.signals.length > 0 && !client && (
+          <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: C.muted }}>
+            <Radar size={10} /> {account.signals.length}
+          </span>
+        )}
+        {account.sector && (
+          <span className="text-[10px] truncate" style={{ color: C.muted }}>{account.sector}</span>
+        )}
+      </div>
+    </button>
+  );
 }
 
 // ── AccountCard ─────────────────────────────────────────────────────────────────

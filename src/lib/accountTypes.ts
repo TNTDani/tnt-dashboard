@@ -43,9 +43,10 @@ export interface AgencyPositioning {
 export type AccountStage = 'new' | 'contacted' | 'engaged' | 'meeting' | 'won' | 'lost' | 'client' | 'dormant';
 
 /** True when an account represents an active/former client.
+ *  Purely stage-based so changing the stage to a prospect stage moves it back.
  *  'won' is a legacy alias kept for backward compat with existing rows. */
-export function isClient(account: { stage?: AccountStage; convertedClientId?: string | null }): boolean {
-  return account.stage === 'client' || account.stage === 'won' || account.stage === 'dormant' || !!account.convertedClientId;
+export function isClient(account: { stage?: AccountStage }): boolean {
+  return account.stage === 'client' || account.stage === 'won' || account.stage === 'dormant';
 }
 
 export type ActivityType = 'call' | 'email' | 'linkedin' | 'meeting' | 'note';
