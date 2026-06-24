@@ -132,7 +132,7 @@ export default function TermsPage() {
           </p>
           <p>
             Our full Privacy Policy is available at{' '}
-            <Link href="/privacy" style={{ color: '#2D4A2D' }}>orchard.works/privacy</Link>.
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#2D4A2D' }}>orchard.works/privacy</a>.
           </p>
         </Section>
 
