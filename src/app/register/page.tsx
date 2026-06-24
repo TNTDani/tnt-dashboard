@@ -319,7 +319,7 @@ export default function RegisterPage() {
           </div>
           <div style={{ textAlign: "center", fontSize: 11.5, color: "#aab8b0", marginTop: 10 }}>
             By creating an account you agree to our{" "}
-            <Link href="/terms" style={{ color: "#5a6a60", textDecoration: "underline" }}>Terms of Service</Link>.
+            <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: "#5a6a60", textDecoration: "underline" }}>Terms of Service</a>.
           </div>
         </motion.div>
       </main>

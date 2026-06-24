@@ -557,7 +557,7 @@ function SidebarContent({
           {!collapsed && (
             <motion.div key="version" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="flex items-center justify-between px-3 pt-1">
               <span className="text-[10px] tracking-widest uppercase" style={{ color: "#8a9a90" }}>Orchard · v3</span>
-              <Link href="/terms" className="text-[10px]" style={{ color: "#aab8b0", textDecoration: "underline" }}>Terms</Link>
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-[10px]" style={{ color: "#aab8b0", textDecoration: "underline" }}>Terms</a>
             </motion.div>
           )}
         </AnimatePresence>
