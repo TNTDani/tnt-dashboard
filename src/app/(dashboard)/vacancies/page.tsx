@@ -315,6 +315,9 @@ export default function Vacancies() {
   const [showAddMatch, setShowAddMatch] = useState(false);
 
   // AI Matching
+  const [interviewNotesLocal, setInterviewNotesLocal] = useState<Record<string, string>>({});
+  const [feedbackNotesLocal, setFeedbackNotesLocal] = useState<Record<string, string>>({});
+
   const [matchingVacancy, setMatchingVacancy] = useState<Vacancy | null>(null);
   const [matchLoading, setMatchLoading] = useState(false);
   const [aiMatches, setAiMatches] = useState<CandidateMatch[]>([]);
@@ -1048,7 +1051,17 @@ export default function Vacancies() {
                                   <option value="">—</option><option value="positive">Positive</option><option value="negative">Negative</option><option value="second-interview">Second Interview</option>
                                 </select></div>
                               <div><label className="text-[#9CA3AF] text-[10px] block mb-1">Notes</label>
-                                <input value={m.interviewNotes ?? ""} onChange={e => updateMatch(m.id, { interviewNotes: e.target.value })} placeholder="Interview notes..."
+                                <input
+                                  value={interviewNotesLocal[m.id] !== undefined ? interviewNotesLocal[m.id] : (m.interviewNotes ?? "")}
+                                  onChange={e => setInterviewNotesLocal(prev => ({ ...prev, [m.id]: e.target.value }))}
+                                  onBlur={() => {
+                                    const local = interviewNotesLocal[m.id];
+                                    if (local !== undefined && local !== (m.interviewNotes ?? "")) {
+                                      void updateMatch(m.id, { interviewNotes: local });
+                                      setInterviewNotesLocal(prev => { const n = { ...prev }; delete n[m.id]; return n; });
+                                    }
+                                  }}
+                                  placeholder="Interview notes..."
                                   className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-lg px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none placeholder-[#9CA3AF]" /></div>
                             </div>
                           </div>
@@ -1128,7 +1141,17 @@ export default function Vacancies() {
                             </div>
                           </div>
                           {/* Notes */}
-                          <textarea value={fb?.notes ?? ""} onChange={e => saveFeedback({ notes: e.target.value })} placeholder="Client feedback notes..." rows={2}
+                          <textarea
+                            value={feedbackNotesLocal[m.candidateId] !== undefined ? feedbackNotesLocal[m.candidateId] : (fb?.notes ?? "")}
+                            onChange={e => setFeedbackNotesLocal(prev => ({ ...prev, [m.candidateId]: e.target.value }))}
+                            onBlur={() => {
+                              const local = feedbackNotesLocal[m.candidateId];
+                              if (local !== undefined && local !== (fb?.notes ?? "")) {
+                                saveFeedback({ notes: local });
+                                setFeedbackNotesLocal(prev => { const n = { ...prev }; delete n[m.candidateId]; return n; });
+                              }
+                            }}
+                            placeholder="Client feedback notes..." rows={2}
                             className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2 text-[#2D4A2D] text-xs placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] resize-none transition-colors" />
                         </div>
                       );

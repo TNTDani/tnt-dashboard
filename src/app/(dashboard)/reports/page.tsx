@@ -273,13 +273,12 @@ function ReportCard({
   onDelete: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [notesLocal, setNotesLocal] = useState(report.notes);
   const m = report.metrics;
 
   const updateMetric = (key: keyof WeeklyReportMetrics, val: number) => {
     onUpdate({ ...report, metrics: { ...m, [key]: val } });
   };
-
-  const updateNotes = (notes: string) => onUpdate({ ...report, notes });
 
   return (
     <div className="bg-white rounded-2xl border border-[rgba(45,74,45,0.12)] overflow-hidden">
@@ -359,8 +358,9 @@ function ReportCard({
               <div className="mb-5">
                 <p className="text-[#94a3b8] text-[10px] font-semibold uppercase tracking-widest mb-2">Notes</p>
                 <textarea
-                  value={report.notes}
-                  onChange={e => updateNotes(e.target.value)}
+                  value={notesLocal}
+                  onChange={e => setNotesLocal(e.target.value)}
+                  onBlur={() => { if (notesLocal !== report.notes) onUpdate({ ...report, notes: notesLocal }); }}
                   rows={2}
                   className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#94a3b8] focus:outline-none focus:border-[#2D4A2D] transition-colors resize-none"
                   placeholder="Add notes for this week…"
