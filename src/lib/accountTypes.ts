@@ -86,6 +86,16 @@ export interface Account {
   signals: Signal[];
   keyPeople: SuggestedPerson[];
   enrichedAt?: string;
+  niche?: string;
+  phone?: string;
+  founder?: string;
+  source?: string;
+  feeAgreement?: {
+    type: 'standard' | 'custom' | 'retainer';
+    customPercentage?: number;
+    retainerAmount?: number;
+    retainerPercentage?: number;
+  };
   convertedClientId?: string | null;
   createdAt: string;
   updatedAt: string;

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase, LayoutGrid, Check, Download } from 'lucide-react';
+import { Plus, X, Search, Building2, MapPin, Sparkles, Radar, SlidersHorizontal, GitMerge, LayoutList, Kanban, Briefcase, LayoutGrid, Check, Download, UserPlus, Phone, DollarSign, Users } from 'lucide-react';
 
 function exportAccountsCsv(rows: Account[]) {
   const headers = ['Company', 'Website', 'Sector', 'Size', 'Location', 'Stage', 'Notes'];
@@ -41,7 +41,13 @@ const CLIENT_CHIPS: AccountStage[] = ['client', 'dormant', 'lost'];
 
 type Segment = 'all' | 'prospects' | 'clients';
 
-const EMPTY = { companyName: '', website: '', sector: '', size: 'medium' as Account['size'], location: '', linkedin: '', description: '', notes: '' };
+const EMPTY_FORM = {
+  companyName: '', website: '', sector: '', size: 'medium' as Account['size'],
+  location: '', linkedin: '', description: '', niche: '', source: '',
+  feeType: 'standard' as 'standard' | 'custom' | 'retainer',
+  customPercentage: '', retainerAmount: '', retainerPercentage: '',
+};
+const EMPTY_CONTACT = { name: '', role: '', email: '', phone: '', linkedin: '' };
 
 function accountHref(a: Account): string {
   return `/accounts/${a.id}`;
@@ -61,7 +67,8 @@ export default function AccountsPage() {
   const [view, setView] = useState<'list' | 'grid' | 'board'>('list');
   const [showForm, setShowForm] = useState(false);
   const [showMerge, setShowMerge] = useState(false);
-  const [form, setForm] = useState(EMPTY);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [contacts, setContacts] = useState([{ ...EMPTY_CONTACT }]);
   const [saving, setSaving] = useState(false);
 
   // ── Multi-select ──────────────────────────────────────────────────────────────
@@ -102,9 +109,40 @@ export default function AccountsPage() {
     if (!form.companyName.trim()) return;
     setSaving(true);
     try {
-      const account = await accountsDb.addAccount({ ...form, signals: [], notes: form.notes });
+      const feeAgreement = form.feeType === 'custom' && form.customPercentage
+        ? { type: form.feeType, customPercentage: parseFloat(form.customPercentage) }
+        : form.feeType === 'retainer'
+          ? { type: form.feeType, retainerAmount: form.retainerAmount ? parseFloat(form.retainerAmount) : undefined, retainerPercentage: form.retainerPercentage ? parseFloat(form.retainerPercentage) : undefined }
+          : form.feeType === 'standard'
+            ? { type: form.feeType as 'standard' }
+            : undefined;
+      const account = await accountsDb.addAccount({
+        companyName: form.companyName.trim(),
+        website: form.website.trim() || undefined,
+        sector: form.sector.trim() || undefined,
+        size: form.size,
+        location: form.location.trim() || undefined,
+        linkedin: form.linkedin.trim() || undefined,
+        description: form.description.trim() || undefined,
+        niche: form.niche.trim() || undefined,
+        source: form.source.trim() || undefined,
+        feeAgreement,
+        signals: [],
+        notes: '',
+      });
+      // Create leads for filled contacts
+      const filled = contacts.filter(c => c.name.trim());
+      await Promise.all(filled.map(c => accountsDb.addLead({
+        accountId: account.id,
+        name: c.name.trim(),
+        role: c.role.trim() || '',
+        email: c.email.trim() || undefined,
+        phone: c.phone.trim() || undefined,
+        linkedin: c.linkedin.trim() || undefined,
+      })));
       setAccounts((a) => [account, ...a]);
-      setForm(EMPTY);
+      setForm(EMPTY_FORM);
+      setContacts([{ ...EMPTY_CONTACT }]);
       setShowForm(false);
     } finally {
       setSaving(false);
@@ -383,30 +421,103 @@ export default function AccountsPage() {
       )}
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={() => setShowForm(false)}>
-          <div className="w-full max-w-md rounded-2xl p-6" style={{ background: C.surface }} onClick={(e) => e.stopPropagation()}>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold" style={{ color: C.primary }}>{t('New account', 'Nieuw account')}</h2>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4" onClick={() => setShowForm(false)}>
+          <div className="w-full max-w-lg rounded-t-2xl sm:rounded-2xl flex flex-col max-h-[92vh]" style={{ background: C.surface }} onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0" style={{ borderBottom: `1px solid ${C.border}` }}>
+              <h2 className="text-base font-semibold" style={{ color: C.primary }}>{t('New account', 'Nieuw account')}</h2>
               <button onClick={() => setShowForm(false)}><X size={18} style={{ color: C.muted }} /></button>
             </div>
-            <div className="space-y-3">
-              <Field label={t('Company name *', 'Bedrijfsnaam *')} value={form.companyName} onChange={(v) => setForm({ ...form, companyName: v })} />
-              <Field label="Website" value={form.website} onChange={(v) => setForm({ ...form, website: v })} placeholder={t('e.g. company.com', 'bijv. bedrijf.nl')} />
-              <div className="grid grid-cols-2 gap-3">
-                <Field label={t('Industry', 'Branche')} value={form.sector} onChange={(v) => setForm({ ...form, sector: v })} />
-                <div>
-                  <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>{t('Size', 'Omvang')}</label>
-                  <select value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value as Account['size'] })} className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={{ border: `1px solid ${C.border}` }}>
-                    {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+
+            {/* Scrollable body */}
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
+
+              {/* ── Section 1: Firmographics ── */}
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: C.muted }}>{t('Company', 'Bedrijf')}</p>
+                <div className="space-y-2.5">
+                  <Field label={t('Company name *', 'Bedrijfsnaam *')} value={form.companyName} onChange={(v) => setForm({ ...form, companyName: v })} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label="Website" value={form.website} onChange={(v) => setForm({ ...form, website: v })} placeholder="company.com" />
+                    <Field label="LinkedIn" value={form.linkedin} onChange={(v) => setForm({ ...form, linkedin: v })} placeholder="linkedin.com/company/..." />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label={t('Industry', 'Branche')} value={form.sector} onChange={(v) => setForm({ ...form, sector: v })} />
+                    <div>
+                      <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>{t('Size', 'Omvang')}</label>
+                      <select value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value as Account['size'] })} className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={{ border: `1px solid ${C.border}` }}>
+                        {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label={t('Location', 'Locatie')} value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
+                    <Field label={t('Niche / focus', 'Niche / focus')} value={form.niche} onChange={(v) => setForm({ ...form, niche: v })} placeholder={t('e.g. SaaS scale-ups', 'bijv. SaaS scale-ups')} />
+                  </div>
+                  <Field label={t('Source (how we found them)', 'Bron (hoe gevonden)')} value={form.source} onChange={(v) => setForm({ ...form, source: v })} placeholder={t('e.g. LinkedIn, referral', 'bijv. LinkedIn, referral')} />
                 </div>
               </div>
-              <Field label={t('Location', 'Locatie')} value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
-              <Field label={t('LinkedIn page', 'LinkedIn-pagina')} value={form.linkedin} onChange={(v) => setForm({ ...form, linkedin: v })} placeholder={t('e.g. linkedin.com/company/...', 'bijv. linkedin.com/company/...')} />
+
+              {/* ── Section 2: Fee agreement ── */}
+              <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16 }}>
+                <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: C.muted }}>{t('Fee agreement', 'Fee-afspraak')}</p>
+                <div className="space-y-2.5">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium" style={{ color: C.muted }}>{t('Type', 'Type')}</label>
+                    <select value={form.feeType} onChange={(e) => setForm({ ...form, feeType: e.target.value as typeof form.feeType })} className="w-full rounded-lg px-3 py-2 text-sm outline-none" style={{ border: `1px solid ${C.border}` }}>
+                      <option value="standard">{t('Standard (18/20/22% by seniority)', 'Standaard (18/20/22% op senioriteit)')}</option>
+                      <option value="custom">{t('Custom percentage', 'Eigen percentage')}</option>
+                      <option value="retainer">{t('Retainer', 'Retainer')}</option>
+                    </select>
+                  </div>
+                  {form.feeType === 'custom' && (
+                    <Field label={t('Percentage (%)', 'Percentage (%)')} value={form.customPercentage} onChange={(v) => setForm({ ...form, customPercentage: v })} placeholder="20" />
+                  )}
+                  {form.feeType === 'retainer' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Field label={t('Retainer amount (€)', 'Retainer bedrag (€)')} value={form.retainerAmount} onChange={(v) => setForm({ ...form, retainerAmount: v })} placeholder="5000" />
+                      <Field label={t('Success % (optional)', 'Success % (optioneel)')} value={form.retainerPercentage} onChange={(v) => setForm({ ...form, retainerPercentage: v })} placeholder="10" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Section 3: Contacts ── */}
+              <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16 }}>
+                <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: C.muted }}>{t('Contacts', 'Contacten')}</p>
+                <div className="space-y-3">
+                  {contacts.map((c, i) => (
+                    <div key={i} className="rounded-xl p-3 space-y-2" style={{ background: `${C.primary}06`, border: `1px solid ${C.border}` }}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium" style={{ color: C.primary }}>{t(`Contact ${i + 1}`, `Contactpersoon ${i + 1}`)}</span>
+                        {contacts.length > 1 && (
+                          <button onClick={() => setContacts(contacts.filter((_, j) => j !== i))} className="text-xs" style={{ color: C.muted }}>
+                            <X size={13} />
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field label={t('Name', 'Naam')} value={c.name} onChange={(v) => setContacts(contacts.map((x, j) => j === i ? { ...x, name: v } : x))} />
+                        <Field label={t('Role', 'Functie')} value={c.role} onChange={(v) => setContacts(contacts.map((x, j) => j === i ? { ...x, role: v } : x))} placeholder={t('e.g. HR Manager', 'bijv. HR Manager')} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Field label="Email" value={c.email} onChange={(v) => setContacts(contacts.map((x, j) => j === i ? { ...x, email: v } : x))} placeholder="name@company.com" />
+                        <Field label={t('Phone', 'Telefoon')} value={c.phone} onChange={(v) => setContacts(contacts.map((x, j) => j === i ? { ...x, phone: v } : x))} placeholder="+31 6..." />
+                      </div>
+                      <Field label="LinkedIn" value={c.linkedin} onChange={(v) => setContacts(contacts.map((x, j) => j === i ? { ...x, linkedin: v } : x))} placeholder="linkedin.com/in/..." />
+                    </div>
+                  ))}
+                  <button onClick={() => setContacts([...contacts, { ...EMPTY_CONTACT }])} className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg" style={{ border: `1px solid ${C.border}`, color: C.muted }}>
+                    <Plus size={12} /> {t('Add contact', 'Contact toevoegen')}
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="mt-5 flex items-center gap-2">
+
+            {/* Footer */}
+            <div className="flex items-center gap-2 px-5 py-4 flex-shrink-0" style={{ borderTop: `1px solid ${C.border}` }}>
               <button onClick={create} disabled={saving || !form.companyName.trim()} className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50" style={{ background: C.primary }}>
-                <Sparkles size={14} /> {saving ? t('Saving...', 'Opslaan...') : t('Create', 'Aanmaken')}
+                {saving ? t('Saving...', 'Opslaan...') : t('Create account', 'Account aanmaken')}
               </button>
               <button onClick={() => setShowForm(false)} className="rounded-lg px-4 py-2 text-sm" style={{ color: C.muted }}>
                 {t('Cancel', 'Annuleren')}

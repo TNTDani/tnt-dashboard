@@ -78,6 +78,12 @@ export default function AccountDetailPage() {
   const [pitchByLead, setPitchByLead] = useState<Record<string, PitchRecord | null>>({});
   const [activities, setActivities] = useState<Activity[]>([]);
   const [liveVacancies, setLiveVacancies] = useState<LiveVacancy[]>([]);
+  const [firmographicSuggestions, setFirmographicSuggestions] = useState<{
+    sector?: string | null;
+    size?: string | null;
+    location?: string | null;
+    niche?: string | null;
+  } | null>(null);
   const [pushingSignals, setPushingSignals] = useState(false);
   const [loading, setLoading] = useState(true);
   const [enriching, setEnriching] = useState(false);
@@ -159,6 +165,16 @@ export default function AccountDetailPage() {
       await accountsDb.updateAccount(account.id, { signals, keyPeople: people, enrichedAt });
       setAccount({ ...account, signals, keyPeople: people, enrichedAt });
       toast.success(`${signals.length} ${t('signal(s)', 'signaal(en)')}, ${people.length} ${t('contact(s)', 'contact(en)')}`);
+      // Capture firmographic suggestions — only for empty fields
+      if (data.firmographics) {
+        const fg = data.firmographics;
+        const suggestions: typeof firmographicSuggestions = {};
+        if (fg.sector && !account.sector) suggestions.sector = fg.sector;
+        if (fg.size && !account.size) suggestions.size = fg.size;
+        if (fg.location && !account.location) suggestions.location = fg.location;
+        if (fg.niche && !account.niche) suggestions.niche = fg.niche;
+        if (Object.keys(suggestions).length > 0) setFirmographicSuggestions(suggestions);
+      }
     } catch {
       toast.error(t('Enrichment failed', 'Verrijken mislukt'));
     } finally {
@@ -270,6 +286,30 @@ export default function AccountDetailPage() {
                 <a href={linkedinUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1" style={{ color: C.primary }}>
                   <Link2 size={13} /> LinkedIn
                 </a>
+              )}
+              {account.niche && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs" style={{ background: C.pill, color: C.pillText }}>
+                  {account.niche}
+                </span>
+              )}
+              {account.phone && (
+                <a href={`tel:${account.phone}`} className="inline-flex items-center gap-1 text-xs hover:underline" style={{ color: C.muted }}>
+                  📞 {account.phone}
+                </a>
+              )}
+              {account.founder && (
+                <span className="inline-flex items-center gap-1 text-xs" style={{ color: C.muted }}>
+                  Founder: {account.founder}
+                </span>
+              )}
+              {account.feeAgreement && (
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs" style={{ background: `${C.green}20`, color: C.green }}>
+                  {account.feeAgreement.type === 'custom'
+                    ? `${account.feeAgreement.customPercentage ?? '?'}% fee`
+                    : account.feeAgreement.type === 'retainer'
+                      ? `Retainer ${account.feeAgreement.retainerAmount ? `€${account.feeAgreement.retainerAmount.toLocaleString()}` : ''}`
+                      : 'Standard fee'}
+                </span>
               )}
             </div>
           </div>
@@ -393,6 +433,55 @@ export default function AccountDetailPage() {
           </div>
         )}
       </div>
+
+      {/* ── Firmographic suggestions from enrichment ── */}
+      {firmographicSuggestions && Object.keys(firmographicSuggestions).some(k => firmographicSuggestions[k as keyof typeof firmographicSuggestions]) && (
+        <div className="mt-4 rounded-xl p-4" style={{ background: `${C.amber}15`, border: `1px solid ${C.amber}40` }}>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold" style={{ color: C.amber }}>
+              Enrichment suggestions — accept or dismiss each
+            </p>
+            <button onClick={() => setFirmographicSuggestions(null)} className="text-xs" style={{ color: C.muted }}>
+              Dismiss all
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(Object.entries(firmographicSuggestions) as [string, string | null | undefined][])
+              .filter(([, v]) => v)
+              .map(([key, value]) => (
+                <div key={key} className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs" style={{ background: 'white', border: `1px solid ${C.border}` }}>
+                  <span style={{ color: C.muted }}>{key}:</span>
+                  <span className="font-medium" style={{ color: C.primary }}>{value}</span>
+                  <button
+                    onClick={async () => {
+                      const patch: Record<string, string> = { [key]: value! };
+                      await accountsDb.updateAccount(account.id, patch as any);
+                      setAccount((prev: any) => prev ? { ...prev, ...patch } : prev);
+                      setFirmographicSuggestions(prev => {
+                        if (!prev) return null;
+                        const next = { ...prev, [key]: undefined };
+                        return Object.values(next).some(Boolean) ? next : null;
+                      });
+                    }}
+                    className="text-[10px] font-semibold px-1.5 py-0.5 rounded" style={{ background: `${C.green}20`, color: C.green }}
+                  >
+                    ✓ Accept
+                  </button>
+                  <button
+                    onClick={() => setFirmographicSuggestions(prev => {
+                      if (!prev) return null;
+                      const next = { ...prev, [key]: undefined };
+                      return Object.values(next).some(Boolean) ? next : null;
+                    })}
+                    className="text-[10px]" style={{ color: C.muted }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* Key people */}
       {(account.keyPeople?.length ?? 0) > 0 && (
@@ -578,8 +667,8 @@ export default function AccountDetailPage() {
         </div>
       )}
 
-      {/* Client delivery section */}
-      {isClient(account) && (
+      {/* Client delivery section — vacancies linked to this account */}
+      {clientVacancies.length > 0 && (
         <div className="mt-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold" style={{ color: C.primary }}>

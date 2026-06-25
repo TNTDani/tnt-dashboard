@@ -14,13 +14,21 @@ export const maxDuration = 60;
 const SCHEMA = `Antwoord UITSLUITEND met een JSON-object (niets erna, geen markdown):
 {
   "signals": [ { "type": "open_role" | "funding" | "acquisition" | "leadership_change" | "expansion" | "competitor" | "other", "summary": string, "source": string, "date": string } ],
-  "people": [ { "name": string, "role": string, "source": string, "linkedin": string } ]
+  "people": [ { "name": string, "role": string, "source": string, "linkedin": string } ],
+  "firmographics": { "sector": string | null, "size": "startup" | "small" | "medium" | "large" | "enterprise" | null, "location": string | null, "niche": string | null }
 }
-Bij "people": alleen mensen relevant voor een recruitmentbureau (HR, talent acquisition, hiring managers, oprichters bij kleine bedrijven). Verzin geen namen.`;
+Bij "people": alleen mensen relevant voor een recruitmentbureau (HR, talent acquisition, hiring managers, oprichters bij kleine bedrijven). Verzin geen namen.
+Bij "firmographics": alleen invullen wat je zeker weet uit bronnen. Laat velden null als onzeker.`;
 
 interface EnrichResult {
   signals: Signal[];
   people: SuggestedPerson[];
+  firmographics?: {
+    sector?: string | null;
+    size?: string | null;
+    location?: string | null;
+    niche?: string | null;
+  };
 }
 interface Usage {
   inputTokens: number;
@@ -37,6 +45,7 @@ function parseResult(text: string): EnrichResult {
     return {
       signals: Array.isArray(parsed.signals) ? parsed.signals : [],
       people: Array.isArray(parsed.people) ? parsed.people : [],
+      firmographics: parsed.firmographics ?? undefined,
     };
   } catch {
     return { signals: [], people: [] };

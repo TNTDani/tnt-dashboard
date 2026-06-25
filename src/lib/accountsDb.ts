@@ -32,6 +32,11 @@ function rowToAccount(r: any): Account {
     signals: r.signals ?? [],
     keyPeople: r.key_people ?? [],
     enrichedAt: r.enriched_at ?? undefined,
+    niche: r.niche ?? undefined,
+    phone: r.phone ?? undefined,
+    founder: r.founder ?? undefined,
+    source: r.source ?? undefined,
+    feeAgreement: r.fee_agreement ?? undefined,
     convertedClientId: r.converted_client_id ?? null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
@@ -53,6 +58,11 @@ function accountToRow(a: Partial<Account>) {
   if (a.signals !== undefined) row.signals = a.signals;
   if (a.keyPeople !== undefined) row.key_people = a.keyPeople;
   if (a.enrichedAt !== undefined) row.enriched_at = a.enrichedAt ?? null;
+  if (a.niche !== undefined) row.niche = a.niche ?? null;
+  if (a.phone !== undefined) row.phone = a.phone ?? null;
+  if (a.founder !== undefined) row.founder = a.founder ?? null;
+  if (a.source !== undefined) row.source = a.source ?? null;
+  if (a.feeAgreement !== undefined) row.fee_agreement = a.feeAgreement ?? null;
   if (a.convertedClientId !== undefined) row.converted_client_id = a.convertedClientId ?? null;
   return row;
 }
