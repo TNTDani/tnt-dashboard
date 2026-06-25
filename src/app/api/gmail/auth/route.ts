@@ -18,8 +18,5 @@ export async function GET(req: NextRequest) {
     ...(loginHint ? { login_hint: loginHint } : {}),
   });
 
-  console.log('[gmail/auth] redirect_uri:', process.env.GOOGLE_REDIRECT_URI);
-  console.log('[gmail/auth] generated authUrl:', authUrl);
-
   return NextResponse.redirect(authUrl);
 }

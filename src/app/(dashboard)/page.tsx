@@ -411,15 +411,7 @@ export default function Dashboard() {
 
   // ── Activity items — real data or placeholders ────────────────────────────
 
-  const displayActivityItems = useMemo((): ActivityItem[] => {
-    if (activityItems.length > 0) return activityItems;
-    const now = Date.now();
-    return [
-      { type: "candidate", id: "_p1", name: "Laura Sanabria",           href: "/candidates",  lastAction: "Viewed", timestamp: new Date(now - 2 * 3600 * 1000).toISOString() },
-      { type: "vacancy",   id: "_p2", name: "Senior Frontend Engineer", href: "/vacancies",   lastAction: "Viewed", timestamp: new Date(now - 25 * 3600 * 1000).toISOString() },
-      { type: "client",    id: "_p3", name: "Lleverage",                href: "/clients",     lastAction: "Viewed", timestamp: new Date(now - 3 * 24 * 3600 * 1000).toISOString() },
-    ];
-  }, [activityItems]);
+  const displayActivityItems = activityItems;
 
   // ── Derived stats ──────────────────────────────────────────────────────────
 
