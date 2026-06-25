@@ -14,7 +14,7 @@ import {
   LayoutDashboard, FileText, Users, Briefcase, UserCircle,
   Building2, Calculator, Mail, ListChecks, Trophy, Inbox,
   BarChart2, LogOut, Radar, Clock, CalendarDays, ChevronLeft,
-  Zap, ChevronDown, Shield, Target, CreditCard,
+  Zap, ChevronDown, Shield, Target, CreditCard, TrendingUp,
 } from "lucide-react";
 
 // ── Nav groups — workflow-oriented ────────────────────────────────────────────
@@ -27,6 +27,7 @@ const NAV_GROUPS = [
       { href: "/", icon: LayoutDashboard, label: "Dashboard", exact: true },
       { href: "/today", icon: Clock, label: "Today", exact: true },
       { href: "/pipeline", icon: Users, label: "Pipeline", exact: true },
+      { href: "/kansen", icon: TrendingUp, label: "Kansen", exact: true },
       { href: "/calendar", icon: CalendarDays, label: "Agenda", exact: true },
     ],
   },

@@ -73,6 +73,7 @@ function usePageTitle() {
     "/accounts": "Accounts",
     "/candidates": "Candidates",
     "/email": "Email",
+    "/kansen": "Kansen",
     "/pipeline": "Pipeline",
     "/shortlist": "Shortlist",
     "/placements": "Placements",
