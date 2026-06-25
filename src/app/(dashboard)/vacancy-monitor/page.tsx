@@ -960,7 +960,7 @@ export default function VacancyMonitorPage() {
       initDb(agencyId);
       db.getCandidateProfiles().then(setCandidates).catch(() => {});
     }
-    setWatchlist(storage.getVacancyWatchlist());
+    if (agencyId) setWatchlist(storage.getVacancyWatchlist(agencyId));
   }, [agencyId]);
 
   async function handleStart() {
@@ -1083,7 +1083,8 @@ export default function VacancyMonitorPage() {
   }
 
   function handleToggleWatchlist(listing: ScoredListing) {
-    const current = storage.getVacancyWatchlist();
+    if (!agencyId) return;
+    const current = storage.getVacancyWatchlist(agencyId);
     const exists = current.find((w) => w.id === listing.id);
     let updated: WatchlistItem[];
     if (exists) {
@@ -1100,7 +1101,7 @@ export default function VacancyMonitorPage() {
         },
       ];
     }
-    storage.saveVacancyWatchlist(updated);
+    storage.saveVacancyWatchlist(updated, agencyId);
     setWatchlist(updated);
   }
 

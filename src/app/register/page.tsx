@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "motion/react";
 import { Loader2, Eye, EyeOff } from "lucide-react";
@@ -11,11 +11,30 @@ import { OrchardLogo } from "@/components/OrchardLogo";
 type Mode = "create" | "join";
 
 export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterContent />
+    </Suspense>
+  );
+}
+
+function RegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [mode,            setMode]            = useState<Mode>("create");
   const [agencyName,      setAgencyName]      = useState("");
   const [inviteCode,      setInviteCode]      = useState("");
+
+  // Pre-populate invite code from ?code= URL param and switch to join mode.
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (code) {
+      setInviteCode(code);
+      setMode("join");
+    }
+  }, [searchParams]);
+
   const [fullName,        setFullName]        = useState("");
   const [email,           setEmail]           = useState("");
   const [password,        setPassword]        = useState("");

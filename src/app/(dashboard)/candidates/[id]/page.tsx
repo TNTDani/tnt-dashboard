@@ -5,10 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   CandidateProfile, TimelineEntry, FollowUp,
-  TimestampedNote, CandidateDocument, CandidateVacancyMatch, Vacancy,
+  TimestampedNote, CandidateDocument, CandidateVacancyMatch, Vacancy, Placement,
 } from '@/lib/types';
 import { storage } from '@/lib/storage';
 import { db, initDb } from '@/lib/db';
+import { accountsDb } from '@/lib/accountsDb';
+import { logEvent, getTimeline } from '@/lib/timeline';
+import type { TimelineEvent } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 import VacancyStageBar from '@/components/VacancyStageBar';
 import {
@@ -29,10 +32,14 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 const MATCH_STATUS_BADGE: Record<string, string> = {
-  active: 'bg-blue-100 text-blue-700',
-  'on-hold': 'bg-amber-100 text-amber-700',
-  rejected: 'bg-red-100 text-red-600',
-  placed: 'bg-purple-100 text-purple-700',
+  active:       'bg-blue-100 text-blue-700',
+  'on-hold':    'bg-amber-100 text-amber-700',
+  submitted:    'bg-blue-100 text-blue-600',
+  interviewing: 'bg-violet-100 text-violet-700',
+  offer:        'bg-amber-100 text-amber-700',
+  rejected:     'bg-red-100 text-red-600',
+  withdrawn:    'bg-gray-100 text-gray-500',
+  placed:       'bg-purple-100 text-purple-700',
 };
 
 const BRANCHES = ['IT', 'Finance', 'Marketing', 'Sales', 'Engineering', 'Healthcare', 'Legal', 'HR', 'Other'];
@@ -44,8 +51,8 @@ const DOC_LABELS: { display: string; value: CandidateDocument['label'] }[] = [
   { display: 'Other', value: 'other' },
 ];
 
-type Tab = 'Overview' | 'Notes' | 'Documents' | 'Matches';
-const TABS: Tab[] = ['Overview', 'Notes', 'Documents', 'Matches'];
+type Tab = 'Overview' | 'Notes' | 'Documents' | 'Matches' | 'Placements';
+const TABS: Tab[] = ['Overview', 'Notes', 'Documents', 'Matches', 'Placements'];
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -91,6 +98,9 @@ export default function CandidateDetailPage() {
   const [matchSearch, setMatchSearch] = useState('');
   const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
   const [matchEdits, setMatchEdits] = useState<Record<string, Partial<CandidateVacancyMatch>>>({});
+  const [currentEmployer, setCurrentEmployer] = useState<Awaited<ReturnType<typeof accountsDb.getCurrentEmployer>>>(null);
+  const [candidatePlacements, setCandidatePlacements] = useState<Placement[]>([]);
+  const [candidateTimeline, setCandidateTimeline] = useState<TimelineEvent[]>([]);
 
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const candidateRef = useRef<CandidateProfile | null>(null);
@@ -112,21 +122,23 @@ export default function CandidateDetailPage() {
         setCandidate(found);
         candidateRef.current = found;
         if (found.updatedAt) setLastSaved(new Date(found.updatedAt));
-        storage.addRecentItem({
-          type: 'candidate',
-          id: found.id,
-          name: `${found.firstName} ${found.lastName}`,
-          href: `/candidates/${found.id}`,
-          viewedAt: new Date().toISOString(),
-        });
-        storage.addActivityItem({
-          type: 'candidate',
-          id: found.id,
-          name: `${found.firstName} ${found.lastName}`,
-          href: `/candidates/${found.id}`,
-          lastAction: 'Viewed',
-          timestamp: new Date().toISOString(),
-        });
+        if (agencyId) {
+          storage.addRecentItem({
+            type: 'candidate',
+            id: found.id,
+            name: `${found.firstName} ${found.lastName}`,
+            href: `/candidates/${found.id}`,
+            viewedAt: new Date().toISOString(),
+          }, agencyId);
+          storage.addActivityItem({
+            type: 'candidate',
+            id: found.id,
+            name: `${found.firstName} ${found.lastName}`,
+            href: `/candidates/${found.id}`,
+            lastAction: 'Viewed',
+            timestamp: new Date().toISOString(),
+          }, agencyId);
+        }
       }
       setVacancies(vacancyList);
       setMatches(candidateMatches);
@@ -136,8 +148,13 @@ export default function CandidateDetailPage() {
       setPipelineAdded(alreadyIn);
       const isShortlisted = pipelineCandidates.some(c => (c as any).profileId === id && c.status === 'shortlisted');
       setShortlistedInPipeline(isShortlisted);
+      // Load current employer from placements (fire-and-forget)
+      accountsDb.getCurrentEmployer(id).then(setCurrentEmployer).catch(() => {});
+      // Load placements and timeline for this candidate
+      db.getPlacements().then(all => setCandidatePlacements(all.filter(p => p.profileId === id))).catch(() => {});
+      getTimeline({ candidateId: id, limit: 30 }).then(setCandidateTimeline).catch(() => {});
     }).catch(() => {}).finally(() => setLoading(false));
-    storage.setLastViewedCandidate(id);
+    if (agencyId) storage.setLastViewedCandidate(id, agencyId);
   }, [id, agencyId]);
 
   useEffect(() => {
@@ -256,6 +273,14 @@ export default function CandidateDetailPage() {
         updatedAt: new Date().toISOString(),
       };
       persist(updated);
+      if (type === 'cv') {
+        logEvent({
+          eventType: 'cv_uploaded',
+          summary: `CV uploaded: ${file.name}`,
+          candidateId: current.id,
+          metadata: { fileName: file.name, fileSize: file.size },
+        });
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -338,7 +363,33 @@ export default function CandidateDetailPage() {
     const existing = matches.find(m => m.id === matchId);
     if (!existing) return;
     const updated: CandidateVacancyMatch = { ...existing, ...edits, updatedAt: new Date().toISOString() };
-    await db.saveMatch(updated);
+    await db.saveMatch(updated, existing.status);
+    // interview_scheduled: interviewDate newly set
+    if (edits.interviewDate && !existing.interviewDate) {
+      logEvent({
+        eventType: 'interview_scheduled',
+        summary: `Interview scheduled for ${candidate?.firstName} ${candidate?.lastName}`,
+        candidateId: id,
+        vacancyId: existing.vacancyId,
+        applicationId: matchId,
+        metadata: {
+          date: edits.interviewDate,
+          time: edits.interviewTime ?? '',
+          type: edits.interviewType ?? '',
+        },
+      });
+    }
+    // interview_completed: interviewOutcome newly set
+    if (edits.interviewOutcome && !existing.interviewOutcome) {
+      logEvent({
+        eventType: 'interview_completed',
+        summary: `Interview completed — outcome: ${edits.interviewOutcome}`,
+        candidateId: id,
+        vacancyId: existing.vacancyId,
+        applicationId: matchId,
+        metadata: { outcome: edits.interviewOutcome, notes: edits.interviewNotes ?? '' },
+      });
+    }
     setMatches(prev => prev.map(m => m.id === matchId ? updated : m));
     setMatchEdits(prev => { const n = { ...prev }; delete n[matchId]; return n; });
   };
@@ -421,7 +472,7 @@ export default function CandidateDetailPage() {
   const handleEmailSent = useCallback((entry: TimelineEntry) => {
     addTimelineEntry(entry);
     setTimeout(refreshFollowUp, 100);
-    if (candidate) {
+    if (candidate && agencyId) {
       storage.addActivityItem({
         type: 'candidate',
         id: candidate.id,
@@ -429,9 +480,9 @@ export default function CandidateDetailPage() {
         href: `/candidates/${candidate.id}`,
         lastAction: 'Email sent',
         timestamp: new Date().toISOString(),
-      });
+      }, agencyId);
     }
-  }, [addTimelineEntry, refreshFollowUp, candidate]);
+  }, [addTimelineEntry, refreshFollowUp, candidate, agencyId]);
 
   if (loading || !candidate) {
     return (
@@ -500,6 +551,17 @@ export default function CandidateDetailPage() {
                 <h1 className="text-2xl font-bold text-[#2D4A2D] leading-tight">{fullName}</h1>
                 {candidate.jobTitle && (
                   <p className="text-[#6B7280] text-sm mt-0.5">{candidate.jobTitle}</p>
+                )}
+                {currentEmployer && (
+                  <p className="text-[#2D4A2D] text-xs mt-0.5 flex items-center gap-1">
+                    <Briefcase size={11} />
+                    {currentEmployer.accountId ? (
+                      <a href={`/accounts/${currentEmployer.accountId}`} className="underline underline-offset-2">
+                        {currentEmployer.company}
+                      </a>
+                    ) : currentEmployer.company}
+                    {' · '}placed {new Date(currentEmployer.placementDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                  </p>
                 )}
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   {(candidate.location || candidate.postalCode) && (
@@ -1132,6 +1194,71 @@ export default function CandidateDetailPage() {
                     </div>
                   )}
 
+                  {/* ── Placements tab ──────────────────────────────── */}
+                  {activeTab === 'Placements' && (
+                    <div className="space-y-4">
+                      {candidatePlacements.length === 0 ? (
+                        <p className="text-sm text-[#6B7280] text-center py-8">No placements recorded yet.</p>
+                      ) : (
+                        candidatePlacements.map(p => (
+                          <div key={p.id} className="rounded-xl p-4 border border-[rgba(45,74,45,0.12)] bg-white">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                {p.vacancyId ? (
+                                  <a href={`/vacancies?id=${p.vacancyId}`} className="text-sm font-semibold text-[#2D4A2D] hover:underline underline-offset-2">
+                                    {p.jobTitle}
+                                  </a>
+                                ) : (
+                                  <p className="text-sm font-semibold text-[#2D4A2D]">{p.jobTitle}</p>
+                                )}
+                                {p.accountId ? (
+                                  <a href={`/accounts/${p.accountId}`} className="text-xs text-[#2D4A2D] hover:underline underline-offset-2">
+                                    {p.company}
+                                  </a>
+                                ) : (
+                                  <p className="text-xs text-[#6B7280] mt-0.5">{p.company}</p>
+                                )}
+                                <p className="text-xs text-[#9CA3AF] mt-0.5">{p.placementDate}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-bold text-[#2D4A2D]">
+                                  {(p.feeAmount ?? 0) > 0 ? `€${p.feeAmount!.toLocaleString()}` : <span className="text-xs font-medium text-amber-600">Fee not set</span>}
+                                </p>
+                                {(p.feePercentage ?? 0) > 0 && <p className="text-xs text-[#6B7280]">{p.feePercentage}%</p>}
+                                <span className={`inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                  (p.invoiceStatus ?? p.paymentStatus) === 'paid' ? 'bg-green-100 text-green-700'
+                                  : (p.invoiceStatus === 'sent' || p.paymentStatus === 'invoiced') ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-gray-100 text-gray-500'
+                                }`}>
+                                  {p.invoiceStatus === 'paid' || p.paymentStatus === 'paid' ? 'Paid'
+                                    : p.invoiceStatus === 'sent' || p.paymentStatus === 'invoiced' ? 'Invoiced'
+                                    : 'Draft'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                      {/* Timeline feed */}
+                      {candidateTimeline.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Activity history</p>
+                          <div className="space-y-2">
+                            {candidateTimeline.map(ev => (
+                              <div key={ev.id} className="flex items-start gap-2.5 text-xs">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#2D4A2D] mt-1.5 flex-shrink-0" />
+                                <div>
+                                  <p className="text-[#2D4A2D]">{ev.summary}</p>
+                                  <p className="text-[#9CA3AF]">{new Date(ev.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -1359,17 +1486,18 @@ export default function CandidateDetailPage() {
         <AddToPipelineModal
           profile={candidate}
           vacancies={vacancies}
+          agencyId={agencyId}
           onClose={() => setShowPipelineModal(false)}
           onAdded={() => {
             setPipelineAdded(true);
-            storage.addActivityItem({
+            if (agencyId) storage.addActivityItem({
               type: 'candidate',
               id: candidate.id,
               name: `${candidate.firstName} ${candidate.lastName}`,
               href: `/candidates/${candidate.id}`,
               lastAction: 'Added to pipeline',
               timestamp: new Date().toISOString(),
-            });
+            }, agencyId);
           }}
         />
       )}

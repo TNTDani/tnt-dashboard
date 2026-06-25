@@ -60,7 +60,7 @@ export interface CandidateVacancyMatch {
   candidateId: string; // CandidateProfile.id
   vacancyId: string;
   matchScore?: number;
-  status: 'active' | 'on-hold' | 'rejected' | 'placed';
+  status: 'active' | 'on-hold' | 'submitted' | 'interviewing' | 'offer' | 'placed' | 'rejected' | 'withdrawn';
   notes: string;
   interviewDate?: string;
   interviewTime?: string;
@@ -142,6 +142,8 @@ export interface Vacancy {
   stageLog: StageLogEntry[];
   clientFeedback: ClientFeedback[];
   createdAt: string;
+  accountId?: string; // FK → accounts
+  contactId?: string; // FK → account_leads
 }
 
 export interface ScreeningResult {
@@ -229,13 +231,39 @@ export interface Placement {
   vacancyTitle: string;
   company: string;
   placementDate: string;
-  grossAnnualSalary: number;
-  feePercentage: number;
-  feeAmount: number;
+  grossAnnualSalary?: number;
+  feePercentage?: number;
+  feeAmount?: number;
   paymentStatus: 'pending' | 'invoiced' | 'paid';
   notes: string;
   createdAt: string;
   updatedAt: string;
+  // relational FKs added in migration_ats_relations.sql
+  accountId?: string;   // FK → accounts
+  contactId?: string;   // FK → account_leads
+  recruiterId?: string; // FK → agency_users
+  applicationId?: string; // FK → candidate_vacancy_matches
+  startDate?: string;   // date ISO
+  invoiceStatus?: 'draft' | 'sent' | 'paid';
+  guaranteeUntil?: string; // date ISO
+}
+
+// Normalised timeline_events DB table (added in migration_ats_relations.sql).
+// One row per meaningful action; nullable FKs link to entities.
+export interface TimelineEvent {
+  id: string;
+  agencyId: string;
+  eventType: string;
+  summary: string;
+  candidateId?: string;
+  vacancyId?: string;
+  accountId?: string;
+  leadId?: string;
+  placementId?: string;
+  applicationId?: string;
+  metadata: Record<string, unknown>;
+  createdBy?: string;
+  createdAt: string;
 }
 
 export interface IntakeTicket {

@@ -4,8 +4,12 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Placement } from "@/lib/types";
 import { db } from "@/lib/db";
+import { logEvent } from "@/lib/timeline";
+import { accountsDb } from "@/lib/accountsDb";
+import type { Account } from "@/lib/accountTypes";
+import NextLink from "next/link";
 import {
-  Trophy, Pencil, X, Check, FileText, Banknote, Clock, Search, Download,
+  Trophy, Pencil, X, Check, FileText, Banknote, Clock, Search, Download, ExternalLink,
 } from "lucide-react";
 
 function exportCsv(rows: Placement[]) {
@@ -60,6 +64,7 @@ interface EditForm {
 export default function PlacementsPage() {
   const [placements, setPlacements] = useState<Placement[]>([]);
   const [editing, setEditing] = useState<Placement | null>(null);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [form, setForm] = useState<EditForm>({
     salary: "", feePreset: "20", customFee: "", paymentStatus: "pending", notes: "",
   });
@@ -72,18 +77,20 @@ export default function PlacementsPage() {
         (a, b) => new Date(b.placementDate).getTime() - new Date(a.placementDate).getTime()
       ))
     );
+    accountsDb.getAccounts().then(setAccounts).catch(() => {});
   }, []);
 
   // ── Totals ──────────────────────────────────────────────────────────────────
   const totalPlacements = placements.length;
   const totalInvoiced = placements
     .filter(p => p.paymentStatus === "invoiced" || p.paymentStatus === "paid")
-    .reduce((s, p) => s + p.feeAmount, 0);
+    .reduce((s, p) => s + (p.feeAmount ?? 0), 0);
   const totalReceived = placements
     .filter(p => p.paymentStatus === "paid")
-    .reduce((s, p) => s + p.feeAmount, 0);
-  const avgFee = totalPlacements > 0
-    ? Math.round(placements.reduce((s, p) => s + p.feeAmount, 0) / totalPlacements)
+    .reduce((s, p) => s + (p.feeAmount ?? 0), 0);
+  const feePlacementsCount = placements.filter(p => (p.feeAmount ?? 0) > 0).length;
+  const avgFee = feePlacementsCount > 0
+    ? Math.round(placements.reduce((s, p) => s + (p.feeAmount ?? 0), 0) / feePlacementsCount)
     : 0;
 
   // ── Filtered list ────────────────────────────────────────────────────────────
@@ -99,13 +106,14 @@ export default function PlacementsPage() {
 
   // ── Edit helpers ─────────────────────────────────────────────────────────────
   const openEdit = (p: Placement) => {
-    const preset = FEE_PRESETS.includes(String(p.feePercentage) as any)
-      ? String(p.feePercentage)
-      : "custom";
+    const feePct = p.feePercentage ?? 0;
+    const preset = feePct > 0 && FEE_PRESETS.includes(String(feePct) as any)
+      ? String(feePct)
+      : feePct > 0 ? "custom" : "20";
     setForm({
-      salary: String(p.grossAnnualSalary),
+      salary: p.grossAnnualSalary ? String(p.grossAnnualSalary) : "",
       feePreset: preset,
-      customFee: preset === "custom" ? String(p.feePercentage) : "",
+      customFee: preset === "custom" ? String(feePct) : "",
       paymentStatus: p.paymentStatus,
       notes: p.notes,
     });
@@ -119,16 +127,32 @@ export default function PlacementsPage() {
       ? parseFloat(form.customFee) || 0
       : parseFloat(form.feePreset);
     const feeAmount = Math.round(salary * (feePct / 100) * 100) / 100;
+    const wasNotPaid = editing.paymentStatus !== 'paid' && editing.invoiceStatus !== 'paid';
+    const nowPaid = form.paymentStatus === 'paid';
 
     const updated = placements.map(p =>
       p.id === editing.id
         ? { ...p, grossAnnualSalary: salary, feePercentage: feePct, feeAmount,
             paymentStatus: form.paymentStatus, notes: form.notes,
+            invoiceStatus: form.paymentStatus === 'paid' ? 'paid' as const
+              : form.paymentStatus === 'invoiced' ? 'sent' as const
+              : (p.invoiceStatus ?? 'draft' as const),
             updatedAt: new Date().toISOString() }
         : p
     );
     setPlacements(updated);
     db.savePlacements(updated);
+    if (wasNotPaid && nowPaid && feeAmount > 0) {
+      logEvent({
+        eventType: 'invoice_paid',
+        summary: `Invoice paid — €${feeAmount.toLocaleString()} for ${editing.candidateName}`,
+        placementId: editing.id,
+        candidateId: editing.profileId,
+        vacancyId: editing.vacancyId,
+        accountId: editing.accountId,
+        metadata: { feeAmount, candidateName: editing.candidateName, company: editing.company },
+      });
+    }
     setEditing(null);
   };
 
@@ -277,33 +301,56 @@ export default function PlacementsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-[#2D4A2D] text-sm font-bold truncate">{p.candidateName}</p>
-                        <p className="text-[#6B7280] text-xs truncate mt-0.5">
-                          {p.vacancyTitle || p.jobTitle || "—"}
-                        </p>
+                        {p.profileId ? (
+                          <NextLink href={`/candidates/${p.profileId}`} className="text-[#2D4A2D] text-sm font-bold truncate hover:underline underline-offset-2 block">
+                            {p.candidateName}
+                          </NextLink>
+                        ) : (
+                          <p className="text-[#2D4A2D] text-sm font-bold truncate">{p.candidateName}</p>
+                        )}
+                        {p.vacancyId ? (
+                          <NextLink href={`/vacancies?id=${p.vacancyId}`} className="text-[#6B7280] text-xs truncate mt-0.5 hover:underline underline-offset-2 block">
+                            {p.vacancyTitle || p.jobTitle || "—"}
+                          </NextLink>
+                        ) : (
+                          <p className="text-[#6B7280] text-xs truncate mt-0.5">{p.vacancyTitle || p.jobTitle || "—"}</p>
+                        )}
                       </div>
                       {/* Fee — prominent */}
                       <div className="text-right flex-shrink-0">
-                        <p className="text-[#2D4A2D] text-lg font-bold leading-none">
-                          {p.feeAmount > 0 ? fmt(p.feeAmount) : "—"}
-                        </p>
-                        {p.feePercentage > 0 && (
-                          <p className="text-[#6B7280] text-xs mt-0.5">{p.feePercentage}% fee</p>
+                        {(p.feeAmount ?? 0) > 0 ? (
+                          <>
+                            <p className="text-[#2D4A2D] text-lg font-bold leading-none">{fmt(p.feeAmount!)}</p>
+                            {(p.feePercentage ?? 0) > 0 && (
+                              <p className="text-[#6B7280] text-xs mt-0.5">{p.feePercentage}% fee</p>
+                            )}
+                          </>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                            Fee not set
+                          </span>
                         )}
                       </div>
                     </div>
 
                     {/* Second row */}
                     <div className="flex items-center gap-3 mt-2.5 flex-wrap">
-                      {p.company && (
-                        <span className="text-[#6B7280] text-xs">{p.company}</span>
-                      )}
+                      {p.company && (() => {
+                        const acc = p.accountId ? accounts.find(a => a.id === p.accountId) : null;
+                        return acc ? (
+                          <NextLink href={`/accounts/${acc.id}`} className="text-[#2D4A2D] text-xs flex items-center gap-0.5 hover:underline underline-offset-2">
+                            <ExternalLink size={10} />{p.company}
+                          </NextLink>
+                        ) : (
+                          <span className="text-[#6B7280] text-xs">{p.company}</span>
+                        );
+                      })()}
                       <span className="text-[#9CA3AF] text-xs">·</span>
                       <span className="text-[#9CA3AF] text-xs">{fmtDate(p.placementDate)}</span>
-                      {p.grossAnnualSalary > 0 && (
+                      {(p.grossAnnualSalary ?? 0) > 0 && (
                         <>
                           <span className="text-[#9CA3AF] text-xs">·</span>
-                          <span className="text-[#6B7280] text-xs">{fmt(p.grossAnnualSalary)} / yr</span>
+                          <span className="text-[#6B7280] text-xs">{fmt(p.grossAnnualSalary!)} / yr</span>
                         </>
                       )}
                     </div>
@@ -320,13 +367,23 @@ export default function PlacementsPage() {
                             {p.notes}
                           </p>
                         )}
-                        <button
-                          onClick={() => openEdit(p)}
-                          className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-[#6B7280] hover:text-[#2D4A2D] text-xs font-medium bg-[rgba(45,74,45,0.06)] hover:bg-[rgba(45,74,45,0.12)] px-2.5 py-1.5 rounded-lg transition-all"
-                          title="Edit placement"
-                        >
-                          <Pencil size={11} /> Edit
-                        </button>
+                        {(p.feeAmount ?? 0) === 0 ? (
+                          <button
+                            onClick={() => openEdit(p)}
+                            className="flex items-center gap-1 text-amber-600 hover:text-amber-700 text-xs font-medium bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition-all border border-amber-200"
+                            title="Add fee"
+                          >
+                            <Pencil size={11} /> Add fee
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => openEdit(p)}
+                            className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-[#6B7280] hover:text-[#2D4A2D] text-xs font-medium bg-[rgba(45,74,45,0.06)] hover:bg-[rgba(45,74,45,0.12)] px-2.5 py-1.5 rounded-lg transition-all"
+                            title="Edit placement"
+                          >
+                            <Pencil size={11} /> Edit
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

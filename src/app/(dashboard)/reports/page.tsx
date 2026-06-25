@@ -90,10 +90,10 @@ function computeMetrics(
   const placementsMade = weekPlacements.length;
   const feesInvoiced   = weekPlacements
     .filter(p => p.paymentStatus === "invoiced" || p.paymentStatus === "paid")
-    .reduce((s, p) => s + p.feeAmount, 0);
+    .reduce((s, p) => s + (p.feeAmount ?? 0), 0);
   const feesReceived   = weekPlacements
     .filter(p => p.paymentStatus === "paid")
-    .reduce((s, p) => s + p.feeAmount, 0);
+    .reduce((s, p) => s + (p.feeAmount ?? 0), 0);
 
   return {
     emailsSent, replyRate: 0, newProspects, callsBooked: 0,

@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "motion/react";
 import { Candidate, Client, Placement, PipelineStatus, Vacancy, CandidateProfile } from "@/lib/types";
 import { storage } from "@/lib/storage";
@@ -30,6 +31,8 @@ export default function PipelinePage() {
 
 function Pipeline() {
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
+  const agencyId = (session?.user as { agencyId?: string } | undefined)?.agencyId;
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -66,7 +69,7 @@ function Pipeline() {
       setVacancies(fetchedVacancies);
       setClients(fetchedClients);
 
-      const lastId = storage.getLastViewedCandidate();
+      const lastId = agencyId ? storage.getLastViewedCandidate(agencyId) : null;
       if (lastId) {
         const profile = fetchedProfiles.find(p => p.id === lastId);
         if (profile) {
@@ -112,37 +115,74 @@ function Pipeline() {
     }
   };
 
-  const confirmPlacement = () => {
+  const confirmPlacement = async () => {
     if (!placementTarget) return;
+
+    const vacancy = vacancies.find(v => v.id === placementTarget.vacancyId);
+    const profileId = (placementTarget as any).profileId as string | undefined;
+    const recruiterId = (session?.user as any)?.id as string | undefined;
+
+    // Optional fee — only set if salary was entered
     const salary = parseFloat(placementForm.salary) || 0;
     const feePct = placementForm.feePreset === "custom"
       ? parseFloat(placementForm.customFee) || 0
       : parseFloat(placementForm.feePreset);
-    const feeAmount = Math.round(salary * (feePct / 100) * 100) / 100;
+    const hasFee = salary > 0;
+    const feeAmount = hasFee ? Math.round(salary * (feePct / 100) * 100) / 100 : undefined;
+
+    // Find the match row for this candidate+vacancy to get applicationId
+    let applicationId: string | undefined;
+    try {
+      const allMatches = await db.getMatches();
+      const match = allMatches.find(m =>
+        m.vacancyId === placementTarget.vacancyId &&
+        (m.candidateId === (profileId ?? placementTarget.id))
+      );
+      applicationId = match?.id;
+    } catch {
+      // non-fatal — proceed without applicationId
+    }
+
+    // Idempotency: skip if a placement already exists for this applicationId
+    if (applicationId) {
+      try {
+        const existing = await db.getPlacements();
+        if (existing.some(p => p.applicationId === applicationId)) {
+          moveCandidate(placementTarget.id, "placed");
+          setPlacementTarget(null);
+          return;
+        }
+      } catch {
+        // non-fatal — proceed
+      }
+    }
 
     moveCandidate(placementTarget.id, "placed");
 
-    const vacancy = vacancies.find(v => v.id === placementTarget.vacancyId);
     const placement: Placement = {
       id: uuidv4(),
       candidateId: placementTarget.id,
-      profileId: (placementTarget as any).profileId,
+      profileId,
       candidateName: placementTarget.firstName,
       jobTitle: placementTarget.currentRole,
       vacancyId: placementTarget.vacancyId,
       vacancyTitle: vacancy?.title ?? "",
       company: vacancy?.company ?? placementTarget.currentCompany ?? "",
       placementDate: new Date().toISOString(),
-      grossAnnualSalary: salary,
-      feePercentage: feePct,
+      grossAnnualSalary: hasFee ? salary : undefined,
+      feePercentage: hasFee ? feePct : undefined,
       feeAmount,
       paymentStatus: "pending",
       notes: placementForm.notes,
+      accountId: vacancy?.accountId,
+      contactId: vacancy?.contactId,
+      recruiterId,
+      applicationId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    db.getPlacements().then(existing => db.savePlacements([...existing, placement]));
+    db.savePlacement(placement).catch(e => console.warn('[confirmPlacement] save failed:', e));
     setPlacementTarget(null);
   };
 
@@ -218,6 +258,7 @@ function Pipeline() {
         <AddToPipelineModal
           profile={suggestedProfile}
           vacancies={vacancies}
+          agencyId={agencyId}
           onClose={() => setShowPipelineModal(false)}
           onAdded={() => {
             db.getCandidates().then(setCandidates);
@@ -256,7 +297,7 @@ function Pipeline() {
                 <GitMerge size={12} /> Add to Pipeline
               </button>
               <button
-                onClick={() => { setShowSuggestion(false); storage.clearLastViewedCandidate(); }}
+                onClick={() => { setShowSuggestion(false); if (agencyId) storage.clearLastViewedCandidate(agencyId); }}
                 className="text-[#6B7280] hover:text-[#2D4A2D] p-1 rounded-lg transition-colors"
                 title="Dismiss"
               >

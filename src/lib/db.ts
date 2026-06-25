@@ -4,6 +4,7 @@ import {
   FollowUp, ScreeningResult, SourcingStrategy, WeeklyReport,
   CandidateVacancyMatch, CalendarEvent,
 } from './types';
+import { logEvent } from './timeline';
 
 // ---------------------------------------------------------------------------
 // Agency scope — call initDb(agencyId) once after the user session loads.
@@ -211,6 +212,8 @@ function vacancyToRow(v: Vacancy) {
     stage_log: v.stageLog ?? [],
     client_feedback: v.clientFeedback ?? [],
     created_at: v.createdAt,
+    account_id: v.accountId ?? null,
+    contact_id: v.contactId ?? null,
   };
 }
 
@@ -231,6 +234,8 @@ function rowToVacancy(r: any): Vacancy {
     stageLog: r.stage_log ?? [],
     clientFeedback: r.client_feedback ?? [],
     createdAt: r.created_at,
+    accountId: r.account_id ?? undefined,
+    contactId: r.contact_id ?? undefined,
   };
 }
 
@@ -249,13 +254,20 @@ function placementToRow(p: Placement) {
     vacancy_title: p.vacancyTitle,
     company: p.company,
     placement_date: p.placementDate,
-    gross_annual_salary: p.grossAnnualSalary,
-    fee_percentage: p.feePercentage,
-    fee_amount: p.feeAmount,
+    gross_annual_salary: p.grossAnnualSalary ?? null,
+    fee_percentage: p.feePercentage ?? null,
+    fee_amount: p.feeAmount ?? null,
     payment_status: p.paymentStatus,
     notes: p.notes,
     created_at: p.createdAt,
     updated_at: p.updatedAt,
+    account_id: p.accountId ?? null,
+    contact_id: p.contactId ?? null,
+    recruiter_id: p.recruiterId ?? null,
+    application_id: p.applicationId ?? null,
+    start_date: p.startDate ?? null,
+    invoice_status: p.invoiceStatus ?? 'draft',
+    guarantee_until: p.guaranteeUntil ?? null,
   };
 }
 
@@ -271,13 +283,20 @@ function rowToPlacement(r: any): Placement {
     vacancyTitle: r.vacancy_title,
     company: r.company,
     placementDate: r.placement_date,
-    grossAnnualSalary: r.gross_annual_salary,
-    feePercentage: r.fee_percentage,
-    feeAmount: r.fee_amount,
+    grossAnnualSalary: r.gross_annual_salary ?? undefined,
+    feePercentage: r.fee_percentage ?? undefined,
+    feeAmount: r.fee_amount ?? undefined,
     paymentStatus: r.payment_status,
     notes: r.notes,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
+    accountId: r.account_id ?? undefined,
+    contactId: r.contact_id ?? undefined,
+    recruiterId: r.recruiter_id ?? undefined,
+    applicationId: r.application_id ?? undefined,
+    startDate: r.start_date ?? undefined,
+    invoiceStatus: r.invoice_status ?? undefined,
+    guaranteeUntil: r.guarantee_until ?? undefined,
   };
 }
 
@@ -573,6 +592,25 @@ export const db = {
   savePlacements: async (data: Placement[]): Promise<void> => {
     await syncAll('placements', data.map(placementToRow));
   },
+  /** Upsert a single placement and log a timeline event. */
+  savePlacement: async (p: Placement): Promise<void> => {
+    const { error } = await supabase.from('placements').upsert(placementToRow(p));
+    if (error) throw error;
+    logEvent({
+      eventType: 'placement_created',
+      summary: `${p.candidateName} placed at ${p.company} — ${p.jobTitle}`,
+      candidateId: p.profileId,
+      vacancyId: p.vacancyId,
+      accountId: p.accountId,
+      placementId: p.id,
+      applicationId: p.applicationId,
+      metadata: {
+        feeAmount: p.feeAmount,
+        grossAnnualSalary: p.grossAnnualSalary,
+        invoiceStatus: p.invoiceStatus ?? 'draft',
+      },
+    });
+  },
 
   // FollowUps
   getFollowUps: async (): Promise<FollowUp[]> => {
@@ -637,9 +675,33 @@ export const db = {
     if (error) throw error;
     return (data ?? []).map(rowToMatch);
   },
-  saveMatch: async (match: CandidateVacancyMatch): Promise<void> => {
+  saveMatch: async (match: CandidateVacancyMatch, prevStatus?: string): Promise<void> => {
     const { error } = await supabase.from('candidate_vacancy_matches').upsert(matchToRow(match));
     if (error) throw error;
+    const statusChanged = prevStatus !== undefined && prevStatus !== match.status;
+    const isNew = prevStatus === undefined;
+    const base = {
+      candidateId: match.candidateId,
+      vacancyId: match.vacancyId,
+      applicationId: match.id,
+    };
+    if (isNew && match.status === 'submitted') {
+      logEvent({ eventType: 'candidate_submitted', summary: 'Candidate submitted for vacancy', ...base, metadata: {} });
+    } else if (statusChanged) {
+      // Specific named events take priority over the generic one
+      if (match.status === 'submitted') {
+        logEvent({ eventType: 'candidate_submitted', summary: 'Candidate submitted for vacancy', ...base, metadata: { from: prevStatus } });
+      } else if (match.status === 'offer') {
+        logEvent({ eventType: 'offer_made', summary: `Offer made — moved from ${prevStatus}`, ...base, metadata: { from: prevStatus } });
+      } else {
+        logEvent({
+          eventType: 'application_status_changed',
+          summary: `Application status: ${prevStatus} → ${match.status}`,
+          ...base,
+          metadata: { from: prevStatus, to: match.status },
+        });
+      }
+    }
   },
   deleteMatch: async (id: string): Promise<void> => {
     const agencyId = requireAgencyId();

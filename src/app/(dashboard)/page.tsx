@@ -384,9 +384,10 @@ export default function Dashboard() {
   const [vacFilter, setVacFilter] = useState<"all" | "open" | "on-hold" | "closed">("all");
 
   useEffect(() => {
-    setRecentItems(storage.getRecentItems().slice(0, 3));
-    setActivityItems(storage.getActivityItems());
-  }, []);
+    if (!agencyId) return;
+    setRecentItems(storage.getRecentItems(agencyId).slice(0, 3));
+    setActivityItems(storage.getActivityItems(agencyId));
+  }, [agencyId]);
 
   useEffect(() => {
     if (!agencyId) return;

@@ -21,9 +21,10 @@ interface Props {
   vacancies: Vacancy[];
   onClose: () => void;
   onAdded: () => void;
+  agencyId?: string;
 }
 
-export default function AddToPipelineModal({ profile, vacancies, onClose, onAdded }: Props) {
+export default function AddToPipelineModal({ profile, vacancies, onClose, onAdded, agencyId }: Props) {
   const [vacancyId, setVacancyId] = useState('');
   const [stage, setStage] = useState<PipelineStatus>('sourced');
 
@@ -47,7 +48,7 @@ export default function AddToPipelineModal({ profile, vacancies, onClose, onAdde
       if (!alreadyIn) {
         db.saveCandidates([...existing, candidate]);
       }
-      storage.clearLastViewedCandidate();
+      if (agencyId) storage.clearLastViewedCandidate(agencyId);
       onAdded();
       onClose();
     });

@@ -39,11 +39,16 @@ export async function POST(req: NextRequest) {
 
     await addCredits(agencyId, creditAmount);
 
+    // If this is a subscription checkout (has plan in metadata), update the agency plan.
+    if (session.metadata?.plan) {
+      await supabaseAdmin.from('agencies').update({ plan: session.metadata.plan }).eq('id', agencyId);
+    }
+
     // Log the purchase for audit trail (negative cost = incoming revenue)
     await supabaseAdmin.from('ai_usage').insert({
       agency_id: agencyId,
       user_email: session.customer_email ?? 'stripe',
-      feature: 'credit_purchase',
+      feature: packId ? 'credit_purchase' : 'subscription_purchase',
       model: null,
       input_tokens: 0,
       output_tokens: 0,
@@ -51,6 +56,50 @@ export async function POST(req: NextRequest) {
       credits: -creditAmount,
       cost_usd: -(session.amount_total ?? 0) / 100,
     });
+  }
+
+  // Handle recurring subscription billing — top up credits each billing cycle.
+  if (event.type === 'invoice.payment_succeeded') {
+    const invoice = event.data.object as {
+      billing_reason?: string;
+      subscription?: string;
+      customer_email?: string | null;
+      amount_paid?: number;
+      subscription_details?: { metadata?: Record<string, string> };
+    };
+
+    // Only handle renewal cycles, not the initial checkout (which fires checkout.session.completed).
+    if (invoice.billing_reason !== 'subscription_cycle') {
+      return NextResponse.json({ received: true });
+    }
+
+    const meta = invoice.subscription_details?.metadata ?? {};
+    const { agencyId, credits, plan } = meta;
+
+    if (!agencyId || !credits) {
+      return NextResponse.json({ received: true });
+    }
+
+    const creditAmount = parseInt(credits, 10);
+    if (!isNaN(creditAmount) && creditAmount > 0) {
+      await addCredits(agencyId, creditAmount);
+
+      if (plan) {
+        await supabaseAdmin.from('agencies').update({ plan }).eq('id', agencyId);
+      }
+
+      await supabaseAdmin.from('ai_usage').insert({
+        agency_id: agencyId,
+        user_email: invoice.customer_email ?? 'stripe',
+        feature: 'subscription_renewal',
+        model: null,
+        input_tokens: 0,
+        output_tokens: 0,
+        web_searches: 0,
+        credits: -creditAmount,
+        cost_usd: -(invoice.amount_paid ?? 0) / 100,
+      });
+    }
   }
 
   return NextResponse.json({ received: true });

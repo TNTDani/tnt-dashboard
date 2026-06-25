@@ -57,6 +57,7 @@ export default function TeamPage() {
   const [showGenForm, setShowGenForm] = useState(false);
   const [genRole,     setGenRole]     = useState<"member" | "admin">("member");
   const [genDays,     setGenDays]     = useState(14);
+  const [genEmail,    setGenEmail]    = useState("");
   const [generating,  setGenerating]  = useState(false);
   const [genError,    setGenError]    = useState("");
   const [newCode,     setNewCode]     = useState<{ code: string; expiresAt: string } | null>(null);
@@ -105,7 +106,11 @@ export default function TeamPage() {
       const res = await fetch("/api/invites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: genRole, expiresInDays: genDays }),
+        body: JSON.stringify({
+          role: genRole,
+          expiresInDays: genDays,
+          ...(genEmail ? { inviteEmail: genEmail } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok) { setGenError(json.error ?? "Failed to generate code."); return; }
@@ -236,7 +241,7 @@ export default function TeamPage() {
             <p className="text-xs mt-0.5" style={{ color: "#8a9a90" }}>Generate a single-use code to share with someone joining your agency.</p>
           </div>
           <button
-            onClick={() => { setShowGenForm(v => !v); setNewCode(null); setGenError(""); }}
+            onClick={() => { setShowGenForm(v => !v); setNewCode(null); setGenError(""); setGenEmail(""); }}
             className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-colors flex-shrink-0 ml-4"
             style={{ background: "#2D4A2D" }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "#3D6B3D"; }}
@@ -269,6 +274,18 @@ export default function TeamPage() {
                 <option value={30}>30 days</option>
                 <option value={90}>90 days</option>
               </select>
+            </div>
+            <div style={{ flex: "1 1 200px" }}>
+              <label className="block text-[11px] font-medium mb-1.5" style={{ color: "#5a6a60" }}>
+                Send to email <span style={{ color: "#aab8b0", fontWeight: 400 }}>(optional)</span>
+              </label>
+              <input
+                type="email"
+                value={genEmail}
+                onChange={e => setGenEmail(e.target.value)}
+                placeholder="colleague@agency.com"
+                style={{ ...selectStyle, minWidth: 0, width: "100%" }}
+              />
             </div>
             <button
               onClick={generate}

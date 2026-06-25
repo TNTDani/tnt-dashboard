@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Vacancy, Candidate, CandidateProfile, SourcingStrategy, Client,
@@ -18,6 +19,9 @@ import {
 } from "lucide-react";
 import type { CandidateMatch } from "@/app/api/match-candidates/route";
 import VacancyStageBar from "@/components/VacancyStageBar";
+import { accountsDb } from "@/lib/accountsDb";
+import type { Account } from "@/lib/accountTypes";
+import Link from "next/link";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -31,10 +35,14 @@ const STATUS_STYLES: Record<Vacancy["status"], string> = {
   closed:   "text-[#6B7280] bg-[#f3f4f6] border-[#d1d5db]",
 };
 const MATCH_STATUS_STYLES: Record<CandidateVacancyMatch["status"], string> = {
-  active:    "text-[#16a34a] bg-[#dcfce7] border-[#86efac]",
-  "on-hold": "text-[#d97706] bg-[#fef3c7] border-[#fcd34d]",
-  rejected:  "text-[#dc2626] bg-[#fee2e2] border-[#fca5a5]",
-  placed:    "text-[#2D4A2D] bg-[#e8f0e8] border-[#a3c4a3]",
+  active:       "text-[#16a34a] bg-[#dcfce7] border-[#86efac]",
+  "on-hold":    "text-[#d97706] bg-[#fef3c7] border-[#fcd34d]",
+  submitted:    "text-[#2563eb] bg-[#dbeafe] border-[#93c5fd]",
+  interviewing: "text-[#7c3aed] bg-[#ede9fe] border-[#c4b5fd]",
+  offer:        "text-[#d97706] bg-[#fef3c7] border-[#fcd34d]",
+  rejected:     "text-[#dc2626] bg-[#fee2e2] border-[#fca5a5]",
+  withdrawn:    "text-[#6B7280] bg-[#f3f4f6] border-[#d1d5db]",
+  placed:       "text-[#2D4A2D] bg-[#e8f0e8] border-[#a3c4a3]",
 };
 const FEEDBACK_STATUS_STYLES: Record<ClientFeedback["status"], string> = {
   pending:   "text-[#6B7280] bg-[#f3f4f6]",
@@ -257,12 +265,15 @@ function VacancyCard({ vacancy, candidateCount, matchCount, onView, onEdit, onDe
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function Vacancies() {
+  const { data: session } = useSession();
+  const agencyId = (session?.user as { agencyId?: string } | undefined)?.agencyId;
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [profiles, setProfiles] = useState<CandidateProfile[]>([]);
   const [sourcingStrategies, setSourcingStrategies] = useState<SourcingStrategy[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [matches, setMatches] = useState<CandidateVacancyMatch[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   const [activeTab, setActiveTab] = useState<"all" | "specific">("all");
   const [showAdd, setShowAdd] = useState(false);
@@ -303,9 +314,11 @@ export default function Vacancies() {
     Promise.all([
       db.getVacancies(), db.getCandidates(), db.getCandidateProfiles(),
       db.getSourcingStrategies(), db.getClients(), db.getMatches(),
-    ]).then(([v, c, p, s, cl, m]) => {
+      accountsDb.getAccounts(),
+    ]).then(([v, c, p, s, cl, m, acc]) => {
       setVacancies(v); setCandidates(c); setProfiles(p);
       setSourcingStrategies(s); setClients(cl); setMatches(m);
+      setAccounts(acc);
     });
   }, []);
 
@@ -456,8 +469,10 @@ export default function Vacancies() {
   const openVacancyDetail = (v: Vacancy) => {
     setViewingVacancy(v);
     setDetailTab("overview");
-    storage.addRecentItem({ type: "vacancy", id: v.id, name: v.title, href: "/vacancies", viewedAt: new Date().toISOString() });
-    storage.addActivityItem({ type: "vacancy", id: v.id, name: v.title, href: "/vacancies", lastAction: "Viewed", timestamp: new Date().toISOString() });
+    if (agencyId) {
+      storage.addRecentItem({ type: "vacancy", id: v.id, name: v.title, href: "/vacancies", viewedAt: new Date().toISOString() }, agencyId);
+      storage.addActivityItem({ type: "vacancy", id: v.id, name: v.title, href: "/vacancies", lastAction: "Viewed", timestamp: new Date().toISOString() }, agencyId);
+    }
   };
 
   // ── Filters ───────────────────────────────────────────────────────────────
@@ -792,6 +807,14 @@ export default function Vacancies() {
                       <StatusBadge status={viewingVacancy.status} />
                     </div>
                     <p className="text-[#6B7280] text-sm">{viewingVacancy.company} · {viewingVacancy.seniorityLevel} · {viewingVacancy.currency} {viewingVacancy.salaryMin.toLocaleString()}–{viewingVacancy.salaryMax.toLocaleString()}</p>
+                    {viewingVacancy.accountId && (() => {
+                      const acc = accounts.find(a => a.id === viewingVacancy.accountId);
+                      return acc ? (
+                        <Link href={`/accounts/${acc.id}`} className="inline-flex items-center gap-1 text-xs mt-0.5" style={{ color: '#2D4A2D' }}>
+                          <Building2 size={11} /> {acc.companyName}
+                        </Link>
+                      ) : null;
+                    })()}
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button

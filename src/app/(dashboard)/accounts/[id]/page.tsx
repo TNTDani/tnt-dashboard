@@ -21,7 +21,9 @@ import type {
 } from '@/lib/accountTypes';
 import { isClient } from '@/lib/accountTypes';
 import { db, initDb } from '@/lib/db';
-import type { Vacancy, CandidateVacancyMatch } from '@/lib/types';
+import type { Vacancy, CandidateVacancyMatch, Placement, TimelineEvent } from '@/lib/types';
+import Link from 'next/link';
+import { getTimeline } from '@/lib/timeline';
 
 interface LiveVacancy {
   id: string;
@@ -68,6 +70,9 @@ export default function AccountDetailPage() {
   const [account, setAccount] = useState<Account | null>(null);
   const [clientVacancies, setClientVacancies] = useState<Vacancy[]>([]);
   const [matchesByVac, setMatchesByVac] = useState<Record<string, CandidateVacancyMatch[]>>({});
+  const [revenue, setRevenue] = useState<Awaited<ReturnType<typeof accountsDb.getAccountRevenue>>>(null);
+  const [accountPlacements, setAccountPlacements] = useState<Placement[]>([]);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [leads, setLeads] = useState<AccountLead[]>([]);
   const [positioning, setPositioning] = useState<AgencyPositioning>(EMPTY_POSITIONING);
   const [pitchByLead, setPitchByLead] = useState<Record<string, PitchRecord | null>>({});
@@ -111,9 +116,10 @@ export default function AccountDetailPage() {
   useEffect(() => {
     if (!account || !agencyId || !isClient(account)) return;
     initDb(agencyId);
+    // Load vacancies linked by FK first; fall back to company-name match for legacy data
     db.getVacancies().then((vacs) => {
       const linked = vacs.filter(
-        (v) => v.company.toLowerCase() === account.companyName.toLowerCase(),
+        (v) => v.accountId === account.id || v.company.toLowerCase() === account.companyName.toLowerCase(),
       );
       setClientVacancies(linked);
       Promise.all(linked.map((v) => db.getMatchesByVacancy(v.id))).then((all) => {
@@ -122,6 +128,12 @@ export default function AccountDetailPage() {
         setMatchesByVac(byVac);
       });
     });
+    // Load revenue summary
+    accountsDb.getAccountRevenue(account.id).then(setRevenue).catch(() => {});
+    // Load placements linked to this account
+    db.getPlacements().then(all => setAccountPlacements(all.filter(p => p.accountId === account.id))).catch(() => {});
+    // Load timeline
+    getTimeline({ accountId: account.id, limit: 20 }).then(setTimeline).catch(() => {});
   }, [account, agencyId]);
 
   async function setStage(stage: AccountStage) {
@@ -461,6 +473,20 @@ export default function AccountDetailPage() {
                 </div>
               </div>
               <PitchPanel account={account} lead={lead} positioning={positioning} initialPitch={pitchByLead[lead.id] ?? null} />
+              {/* Vacancies where this lead is the hiring manager */}
+              {(() => {
+                const linkedVacs = clientVacancies.filter(v => v.contactId === lead.id);
+                if (linkedVacs.length === 0) return null;
+                return (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {linkedVacs.map(v => (
+                      <Link key={v.id} href={`/vacancies?id=${v.id}`} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full hover:opacity-80" style={{ background: `${C.primary}18`, color: C.primary }}>
+                        <Briefcase size={10} /> {v.title}
+                      </Link>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           ))
         )}
@@ -555,44 +581,121 @@ export default function AccountDetailPage() {
       {/* Client delivery section */}
       {isClient(account) && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold mb-3" style={{ color: C.primary }}>
-            Client delivery
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold" style={{ color: C.primary }}>
+              Client delivery
+            </h2>
+            {revenue && revenue.placementCount > 0 && (
+              <div className="flex items-center gap-3 text-xs" style={{ color: C.muted }}>
+                <span>
+                  <span className="font-semibold" style={{ color: C.primary }}>
+                    €{revenue.totalFees.toLocaleString()}
+                  </span>{' '}total fees
+                </span>
+                {revenue.collectedFees > 0 && (
+                  <span>
+                    <span className="font-semibold" style={{ color: C.green }}>
+                      €{revenue.collectedFees.toLocaleString()}
+                    </span>{' '}collected
+                  </span>
+                )}
+                <span>{revenue.placementCount} placement{revenue.placementCount !== 1 ? 's' : ''}</span>
+              </div>
+            )}
+          </div>
           {clientVacancies.length === 0 ? (
             <p className="text-sm" style={{ color: C.muted }}>
-              No vacancies linked to this client yet. Add vacancies on the Vacancies page and set the company name to &ldquo;{account.companyName}&rdquo;.
+              No vacancies linked to this client yet.{' '}
+              <Link href="/vacancies" style={{ color: C.primary }}>Add a vacancy</Link> and link it to this account.
             </p>
           ) : (
             <div className="space-y-3">
               {clientVacancies.map((vac) => {
                 const matches = matchesByVac[vac.id] ?? [];
-                const active = matches.filter((m) => m.status === 'active' || m.status === 'on-hold');
+                const active = matches.filter((m) => ['active', 'on-hold', 'submitted', 'interviewing', 'offer'].includes(m.status));
                 const placed = matches.filter((m) => m.status === 'placed');
                 const statusLabel: Record<string, string> = { open: 'Active', 'on-hold': 'On hold', closed: 'Filled' };
                 const statusColor: Record<string, string> = { open: C.green, 'on-hold': C.amber, closed: C.faint };
                 return (
-                  <div key={vac.id} className="rounded-xl p-4 flex items-start justify-between gap-4" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate" style={{ color: C.primary }}>{vac.title}</p>
-                      <p className="text-xs mt-0.5 capitalize" style={{ color: C.muted }}>
-                        {vac.stage.replace(/_/g, ' ')}
-                      </p>
-                      {(active.length > 0 || placed.length > 0) && (
-                        <p className="text-xs mt-1.5" style={{ color: C.muted }}>
-                          {active.length > 0 && `${active.length} in pipeline`}
-                          {active.length > 0 && placed.length > 0 && ' · '}
-                          {placed.length > 0 && `${placed.length} placed`}
+                  <Link key={vac.id} href={`/vacancies?id=${vac.id}`} className="block rounded-xl p-4 transition-colors" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate" style={{ color: C.primary }}>{vac.title}</p>
+                        <p className="text-xs mt-0.5 capitalize" style={{ color: C.muted }}>
+                          {vac.stage.replace(/_/g, ' ')}
                         </p>
-                      )}
+                        {(active.length > 0 || placed.length > 0) && (
+                          <p className="text-xs mt-1.5" style={{ color: C.muted }}>
+                            {active.length > 0 && `${active.length} in pipeline`}
+                            {active.length > 0 && placed.length > 0 && ' · '}
+                            {placed.length > 0 && `${placed.length} placed`}
+                          </p>
+                        )}
+                      </div>
+                      <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: `${statusColor[vac.status]}22`, color: statusColor[vac.status] }}>
+                        {statusLabel[vac.status] ?? vac.status}
+                      </span>
                     </div>
-                    <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: `${statusColor[vac.status]}22`, color: statusColor[vac.status] }}>
-                      {statusLabel[vac.status] ?? vac.status}
-                    </span>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Placements from this account */}
+      {accountPlacements.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-base font-semibold mb-3" style={{ color: C.primary }}>Placements</h2>
+          <div className="space-y-2">
+            {accountPlacements.map(p => {
+              const invoiceColor = p.invoiceStatus === 'paid' ? C.green : p.invoiceStatus === 'sent' ? C.amber : C.faint;
+              const invoiceLabel = p.invoiceStatus === 'paid' ? 'Paid' : p.invoiceStatus === 'sent' ? 'Invoiced' : 'Draft';
+              return (
+                <div key={p.id} className="flex items-center justify-between rounded-lg px-4 py-3" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+                  <div className="flex-1 min-w-0">
+                    {p.profileId ? (
+                      <Link href={`/candidates/${p.profileId}`} className="text-sm font-medium hover:underline underline-offset-2" style={{ color: C.primary }}>
+                        {p.candidateName}
+                      </Link>
+                    ) : (
+                      <p className="text-sm font-medium" style={{ color: C.primary }}>{p.candidateName}</p>
+                    )}
+                    <p className="text-xs mt-0.5" style={{ color: C.muted }}>{p.jobTitle} · {p.placementDate}</p>
+                  </div>
+                  <div className="flex items-center gap-3 ml-4">
+                    <p className="text-sm font-semibold" style={{ color: C.primary }}>
+                      {(p.feeAmount ?? 0) > 0 ? `€${p.feeAmount!.toLocaleString()}` : <span style={{ color: '#d97706', fontSize: '0.7rem' }}>Fee not set</span>}
+                    </p>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: `${invoiceColor}22`, color: invoiceColor }}>
+                      {invoiceLabel}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Unified timeline feed */}
+      {timeline.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-base font-semibold mb-3" style={{ color: C.primary }}>Timeline</h2>
+          <div className="space-y-2">
+            {timeline.map(ev => (
+              <div key={ev.id} className="flex items-start gap-3 rounded-lg px-4 py-3" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+                <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: C.primary }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm" style={{ color: C.primary }}>{ev.summary}</p>
+                  <p className="text-xs mt-0.5" style={{ color: C.faint }}>
+                    {new Date(ev.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

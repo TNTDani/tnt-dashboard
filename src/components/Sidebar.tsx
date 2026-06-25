@@ -319,9 +319,12 @@ function SidebarContent({
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [creditUnlimited, setCreditUnlimited] = useState(false);
 
+  const agencyId = (session?.user as { agencyId?: string } | undefined)?.agencyId;
+
   useEffect(() => {
-    setRecentItems(storage.getRecentItems().slice(0, 4));
-  }, []);
+    if (!agencyId) return;
+    setRecentItems(storage.getRecentItems(agencyId).slice(0, 4));
+  }, [agencyId]);
 
   useEffect(() => {
     if (!session) return;
@@ -329,7 +332,7 @@ function SidebarContent({
       .then((r) => r.json())
       .then((d) => {
         setCreditUnlimited(d.unlimited ?? false);
-        setCreditBalance(d.unlimited ? null : (d.balance ?? 0));
+        setCreditBalance(d.unlimited ? null : (d.total ?? d.balance ?? 0));
       })
       .catch(() => {});
   }, [session]);

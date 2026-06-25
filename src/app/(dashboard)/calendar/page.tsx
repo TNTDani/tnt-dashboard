@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { db, initDb } from '@/lib/db';
+import { logEvent } from '@/lib/timeline';
 import { storage } from '@/lib/storage';
 import { CalendarEvent, CalendarEventType, EVENT_COLORS, CandidateProfile, Vacancy, Client } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -385,11 +386,26 @@ export default function CalendarPage() {
 
   // Event CRUD
   const handleSaveEvent = async (event: CalendarEvent) => {
+    const isNew = !events.some(e => e.id === event.id);
     await db.saveCalendarEvent(event);
     setEvents(prev => {
       const idx = prev.findIndex(e => e.id === event.id);
       return idx >= 0 ? prev.map(e => e.id === event.id ? event : e) : [...prev, event];
     });
+    if (isNew && event.type === 'interview') {
+      logEvent({
+        eventType: 'interview_scheduled',
+        summary: `Interview scheduled: ${event.title}`,
+        candidateId: event.candidateId,
+        vacancyId: event.vacancyId,
+        metadata: {
+          startTime: event.startTime,
+          candidateName: event.candidateName ?? '',
+          vacancyTitle: event.vacancyTitle ?? '',
+          location: event.location ?? '',
+        },
+      });
+    }
 
     // Push to Google Calendar if connected
     if (calendarConnected && !event.googleCalendarEventId) {

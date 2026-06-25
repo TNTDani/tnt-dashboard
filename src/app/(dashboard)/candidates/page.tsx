@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { CandidateProfile, TimelineEntry } from '@/lib/types';
 import { db, initDb } from '@/lib/db';
+import { logEvent } from '@/lib/timeline';
 import { geocodePostalCode, haversineDistance } from '@/lib/geocoding';
 import { v4 as uuidv4 } from 'uuid';
 import { Plus, X, Search, SlidersHorizontal, UserCircle, MapPin, Briefcase, Loader2, Euro, ChevronUp, ChevronDown, Mail, ArrowRight, Download } from 'lucide-react';
@@ -227,6 +228,12 @@ export default function CandidatesPage() {
     const updated = [...candidates, newCandidate];
     setCandidates(updated);
     db.saveCandidateProfiles(updated);
+    logEvent({
+      eventType: 'candidate_created',
+      summary: `${newCandidate.firstName} ${newCandidate.lastName} added as candidate`,
+      candidateId: newCandidate.id,
+      metadata: { jobTitle: newCandidate.jobTitle, branch: newCandidate.branch },
+    });
     setForm(EMPTY_FORM);
     setShowAdd(false);
   };

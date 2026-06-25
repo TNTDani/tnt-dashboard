@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { randomBytes } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
+import { sendInvite } from "@/lib/email";
 
 async function getCaller(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
@@ -86,6 +87,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const role: unknown = body.role ?? "member";
   const expiresInDays: unknown = body.expiresInDays ?? 14;
+  const inviteEmail: string | undefined = typeof body.inviteEmail === "string" ? body.inviteEmail.trim().toLowerCase() : undefined;
 
   // Role validation — never allow 'owner' codes; admins can only invite members.
   if (role !== "member" && role !== "admin") {
@@ -117,6 +119,28 @@ export async function POST(req: NextRequest) {
   if (error) {
     console.error("[POST /api/invites]", error);
     return NextResponse.json({ error: "Failed to create invite." }, { status: 500 });
+  }
+
+  // Optionally send invite email.
+  if (inviteEmail) {
+    try {
+      const { data: agency } = await supabaseAdmin
+        .from("agencies")
+        .select("name")
+        .eq("id", caller.agency_id)
+        .maybeSingle();
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.orchard.works";
+      await sendInvite({
+        to: inviteEmail,
+        inviteUrl: `${appUrl}/register?code=${code}`,
+        agencyName: agency?.name ?? "your agency",
+        inviterName: caller.email,
+      });
+    } catch (mailErr) {
+      // Non-fatal: code was created, email sending just failed.
+      console.error("[POST /api/invites] email send failed", mailErr);
+    }
   }
 
   return NextResponse.json({ code, expiresAt });

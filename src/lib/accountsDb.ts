@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import { requireAgencyId } from './db';
 import { v4 as uuidv4 } from 'uuid';
+import { logEvent } from './timeline';
 import type {
   Account,
   AccountLead,
@@ -240,10 +241,11 @@ export const accountsDb = {
   },
 
   addActivity: async (a: Omit<Activity, 'id' | 'createdAt'>): Promise<Activity> => {
+    const id = uuidv4();
     const { data, error } = await supabase
       .from('account_activities')
       .insert({
-        id: uuidv4(),
+        id,
         agency_id: requireAgencyId(),
         account_id: a.accountId,
         lead_id: a.leadId ?? null,
@@ -256,7 +258,22 @@ export const accountsDb = {
       .select('*')
       .single();
     if (error) throw error;
-    return rowToActivity(data);
+    const activity = rowToActivity(data);
+    // fire-and-forget timeline event
+    logEvent({
+      eventType: 'activity_logged',
+      summary: `${a.type} — ${a.outcome}`,
+      accountId: a.accountId,
+      leadId: a.leadId,
+      metadata: {
+        activityId: id,
+        activityType: a.type,
+        outcome: a.outcome,
+        note: a.note ?? '',
+      },
+      createdBy: a.createdBy,
+    });
+    return activity;
   },
 
   // Returns earliest pending next_step per account (next_step_date set)
@@ -311,5 +328,81 @@ export const accountsDb = {
       updated_at: new Date().toISOString(),
     });
     if (error) throw error;
+  },
+
+  // ── Computed helpers (rely on migration_ats_relations.sql views) ───────────
+
+  /** Revenue summary for one account from the account_revenue view. */
+  getAccountRevenue: async (accountId: string): Promise<{
+    placementCount: number;
+    totalFees: number;
+    collectedFees: number;
+    invoicedFees: number;
+    draftFees: number;
+  } | null> => {
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase
+      .from('account_revenue')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('account_id', accountId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    return {
+      placementCount: data.placement_count ?? 0,
+      totalFees:      data.total_fees     ?? 0,
+      collectedFees:  data.collected_fees ?? 0,
+      invoicedFees:   data.invoiced_fees  ?? 0,
+      draftFees:      data.draft_fees     ?? 0,
+    };
+  },
+
+  /** Vacancy counts for one account from the account_vacancy_counts view. */
+  getAccountVacancyCounts: async (accountId: string): Promise<{
+    totalVacancies: number;
+    openVacancies: number;
+    placedVacancies: number;
+  } | null> => {
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase
+      .from('account_vacancy_counts')
+      .select('*')
+      .eq('agency_id', agencyId)
+      .eq('account_id', accountId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    return {
+      totalVacancies:  data.total_vacancies  ?? 0,
+      openVacancies:   data.open_vacancies   ?? 0,
+      placedVacancies: data.placed_vacancies ?? 0,
+    };
+  },
+
+  /** Current employer for a candidate: most recent placement's company. */
+  getCurrentEmployer: async (candidateProfileId: string): Promise<{
+    company: string;
+    jobTitle: string;
+    placementDate: string;
+    accountId?: string;
+  } | null> => {
+    const agencyId = requireAgencyId();
+    const { data, error } = await supabase
+      .from('placements')
+      .select('company, job_title, placement_date, account_id')
+      .eq('agency_id', agencyId)
+      .eq('profile_id', candidateProfileId)
+      .order('placement_date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    return {
+      company:       data.company,
+      jobTitle:      data.job_title,
+      placementDate: data.placement_date,
+      accountId:     data.account_id ?? undefined,
+    };
   },
 };

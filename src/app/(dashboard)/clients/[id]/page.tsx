@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Client, FeeAgreement, TimelineEntry, FollowUp } from '@/lib/types';
 import { db } from '@/lib/db';
@@ -55,6 +56,8 @@ export default function ClientDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const { data: session } = useSession();
+  const agencyId = (session?.user as { agencyId?: string } | undefined)?.agencyId;
 
   const [client, setClient] = useState<Client | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
@@ -80,14 +83,14 @@ export default function ClientDetailPage() {
       if (found) {
         setClient(found);
         setNotesValue(found.notes);
-        storage.addActivityItem({
+        if (agencyId) storage.addActivityItem({
           type: 'client',
           id: found.id,
           name: found.companyName,
           href: `/clients/${found.id}`,
           lastAction: 'Viewed',
           timestamp: new Date().toISOString(),
-        });
+        }, agencyId);
       }
       const activeFollowUp = allFollowUps.find(f => f.contactId === id && f.status !== 'done');
       setFollowUp(activeFollowUp || null);
