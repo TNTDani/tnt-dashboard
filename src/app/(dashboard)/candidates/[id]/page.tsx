@@ -11,6 +11,7 @@ import { storage } from '@/lib/storage';
 import { db, initDb } from '@/lib/db';
 import { accountsDb } from '@/lib/accountsDb';
 import { logEvent, getTimeline } from '@/lib/timeline';
+import { useT } from '@/lib/i18n';
 import type { TimelineEvent } from '@/lib/types';
 import { v4 as uuidv4 } from 'uuid';
 import VacancyStageBar from '@/components/VacancyStageBar';
@@ -71,6 +72,7 @@ export default function CandidateDetailPage() {
   const id = params.id as string;
   const { data: session } = useSession();
   const agencyId = session?.user?.agencyId;
+  const t = useT();
 
   const [loading, setLoading] = useState(true);
   const [candidate, setCandidate] = useState<CandidateProfile | null>(null);
@@ -101,6 +103,7 @@ export default function CandidateDetailPage() {
   const [currentEmployer, setCurrentEmployer] = useState<Awaited<ReturnType<typeof accountsDb.getCurrentEmployer>>>(null);
   const [candidatePlacements, setCandidatePlacements] = useState<Placement[]>([]);
   const [candidateTimeline, setCandidateTimeline] = useState<TimelineEvent[]>([]);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   const statusMenuRef = useRef<HTMLDivElement>(null);
   const candidateRef = useRef<CandidateProfile | null>(null);
@@ -364,6 +367,7 @@ export default function CandidateDetailPage() {
     if (!existing) return;
     const updated: CandidateVacancyMatch = { ...existing, ...edits, updatedAt: new Date().toISOString() };
     await db.saveMatch(updated, existing.status);
+
     // interview_scheduled: interviewDate newly set
     if (edits.interviewDate && !existing.interviewDate) {
       logEvent({
@@ -390,6 +394,43 @@ export default function CandidateDetailPage() {
         metadata: { outcome: edits.interviewOutcome, notes: edits.interviewNotes ?? '' },
       });
     }
+
+    // Auto-create placement when committed to 'placed' (idempotent on applicationId)
+    if (updated.status === 'placed') {
+      try {
+        const allPlacements = await db.getPlacements();
+        const alreadyPlaced = allPlacements.some(p => p.applicationId === matchId);
+        if (!alreadyPlaced) {
+          const vacancy = vacancies.find(v => v.id === updated.vacancyId);
+          const recruiterId = (session?.user as any)?.id as string | undefined;
+          const newPlacement: Placement = {
+            id: uuidv4(),
+            candidateId: id,
+            profileId: id,
+            candidateName: candidate ? `${candidate.firstName} ${candidate.lastName}`.trim() : '',
+            jobTitle: candidate?.jobTitle ?? '',
+            vacancyId: updated.vacancyId,
+            vacancyTitle: vacancy?.title ?? '',
+            company: vacancy?.company ?? '',
+            placementDate: new Date().toISOString(),
+            paymentStatus: 'pending',
+            notes: '',
+            accountId: vacancy?.accountId,
+            contactId: vacancy?.contactId,
+            recruiterId,
+            applicationId: matchId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          await db.savePlacement(newPlacement);
+          setCandidatePlacements(prev => [...prev, newPlacement]);
+        }
+      } catch (e) {
+        console.warn('[handleUpdateMatch] placement create failed:', e);
+      }
+      setShowCongrats(true);
+    }
+
     setMatches(prev => prev.map(m => m.id === matchId ? updated : m));
     setMatchEdits(prev => { const n = { ...prev }; delete n[matchId]; return n; });
   };
@@ -1074,7 +1115,11 @@ export default function CandidateDetailPage() {
                                             >
                                               <option value="active">Active</option>
                                               <option value="on-hold">On Hold</option>
+                                              <option value="submitted">Submitted</option>
+                                              <option value="interviewing">Interviewing</option>
+                                              <option value="offer">Offer</option>
                                               <option value="rejected">Rejected</option>
+                                              <option value="withdrawn">Withdrawn</option>
                                               <option value="placed">Placed</option>
                                             </select>
                                           </div>
@@ -1502,6 +1547,42 @@ export default function CandidateDetailPage() {
         />
       )}
       </div>{/* end p-4/p-8 */}
+
+      {/* Congratulations popup — fires on every Save while match is Placed */}
+      <AnimatePresence>
+        {showCongrats && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowCongrats(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.88, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.88, opacity: 0 }}
+              transition={{ type: 'spring', damping: 18, stiffness: 260 }}
+              className="bg-white rounded-2xl p-8 max-w-xs w-full text-center shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="text-5xl mb-4">🏆</div>
+              <h2 className="text-xl font-bold text-[#2D4A2D] mb-2">
+                {t('Congratulations!', 'Gefeliciteerd!')}
+              </h2>
+              <p className="text-[#6B7280] text-sm mb-6">
+                {t('Onto many more!', 'Op naar nog veel meer!')}
+              </p>
+              <button
+                onClick={() => setShowCongrats(false)}
+                className="bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold px-8 py-2.5 rounded-xl transition-colors text-sm"
+              >
+                {t('Close', 'Sluiten')}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
