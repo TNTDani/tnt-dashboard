@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { accountsDb } from '@/lib/accountsDb';
 import type { Vacancy, CandidateVacancyMatch, Placement, CandidateProfile, Client } from '@/lib/types';
 import type { Account } from '@/lib/accountTypes';
+import { deriveFeeFromClient, derivePlacementFee } from '@/lib/feeDerivation';
 
 // ── Public types ──────────────────────────────────────────────────────────────
 
@@ -39,17 +40,6 @@ export interface PipelineForecast {
 
 // ── Internal constants ────────────────────────────────────────────────────────
 
-// Standard placement fee percentages by seniority (agency standard rates).
-const STANDARD_RATE_PCT: Record<string, number> = {
-  'Junior': 18,
-  'Medior': 18,
-  'Junior/Medior': 18,
-  'Senior': 20,
-  'Management': 22,
-  'Management/Lead': 22,
-  'Lead': 22,
-};
-
 const STAGE_CONFIG: { status: string; label: string }[] = [
   { status: 'submitted',     label: 'CV ingestuurd' },
   { status: 'interviewing',  label: 'Interview' },
@@ -60,46 +50,6 @@ const STAGE_CONFIG: { status: string; label: string }[] = [
 const OPEN_STATUSES = new Set<CandidateVacancyMatch['status']>([
   'submitted', 'interviewing', 'offer',
 ]);
-
-// ── Fee derivation ────────────────────────────────────────────────────────────
-
-/**
- * Derive expected fee for an open match:
- * vacancy.salaryMin/Max midpoint × client.feeAgreement rate.
- * Returns null when any required piece is missing — never substitutes a default.
- */
-function deriveFeeFromClient(vacancy: Vacancy, client: Client): number | null {
-  const midpoint = (vacancy.salaryMin + vacancy.salaryMax) / 2;
-  if (!midpoint || midpoint <= 0) return null;
-
-  const fa = client.feeAgreement;
-  if (!fa) return null;
-
-  if (fa.type === 'custom' && fa.customPercentage) {
-    return Math.round((fa.customPercentage / 100) * midpoint);
-  }
-  if (fa.type === 'retainer') {
-    if (fa.retainerAmount) return fa.retainerAmount;
-    if (fa.retainerPercentage) return Math.round((fa.retainerPercentage / 100) * midpoint);
-  }
-  if (fa.type === 'standard') {
-    const rate = STANDARD_RATE_PCT[vacancy.seniorityLevel];
-    if (rate) return Math.round((rate / 100) * midpoint);
-  }
-  return null;
-}
-
-/**
- * Derive expected fee from a Placement row (placed+unpaid):
- * Uses stored feeAmount first; falls back to feePercentage × grossAnnualSalary.
- */
-function derivePlacementFee(p: Placement): number | null {
-  if (p.feeAmount != null && p.feeAmount > 0) return p.feeAmount;
-  if (p.feePercentage && p.grossAnnualSalary) {
-    return Math.round((p.feePercentage / 100) * p.grossAnnualSalary);
-  }
-  return null;
-}
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
