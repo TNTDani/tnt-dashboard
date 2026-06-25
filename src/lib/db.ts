@@ -5,6 +5,7 @@ import {
   CandidateVacancyMatch, CalendarEvent,
 } from './types';
 import { logEvent } from './timeline';
+import { v4 as uuidv4 } from 'uuid';
 
 // ---------------------------------------------------------------------------
 // Agency scope — call initDb(agencyId) once after the user session loads.
@@ -214,6 +215,10 @@ function vacancyToRow(v: Vacancy) {
     created_at: v.createdAt,
     account_id: v.accountId ?? null,
     contact_id: v.contactId ?? null,
+    openings: v.openings ?? 1,
+    close_reason: v.closeReason ?? null,
+    close_note: v.closeNote ?? null,
+    closed_at: v.closedAt ?? null,
   };
 }
 
@@ -236,6 +241,10 @@ function rowToVacancy(r: any): Vacancy {
     createdAt: r.created_at,
     accountId: r.account_id ?? undefined,
     contactId: r.contact_id ?? undefined,
+    openings: r.openings ?? 1,
+    closeReason: r.close_reason ?? undefined,
+    closeNote: r.close_note ?? undefined,
+    closedAt: r.closed_at ?? undefined,
   };
 }
 
@@ -675,7 +684,7 @@ export const db = {
     if (error) throw error;
     return (data ?? []).map(rowToMatch);
   },
-  saveMatch: async (match: CandidateVacancyMatch, prevStatus?: string): Promise<void> => {
+  saveMatch: async (match: CandidateVacancyMatch, prevStatus?: string, options?: { recruiterId?: string }): Promise<{ placementCreated: boolean }> => {
     const { error } = await supabase.from('candidate_vacancy_matches').upsert(matchToRow(match));
     if (error) throw error;
     const statusChanged = prevStatus !== undefined && prevStatus !== match.status;
@@ -688,7 +697,6 @@ export const db = {
     if (isNew && match.status === 'submitted') {
       logEvent({ eventType: 'candidate_submitted', summary: 'Candidate submitted for vacancy', ...base, metadata: {} });
     } else if (statusChanged) {
-      // Specific named events take priority over the generic one
       if (match.status === 'submitted') {
         logEvent({ eventType: 'candidate_submitted', summary: 'Candidate submitted for vacancy', ...base, metadata: { from: prevStatus } });
       } else if (match.status === 'offer') {
@@ -702,6 +710,75 @@ export const db = {
         });
       }
     }
+
+    // Auto-create placement when status is 'placed' (idempotent on applicationId)
+    let placementCreated = false;
+    if (match.status === 'placed') {
+      try {
+        const agencyId = requireAgencyId();
+        const { data: existing } = await supabase
+          .from('placements')
+          .select('id')
+          .eq('agency_id', agencyId)
+          .eq('application_id', match.id)
+          .limit(1);
+        if (!existing?.length) {
+          const [vacRes, profRes] = await Promise.all([
+            supabase.from('vacancies').select('title,company,account_id,contact_id').eq('id', match.vacancyId).single(),
+            supabase.from('candidate_profiles').select('first_name,last_name,job_title').eq('id', match.candidateId).single(),
+          ]);
+          const vacRow = vacRes.data;
+          const profRow = profRes.data;
+          const pid = uuidv4();
+          const now = new Date().toISOString();
+          const { error: pErr } = await supabase.from('placements').insert({
+            id: pid,
+            agency_id: agencyId,
+            candidate_id: match.candidateId,
+            profile_id: match.candidateId,
+            candidate_name: profRow ? `${profRow.first_name} ${profRow.last_name}`.trim() : '',
+            job_title: profRow?.job_title ?? '',
+            vacancy_id: match.vacancyId,
+            vacancy_title: vacRow?.title ?? '',
+            company: vacRow?.company ?? '',
+            placement_date: now,
+            gross_annual_salary: null,
+            fee_percentage: null,
+            fee_amount: null,
+            payment_status: 'pending',
+            notes: '',
+            account_id: vacRow?.account_id ?? null,
+            contact_id: vacRow?.contact_id ?? null,
+            recruiter_id: options?.recruiterId ?? null,
+            application_id: match.id,
+            invoice_status: 'draft',
+            start_date: null,
+            guarantee_until: null,
+            created_at: now,
+            updated_at: now,
+          });
+          if (pErr) {
+            console.warn('[saveMatch] placement insert failed:', pErr.message);
+          } else {
+            placementCreated = true;
+            logEvent({
+              eventType: 'placement_created',
+              summary: `${profRow ? `${profRow.first_name} ${profRow.last_name}`.trim() : 'Candidate'} placed at ${vacRow?.company ?? ''} — ${profRow?.job_title ?? ''}`,
+              candidateId: match.candidateId,
+              vacancyId: match.vacancyId,
+              accountId: vacRow?.account_id ?? undefined,
+              placementId: pid,
+              applicationId: match.id,
+              metadata: {},
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('[saveMatch] placement block failed:', e);
+      }
+    }
+
+    return { placementCreated };
   },
   deleteMatch: async (id: string): Promise<void> => {
     const agencyId = requireAgencyId();

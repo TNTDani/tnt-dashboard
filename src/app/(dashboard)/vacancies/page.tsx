@@ -9,6 +9,7 @@ import {
 } from "@/lib/types";
 import { db } from "@/lib/db";
 import { storage } from "@/lib/storage";
+import { logEvent } from "@/lib/timeline";
 import { v4 as uuidv4 } from "uuid";
 import {
   Plus, X, Briefcase, Users,
@@ -28,10 +29,11 @@ import Link from "next/link";
 const SENIORITY_LEVELS = ["Junior", "Mid-level", "Senior", "Lead", "Manager", "Director", "VP", "C-Level"];
 const SENIORITY_FILTER_GROUPS = ["Junior/Medior", "Senior", "Management"];
 const STATUS_OPTS: Vacancy["status"][] = ["open", "on-hold", "closed"];
-const STATUS_LABEL: Record<Vacancy["status"], string> = { open: "Active", "on-hold": "Prospected", closed: "Filled" };
+const STATUS_LABEL: Record<Vacancy["status"], string> = { open: "Active", "on-hold": "On Hold", filled: "Filled", closed: "Closed" };
 const STATUS_STYLES: Record<Vacancy["status"], string> = {
   open:     "text-[#16a34a] bg-[#dcfce7] border-[#86efac]",
   "on-hold":"text-[#2D4A2D] bg-[#e8f0e8] border-[#a3c4a3]",
+  filled:   "text-[#2563eb] bg-[#dbeafe] border-[#93c5fd]",
   closed:   "text-[#6B7280] bg-[#f3f4f6] border-[#d1d5db]",
 };
 const MATCH_STATUS_STYLES: Record<CandidateVacancyMatch["status"], string> = {
@@ -57,7 +59,7 @@ const FLAG_CONFIG: Record<CandidateMatch["flag"], { icon: React.ElementType; bar
 };
 const EMPTY_FORM = {
   title: "", company: "", salaryMin: "", salaryMax: "", currency: "EUR",
-  requirements: "", seniorityLevel: "Senior", description: "", status: "open" as Vacancy["status"],
+  requirements: "", seniorityLevel: "Senior", description: "", status: "open" as Vacancy["status"], openings: "1",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -145,8 +147,8 @@ function StatusBadge({ status }: { status: Vacancy["status"] }) {
 
 // ── Vacancy Card ──────────────────────────────────────────────────────────────
 
-function VacancyCard({ vacancy, candidateCount, matchCount, onView, onEdit, onDelete, onMatch }: {
-  vacancy: Vacancy; candidateCount: number; matchCount: number;
+function VacancyCard({ vacancy, candidateCount, matchCount, filledCount, openings, onView, onEdit, onDelete, onMatch }: {
+  vacancy: Vacancy; candidateCount: number; matchCount: number; filledCount: number; openings: number;
   onView: () => void; onEdit: () => void; onDelete: () => void; onMatch: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -190,7 +192,14 @@ function VacancyCard({ vacancy, candidateCount, matchCount, onView, onEdit, onDe
               </p>
             </div>
           </div>
-          <StatusBadge status={vacancy.status} />
+          <div className="flex flex-col items-end gap-1">
+            <StatusBadge status={vacancy.status} />
+            {filledCount > 0 && (
+              <span className="text-[10px] text-[#6B7280]">
+                {filledCount}/{openings} filled
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Stage bar */}
@@ -274,6 +283,8 @@ export default function Vacancies() {
   const [clients, setClients] = useState<Client[]>([]);
   const [matches, setMatches] = useState<CandidateVacancyMatch[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [closingVacancy, setClosingVacancy] = useState<Vacancy | null>(null);
+  const [closeForm, setCloseForm] = useState({ reason: 'filled-by-us', note: '' });
 
   const [activeTab, setActiveTab] = useState<"all" | "specific">("all");
   const [showAdd, setShowAdd] = useState(false);
@@ -324,6 +335,37 @@ export default function Vacancies() {
 
   const save = (data: Vacancy[]) => { setVacancies(data); db.saveVacancies(data); };
 
+  const filledCount = (vacancyId: string) =>
+    matches.filter(m => m.vacancyId === vacancyId && m.status === 'placed').length;
+
+  const effectiveStatus = (v: Vacancy): Vacancy['status'] => {
+    if (v.status === 'closed') return 'closed';
+    const count = filledCount(v.id);
+    if (count >= (v.openings ?? 1)) return 'filled';
+    return v.status;
+  };
+
+  const closeVacancy = () => {
+    if (!closingVacancy) return;
+    const updated: Vacancy = {
+      ...closingVacancy,
+      status: 'closed',
+      closeReason: closeForm.reason,
+      closeNote: closeForm.note || undefined,
+      closedAt: new Date().toISOString(),
+    };
+    save(vacancies.map(v => v.id === closingVacancy.id ? updated : v));
+    if (viewingVacancy?.id === closingVacancy.id) setViewingVacancy(updated);
+    logEvent({
+      eventType: 'vacancy_closed',
+      summary: `Vacancy closed — ${closingVacancy.title} (${closeForm.reason})`,
+      vacancyId: closingVacancy.id,
+      accountId: closingVacancy.accountId,
+      metadata: { reason: closeForm.reason, note: closeForm.note },
+    });
+    setClosingVacancy(null);
+  };
+
   const stats = useMemo(() => ({
     active:     vacancies.filter(v => v.status === "open").length,
     prospected: vacancies.filter(v => v.status === "on-hold").length,
@@ -359,7 +401,7 @@ export default function Vacancies() {
     setEditForm({ title: v.title, company: v.company, salaryMin: String(v.salaryMin),
       salaryMax: String(v.salaryMax), currency: v.currency,
       requirements: v.requirements.join("\n"), seniorityLevel: v.seniorityLevel,
-      description: v.description, status: v.status });
+      description: v.description, status: v.status, openings: String(v.openings ?? 1) });
     setEditingVacancy(v);
   };
 
@@ -370,7 +412,7 @@ export default function Vacancies() {
       salaryMax: parseInt(editForm.salaryMax) || 0, currency: editForm.currency,
       requirements: editForm.requirements.split("\n").map(r => r.trim()).filter(Boolean),
       seniorityLevel: editForm.seniorityLevel, description: editForm.description.trim(),
-      status: editForm.status };
+      status: editForm.status, openings: parseInt(editForm.openings) || 1 };
     save(vacancies.map(v => v.id === editingVacancy.id ? updated : v));
     if (viewingVacancy?.id === editingVacancy.id) setViewingVacancy(updated);
     setEditingVacancy(null);
@@ -408,7 +450,7 @@ export default function Vacancies() {
     const existing = matches.find(m => m.id === id);
     if (!existing) return;
     const updated = { ...existing, ...patch, updatedAt: new Date().toISOString() };
-    await db.saveMatch(updated);
+    await db.saveMatch(updated, existing.status);
     setMatches(prev => prev.map(m => m.id === id ? updated : m));
   };
 
@@ -704,9 +746,11 @@ export default function Vacancies() {
                 transition={{ duration: 0.2, delay: i * 0.03 }}
               >
                 <VacancyCard
-                  vacancy={v}
+                  vacancy={{ ...v, status: effectiveStatus(v) }}
                   candidateCount={candidates.filter(c => c.vacancyId === v.id).length}
                   matchCount={vacancyMatches(v.id).length}
+                  filledCount={filledCount(v.id)}
+                  openings={v.openings ?? 1}
                   onView={() => openVacancyDetail(v)}
                   onEdit={() => openEdit(v)}
                   onDelete={() => removeVacancy(v.id)}
@@ -804,7 +848,7 @@ export default function Vacancies() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h2 className="text-[#2D4A2D] font-bold">{viewingVacancy.title}</h2>
-                      <StatusBadge status={viewingVacancy.status} />
+                      <StatusBadge status={effectiveStatus(viewingVacancy)} />
                     </div>
                     <p className="text-[#6B7280] text-sm">{viewingVacancy.company} · {viewingVacancy.seniorityLevel} · {viewingVacancy.currency} {viewingVacancy.salaryMin.toLocaleString()}–{viewingVacancy.salaryMax.toLocaleString()}</p>
                     {viewingVacancy.accountId && (() => {
@@ -827,6 +871,14 @@ export default function Vacancies() {
                       <CalendarDays size={11} /> Schedule Call
                     </button>
                     <button onClick={() => { setViewingVacancy(null); openEdit(viewingVacancy); }} className="flex items-center gap-1.5 bg-white hover:bg-[rgba(45,74,45,0.06)] text-[#6B7280] hover:text-[#2D4A2D] border border-[rgba(45,74,45,0.15)] px-3 py-1.5 rounded-xl text-xs font-medium transition-all"><Pencil size={11} /> Edit</button>
+                    {viewingVacancy.status !== 'closed' && (
+                      <button
+                        onClick={() => { setCloseForm({ reason: 'filled-by-us', note: '' }); setClosingVacancy(viewingVacancy); }}
+                        className="flex items-center gap-1.5 bg-white hover:bg-red-50 text-[#6B7280] hover:text-red-600 border border-[rgba(45,74,45,0.15)] hover:border-red-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all"
+                      >
+                        <X size={11} /> Close
+                      </button>
+                    )}
                     <button onClick={() => setViewingVacancy(null)} className="text-[#6B7280] hover:text-[#2D4A2D] transition-colors"><X size={16} /></button>
                   </div>
                 </div>
@@ -835,7 +887,6 @@ export default function Vacancies() {
                   <VacancyStageBar
                     stage={viewingVacancy.stage ?? "intake"}
                     stageLog={viewingVacancy.stageLog ?? []}
-                    onStageChange={(s, log) => handleStageChange(viewingVacancy, s, log)}
                   />
                 </div>
                 {/* Sub-tabs */}
@@ -992,9 +1043,6 @@ export default function Vacancies() {
                                 <select value={m.interviewOutcome ?? ""} onChange={e => {
                                   const outcome = e.target.value as CandidateVacancyMatch["interviewOutcome"];
                                   updateMatch(m.id, { interviewOutcome: outcome });
-                                  if (outcome === "positive" && viewingVacancy.stage !== "offer" && viewingVacancy.stage !== "placed") {
-                                    handleStageChange(viewingVacancy, "offer", [...(viewingVacancy.stageLog ?? []), { id: uuidv4(), stage: "offer" as VacancyStage, changedAt: new Date().toISOString(), note: "Auto-advanced: positive interview outcome" }]);
-                                  }
                                 }}
                                   className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-lg px-2 py-1.5 text-[#2D4A2D] text-xs focus:outline-none">
                                   <option value="">—</option><option value="positive">Positive</option><option value="negative">Negative</option><option value="second-interview">Second Interview</option>
@@ -1225,6 +1273,72 @@ export default function Vacancies() {
                   <p className="text-[#6B7280] text-[10px] text-center">Scored {aiMatches.length} of {profiles.length} candidates · Powered by Claude</p>
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Close vacancy modal */}
+      <AnimatePresence>
+        {closingVacancy && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setClosingVacancy(null)}
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-2xl w-full max-w-sm shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.08)]">
+                <h2 className="text-[#2D4A2D] font-semibold text-sm">Close Vacancy</h2>
+                <button onClick={() => setClosingVacancy(null)} className="text-[#6B7280] hover:text-[#2D4A2D]"><X size={15} /></button>
+              </div>
+              <div className="px-5 py-5 space-y-4">
+                <p className="text-[#6B7280] text-xs">{closingVacancy.title} · {closingVacancy.company}</p>
+                <div>
+                  <label className="block text-[#6B7280] text-xs font-medium mb-2">Reason</label>
+                  <div className="space-y-1.5">
+                    {[
+                      { value: 'filled-by-us', label: 'Filled by us' },
+                      { value: 'filled-by-client', label: 'Filled by client elsewhere' },
+                      { value: 'cancelled', label: 'Cancelled by client' },
+                      { value: 'on-hold', label: 'On hold indefinitely' },
+                      { value: 'other', label: 'Other' },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setCloseForm(f => ({ ...f, reason: opt.value }))}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all ${closeForm.reason === opt.value ? 'bg-[#2D4A2D] text-white' : 'bg-white border border-[rgba(45,74,45,0.15)] text-[#6B7280] hover:border-[#2D4A2D] hover:text-[#2D4A2D]'}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[#6B7280] text-xs font-medium mb-1.5">Note (optional)</label>
+                  <textarea
+                    className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2 text-[#2D4A2D] text-xs placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] resize-none transition-colors"
+                    rows={2}
+                    placeholder="e.g. client hired internally"
+                    value={closeForm.note}
+                    onChange={e => setCloseForm(f => ({ ...f, note: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 px-5 pb-5">
+                <button onClick={() => setClosingVacancy(null)} className="flex-1 px-4 py-2.5 rounded-xl text-sm border border-[rgba(45,74,45,0.15)] text-[#6B7280] hover:text-[#2D4A2D] hover:border-[#2D4A2D] transition-colors">Cancel</button>
+                <button onClick={closeVacancy} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold transition-colors">
+                  Close Vacancy
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

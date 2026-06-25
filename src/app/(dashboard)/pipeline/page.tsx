@@ -4,11 +4,11 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "motion/react";
-import { Candidate, Client, Placement, PipelineStatus, Vacancy, CandidateProfile } from "@/lib/types";
+import { Candidate, Client, PipelineStatus, Vacancy, CandidateProfile, CandidateVacancyMatch } from "@/lib/types";
 import { storage } from "@/lib/storage";
 import { db } from "@/lib/db";
 import { v4 as uuidv4 } from "uuid";
-import { Plus, X, Briefcase, GitMerge, ListChecks, Trophy, ChevronRight } from "lucide-react";
+import { Plus, X, Briefcase, GitMerge, ListChecks, ChevronRight } from "lucide-react";
 import AddToPipelineModal from "@/components/AddToPipelineModal";
 
 const COLUMNS: { status: PipelineStatus; label: string }[] = [
@@ -18,8 +18,6 @@ const COLUMNS: { status: PipelineStatus; label: string }[] = [
   { status: "interviewed", label: "Interviewed" },
   { status: "placed",      label: "Placed"      },
 ];
-
-const FEE_PRESETS = ["18", "20", "22"] as const;
 
 export default function PipelinePage() {
   return (
@@ -36,6 +34,8 @@ function Pipeline() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [matches, setMatches] = useState<CandidateVacancyMatch[]>([]);
+  const [showCongrats, setShowCongrats] = useState(false);
   const [stageFilter, setStageFilter] = useState<PipelineStatus | null>(
     (searchParams.get("filter") as PipelineStatus) ?? null
   );
@@ -49,25 +49,18 @@ function Pipeline() {
   const [showSuggestion, setShowSuggestion] = useState(false);
   const [showPipelineModal, setShowPipelineModal] = useState(false);
 
-  // Placement confirmation modal
-  const [placementTarget, setPlacementTarget] = useState<Candidate | null>(null);
-  const [placementForm, setPlacementForm] = useState({
-    salary: "",
-    feePreset: "20" as string,
-    customFee: "",
-    notes: "",
-  });
-
   useEffect(() => {
     Promise.all([
       db.getCandidates(),
       db.getVacancies(),
       db.getClients(),
       db.getCandidateProfiles(),
-    ]).then(([pipelineCandidates, fetchedVacancies, fetchedClients, fetchedProfiles]) => {
+      db.getMatches(),
+    ]).then(([pipelineCandidates, fetchedVacancies, fetchedClients, fetchedProfiles, fetchedMatches]) => {
       setCandidates(pipelineCandidates);
       setVacancies(fetchedVacancies);
       setClients(fetchedClients);
+      setMatches(fetchedMatches);
 
       const lastId = agencyId ? storage.getLastViewedCandidate(agencyId) : null;
       if (lastId) {
@@ -92,98 +85,45 @@ function Pipeline() {
     save(candidates.map(c => c.id === id ? { ...c, status } : c));
   };
 
-  const requestMove = (candidate: Candidate, status: PipelineStatus) => {
-    if (status === "placed") {
-      const vacancy = vacancies.find(v => v.id === candidate.vacancyId);
-      const client = vacancy ? clients.find(c => c.companyName === vacancy.company) : null;
-      let feePreset = "20";
-      if (client?.feeAgreement.type === "custom" && client.feeAgreement.customPercentage) {
-        const pct = String(client.feeAgreement.customPercentage);
-        feePreset = FEE_PRESETS.includes(pct as any) ? pct : "custom";
-      }
-      setPlacementForm({
-        salary: "",
-        feePreset,
-        customFee: client?.feeAgreement.customPercentage
-          ? String(client.feeAgreement.customPercentage)
-          : "",
-        notes: "",
-      });
-      setPlacementTarget(candidate);
-    } else {
+  const requestMove = async (candidate: Candidate, status: PipelineStatus) => {
+    if (status !== 'placed') {
       moveCandidate(candidate.id, status);
+      return;
     }
-  };
 
-  const confirmPlacement = async () => {
-    if (!placementTarget) return;
+    // Move the pipeline card immediately
+    moveCandidate(candidate.id, 'placed');
 
-    const vacancy = vacancies.find(v => v.id === placementTarget.vacancyId);
-    const profileId = (placementTarget as any).profileId as string | undefined;
+    // Trigger placement via match (requires a profileId + vacancyId)
+    const profileId = (candidate as any).profileId as string | undefined;
     const recruiterId = (session?.user as any)?.id as string | undefined;
+    if (!profileId || !candidate.vacancyId) return;
 
-    // Optional fee — only set if salary was entered
-    const salary = parseFloat(placementForm.salary) || 0;
-    const feePct = placementForm.feePreset === "custom"
-      ? parseFloat(placementForm.customFee) || 0
-      : parseFloat(placementForm.feePreset);
-    const hasFee = salary > 0;
-    const feeAmount = hasFee ? Math.round(salary * (feePct / 100) * 100) / 100 : undefined;
-
-    // Find the match row for this candidate+vacancy to get applicationId
-    let applicationId: string | undefined;
-    try {
-      const allMatches = await db.getMatches();
-      const match = allMatches.find(m =>
-        m.vacancyId === placementTarget.vacancyId &&
-        (m.candidateId === (profileId ?? placementTarget.id))
-      );
-      applicationId = match?.id;
-    } catch {
-      // non-fatal — proceed without applicationId
-    }
-
-    // Idempotency: skip if a placement already exists for this applicationId
-    if (applicationId) {
-      try {
-        const existing = await db.getPlacements();
-        if (existing.some(p => p.applicationId === applicationId)) {
-          moveCandidate(placementTarget.id, "placed");
-          setPlacementTarget(null);
-          return;
-        }
-      } catch {
-        // non-fatal — proceed
-      }
-    }
-
-    moveCandidate(placementTarget.id, "placed");
-
-    const placement: Placement = {
+    const existingMatch = matches.find(m =>
+      m.vacancyId === candidate.vacancyId && m.candidateId === profileId
+    );
+    const matchToUse: CandidateVacancyMatch = existingMatch ?? {
       id: uuidv4(),
-      candidateId: placementTarget.id,
-      profileId,
-      candidateName: placementTarget.firstName,
-      jobTitle: placementTarget.currentRole,
-      vacancyId: placementTarget.vacancyId,
-      vacancyTitle: vacancy?.title ?? "",
-      company: vacancy?.company ?? placementTarget.currentCompany ?? "",
-      placementDate: new Date().toISOString(),
-      grossAnnualSalary: hasFee ? salary : undefined,
-      feePercentage: hasFee ? feePct : undefined,
-      feeAmount,
-      paymentStatus: "pending",
-      notes: placementForm.notes,
-      accountId: vacancy?.accountId,
-      contactId: vacancy?.contactId,
-      recruiterId,
-      applicationId,
+      candidateId: profileId,
+      vacancyId: candidate.vacancyId,
+      status: 'active' as const,
+      notes: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    const prevStatus = existingMatch?.status;
+    const updatedMatch: CandidateVacancyMatch = { ...matchToUse, status: 'placed' as const, updatedAt: new Date().toISOString() };
 
-    db.savePlacement(placement).catch(e => console.warn('[confirmPlacement] save failed:', e));
-    setPlacementTarget(null);
+    try {
+      const { placementCreated } = await db.saveMatch(updatedMatch, prevStatus, { recruiterId });
+      setMatches(prev => {
+        const idx = prev.findIndex(m => m.id === updatedMatch.id);
+        return idx >= 0 ? prev.map(m => m.id === updatedMatch.id ? updatedMatch : m) : [...prev, updatedMatch];
+      });
+      if (placementCreated) setShowCongrats(true);
+    } catch (e) {
+      console.warn('[requestMove] saveMatch failed:', e);
+    }
   };
 
   const addCandidate = () => {
@@ -210,18 +150,11 @@ function Pipeline() {
     const id = e.dataTransfer.getData("candidateId");
     if (id) {
       const candidate = candidates.find(c => c.id === id);
-      if (candidate) requestMove(candidate, status);
+      if (candidate) void requestMove(candidate, status);
     }
     setDragging(null);
     setDragOver(null);
   };
-
-  // Live fee calculation for the modal
-  const modalSalary = parseFloat(placementForm.salary) || 0;
-  const modalFeePct = placementForm.feePreset === "custom"
-    ? parseFloat(placementForm.customFee) || 0
-    : parseFloat(placementForm.feePreset);
-  const modalFeeAmount = Math.round(modalSalary * (modalFeePct / 100) * 100) / 100;
 
   const totalActive = candidates.filter(c => c.status !== "placed").length;
 
@@ -420,7 +353,7 @@ function Pipeline() {
                         {nextCol && (
                           <div className="mt-2.5 pt-2.5 border-t border-[rgba(45,74,45,0.08)] opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
-                              onClick={() => requestMove(c, nextCol.status)}
+                              onClick={() => void requestMove(c, nextCol.status)}
                               className="w-full flex items-center justify-center gap-1 text-[#2D4A2D] text-[11px] font-medium bg-[rgba(45,74,45,0.06)] hover:bg-[rgba(45,74,45,0.12)] rounded-lg py-1.5 transition-colors"
                             >
                               Move to {nextCol.label} <ChevronRight size={11} />
@@ -515,136 +448,33 @@ function Pipeline() {
         )}
       </AnimatePresence>
 
-      {/* Placement confirmation modal */}
+      {/* Congratulations popup */}
       <AnimatePresence>
-        {placementTarget && (
+        {showCongrats && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center sm:p-4"
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowCongrats(false)}
           >
             <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white border border-[rgba(45,74,45,0.12)] rounded-t-2xl sm:rounded-2xl w-full max-w-md shadow-2xl"
+              initial={{ scale: 0.88, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.88, opacity: 0 }}
+              transition={{ type: 'spring', damping: 18, stiffness: 260 }}
+              className="bg-white rounded-2xl p-8 max-w-xs w-full text-center shadow-2xl"
+              onClick={e => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(45,74,45,0.08)]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-[rgba(45,74,45,0.10)] flex items-center justify-center">
-                    <Trophy size={14} className="text-[#2D4A2D]" />
-                  </div>
-                  <div>
-                    <h2 className="text-[#2D4A2D] font-semibold text-sm leading-none">Confirm Placement</h2>
-                    <p className="text-[#6B7280] text-xs mt-0.5">
-                      {placementTarget.firstName}
-                      {placementTarget.vacancyId && vacancies.find(v => v.id === placementTarget.vacancyId)
-                        ? ` → ${vacancies.find(v => v.id === placementTarget.vacancyId)!.title}`
-                        : ""}
-                    </p>
-                  </div>
-                </div>
-                <button onClick={() => setPlacementTarget(null)} className="text-[#6B7280] hover:text-[#2D4A2D] transition-colors">
-                  <X size={15} />
-                </button>
-              </div>
-
-              {/* Body */}
-              <div className="px-5 py-5 space-y-4">
-                {/* Salary */}
-                <div>
-                  <label className="block text-[#6B7280] text-xs font-medium mb-1.5">Gross Annual Salary (€)</label>
-                  <input
-                    type="number"
-                    className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                    placeholder="e.g. 75000"
-                    value={placementForm.salary}
-                    onChange={e => setPlacementForm(f => ({ ...f, salary: e.target.value }))}
-                  />
-                </div>
-
-                {/* Fee % */}
-                <div>
-                  <label className="block text-[#6B7280] text-xs font-medium mb-2">Fee Percentage</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[...FEE_PRESETS, "custom"].map(p => (
-                      <button
-                        key={p}
-                        onClick={() => setPlacementForm(f => ({ ...f, feePreset: p }))}
-                        className={`py-2 rounded-xl text-sm font-medium transition-all ${
-                          placementForm.feePreset === p
-                            ? "bg-[#2D4A2D] text-white"
-                            : "bg-white border border-[rgba(45,74,45,0.15)] text-[#6B7280] hover:border-[#2D4A2D] hover:text-[#2D4A2D]"
-                        }`}
-                      >
-                        {p === "custom" ? "Custom" : `${p}%`}
-                      </button>
-                    ))}
-                  </div>
-                  {placementForm.feePreset === "custom" && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <input
-                        type="number"
-                        className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors"
-                        placeholder="e.g. 21.5"
-                        value={placementForm.customFee}
-                        onChange={e => setPlacementForm(f => ({ ...f, customFee: e.target.value }))}
-                      />
-                      <span className="text-[#6B7280] text-sm flex-shrink-0">%</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Live fee calculation */}
-                <div className={`rounded-xl px-4 py-3 border transition-all ${
-                  modalSalary > 0
-                    ? "bg-[rgba(45,74,45,0.06)] border-[rgba(45,74,45,0.18)]"
-                    : "bg-white border-[rgba(45,74,45,0.10)]"
-                }`}>
-                  <p className="text-[#6B7280] text-xs mb-0.5">Calculated Fee</p>
-                  <p className={`text-xl font-bold ${modalSalary > 0 ? "text-[#2D4A2D]" : "text-[#9CA3AF]"}`}>
-                    {modalSalary > 0
-                      ? `€${modalFeeAmount.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-                      : "Enter salary to calculate"}
-                  </p>
-                  {modalSalary > 0 && (
-                    <p className="text-[#6B7280] text-xs mt-0.5">
-                      €{modalSalary.toLocaleString("nl-NL")} × {modalFeePct}%
-                    </p>
-                  )}
-                </div>
-
-                {/* Notes */}
-                <div>
-                  <label className="block text-[#6B7280] text-xs font-medium mb-1.5">Notes (optional)</label>
-                  <textarea
-                    className="w-full bg-white border border-[rgba(45,74,45,0.15)] rounded-xl px-3 py-2.5 text-[#2D4A2D] text-sm placeholder-[#9CA3AF] focus:outline-none focus:border-[#2D4A2D] transition-colors resize-none"
-                    rows={2}
-                    placeholder="e.g. start date 01-05-2026, offer confirmed by email"
-                    value={placementForm.notes}
-                    onChange={e => setPlacementForm(f => ({ ...f, notes: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex gap-2 px-5 pb-5">
-                <button
-                  onClick={() => setPlacementTarget(null)}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm border border-[rgba(45,74,45,0.15)] text-[#6B7280] hover:text-[#2D4A2D] hover:border-[#2D4A2D] transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmPlacement}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold transition-colors"
-                >
-                  <Trophy size={14} /> Confirm Placement
-                </button>
-              </div>
+              <div className="text-5xl mb-4">🏆</div>
+              <h2 className="text-xl font-bold text-[#2D4A2D] mb-2">Congratulations!</h2>
+              <p className="text-[#6B7280] text-sm mb-6">Onto many more!</p>
+              <button
+                onClick={() => setShowCongrats(false)}
+                className="bg-[#2D4A2D] hover:bg-[#3D6B3D] text-white font-semibold px-8 py-2.5 rounded-xl transition-colors text-sm"
+              >
+                Close
+              </button>
             </motion.div>
           </motion.div>
         )}

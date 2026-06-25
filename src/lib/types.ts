@@ -137,13 +137,17 @@ export interface Vacancy {
   requirements: string[];
   seniorityLevel: string;
   description: string;
-  status: 'open' | 'closed' | 'on-hold';
+  status: 'open' | 'filled' | 'closed' | 'on-hold';
   stage: VacancyStage;
   stageLog: StageLogEntry[];
   clientFeedback: ClientFeedback[];
   createdAt: string;
   accountId?: string; // FK → accounts
   contactId?: string; // FK → account_leads
+  openings?: number;      // positions to fill, default 1
+  closeReason?: string;   // filled-by-client / cancelled / on-hold / other
+  closeNote?: string;
+  closedAt?: string;      // ISO timestamp
 }
 
 export interface ScreeningResult {

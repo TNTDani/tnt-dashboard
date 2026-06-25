@@ -366,7 +366,7 @@ export default function CandidateDetailPage() {
     const existing = matches.find(m => m.id === matchId);
     if (!existing) return;
     const updated: CandidateVacancyMatch = { ...existing, ...edits, updatedAt: new Date().toISOString() };
-    await db.saveMatch(updated, existing.status);
+    const { placementCreated } = await db.saveMatch(updated, existing.status);
 
     // interview_scheduled: interviewDate newly set
     if (edits.interviewDate && !existing.interviewDate) {
@@ -395,42 +395,7 @@ export default function CandidateDetailPage() {
       });
     }
 
-    // Auto-create placement when committed to 'placed' (idempotent on applicationId)
-    if (updated.status === 'placed') {
-      try {
-        const allPlacements = await db.getPlacements();
-        const alreadyPlaced = allPlacements.some(p => p.applicationId === matchId);
-        if (!alreadyPlaced) {
-          const vacancy = vacancies.find(v => v.id === updated.vacancyId);
-          const recruiterId = (session?.user as any)?.id as string | undefined;
-          const newPlacement: Placement = {
-            id: uuidv4(),
-            candidateId: id,
-            profileId: id,
-            candidateName: candidate ? `${candidate.firstName} ${candidate.lastName}`.trim() : '',
-            jobTitle: candidate?.jobTitle ?? '',
-            vacancyId: updated.vacancyId,
-            vacancyTitle: vacancy?.title ?? '',
-            company: vacancy?.company ?? '',
-            placementDate: new Date().toISOString(),
-            paymentStatus: 'pending',
-            notes: '',
-            accountId: vacancy?.accountId,
-            contactId: vacancy?.contactId,
-            recruiterId,
-            applicationId: matchId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-          await db.savePlacement(newPlacement);
-          setCandidatePlacements(prev => [...prev, newPlacement]);
-        }
-      } catch (e) {
-        console.warn('[handleUpdateMatch] placement create failed:', e);
-      }
-      setShowCongrats(true);
-    }
-
+    if (placementCreated) setShowCongrats(true);
     setMatches(prev => prev.map(m => m.id === matchId ? updated : m));
     setMatchEdits(prev => { const n = { ...prev }; delete n[matchId]; return n; });
   };
