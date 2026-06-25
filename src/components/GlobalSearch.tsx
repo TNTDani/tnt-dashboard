@@ -4,7 +4,9 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { db } from "@/lib/db";
-import { CandidateProfile, Vacancy, Client } from "@/lib/types";
+import { accountsDb } from "@/lib/accountsDb";
+import { CandidateProfile, Vacancy } from "@/lib/types";
+import type { Account } from "@/lib/accountTypes";
 import { Search, UserCircle, Briefcase, Building2, X, Command, Plus, Mail, Sparkles, Radar } from "lucide-react";
 
 interface Result {
@@ -71,18 +73,18 @@ export default function GlobalSearch({ autoFocus = false, onClose }: GlobalSearc
   const [allData, setAllData] = useState<{
     candidates: CandidateProfile[];
     vacancies: Vacancy[];
-    clients: Client[];
+    accounts: Account[];
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadData = useCallback(async () => {
     if (allData) return;
-    const [candidates, vacancies, clients] = await Promise.all([
+    const [candidates, vacancies, accounts] = await Promise.all([
       db.getCandidateProfiles(),
       db.getVacancies(),
-      db.getClients(),
+      accountsDb.getAccounts(),
     ]);
-    setAllData({ candidates, vacancies, clients });
+    setAllData({ candidates, vacancies, accounts });
   }, [allData]);
 
   // Cmd+K shortcut
@@ -137,16 +139,16 @@ export default function GlobalSearch({ autoFocus = false, onClose }: GlobalSearc
         out.push({ type: "vacancy", id: v.id, name: v.title, sub: v.company, href: "/vacancies" })
       );
 
-    allData.clients
-      .filter((c) => `${c.companyName} ${c.contactName} ${c.sector}`.toLowerCase().includes(q))
+    allData.accounts
+      .filter((a) => `${a.companyName} ${a.sector ?? ''}`.toLowerCase().includes(q))
       .slice(0, 3)
-      .forEach((c) =>
+      .forEach((a) =>
         out.push({
           type: "client",
-          id: c.id,
-          name: c.companyName,
-          sub: c.contactName,
-          href: `/clients/${c.id}`,
+          id: a.id,
+          name: a.companyName,
+          sub: a.sector ?? '',
+          href: `/accounts/${a.id}`,
         })
       );
 

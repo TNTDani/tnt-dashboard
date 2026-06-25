@@ -44,7 +44,6 @@ type Segment = 'all' | 'prospects' | 'clients';
 const EMPTY = { companyName: '', website: '', sector: '', size: 'medium' as Account['size'], location: '', linkedin: '', description: '', notes: '' };
 
 function accountHref(a: Account): string {
-  if (isClient(a) && a.convertedClientId) return `/clients/${a.convertedClientId}`;
   return `/accounts/${a.id}`;
 }
 

@@ -46,9 +46,9 @@ function useTopbarActions(): TopbarAction[] {
       { label: "New vacancy", icon: Plus, href: "/vacancies", primary: true },
       { label: "Monitor", icon: Zap, href: "/vacancy-monitor" },
     ];
-  if (path === "/clients" || path.startsWith("/clients/"))
+  if (path === "/accounts" || path.startsWith("/accounts/"))
     return [
-      { label: "New client", icon: Plus, href: "/clients", primary: true },
+      { label: "New account", icon: Plus, href: "/accounts", primary: true },
     ];
   if (path === "/pipeline")
     return [
@@ -70,8 +70,8 @@ function usePageTitle() {
   const map: Record<string, string> = {
     "/": "Dashboard",
     "/calendar": "Agenda",
+    "/accounts": "Accounts",
     "/candidates": "Candidates",
-    "/clients": "Clients",
     "/email": "Email",
     "/pipeline": "Pipeline",
     "/shortlist": "Shortlist",

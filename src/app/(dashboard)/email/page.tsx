@@ -24,7 +24,9 @@ import {
 } from "lucide-react";
 import { storage } from "@/lib/storage";
 import { db } from "@/lib/db";
+import { accountsDb } from "@/lib/accountsDb";
 import { CandidateProfile, Client } from "@/lib/types";
+import type { Account } from "@/lib/accountTypes";
 import { EMAIL_TEMPLATES, applyTemplate } from "@/lib/emailTemplates";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -108,7 +110,8 @@ function initials(name: string): string {
 function findProfile(
   email: string,
   candidates: CandidateProfile[],
-  clients: Client[]
+  clients: Client[],
+  accounts: Account[]
 ): { type: "candidate" | "client"; id: string; name: string } | null {
   const lower = email.toLowerCase();
   const candidate = candidates.find((c) => c.email?.toLowerCase() === lower);
@@ -119,8 +122,10 @@ function findProfile(
       name: `${candidate.firstName} ${candidate.lastName}`,
     };
   const client = clients.find((c) => c.contactEmail?.toLowerCase() === lower);
-  if (client)
-    return { type: "client", id: client.id, name: client.companyName };
+  if (client) {
+    const account = accounts.find((a) => a.convertedClientId === client.id);
+    return { type: "client", id: account?.id ?? client.id, name: client.companyName };
+  }
   return null;
 }
 
@@ -143,7 +148,7 @@ function ProfileLink({
 }: {
   profile: { type: "candidate" | "client"; id: string; name: string };
 }) {
-  const href = profile.type === "candidate" ? `/candidates/${profile.id}` : `/clients/${profile.id}`;
+  const href = profile.type === "candidate" ? `/candidates/${profile.id}` : `/accounts/${profile.id}`;
   const Icon = profile.type === "candidate" ? UserCircle : Building2;
   return (
     <Link
@@ -467,6 +472,7 @@ export default function EmailPage() {
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [candidates, setCandidates] = useState<CandidateProfile[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Pre-OAuth modal state
@@ -483,6 +489,7 @@ export default function EmailPage() {
     }
     db.getCandidateProfiles().then(setCandidates);
     db.getClients().then(setClients);
+    accountsDb.getAccounts().then(setAccounts);
 
     // Listen for gmail_connected message from OAuth popup
     const handler = (e: MessageEvent) => {
@@ -700,7 +707,7 @@ export default function EmailPage() {
 
   // Selected email sender profile
   const senderProfile = selectedEmail
-    ? findProfile(parseAddress(selectedEmail.from).email, candidates, clients)
+    ? findProfile(parseAddress(selectedEmail.from).email, candidates, clients, accounts)
     : null;
 
   return (
@@ -790,7 +797,7 @@ export default function EmailPage() {
 
           {emails.map((email) => {
             const sender = parseAddress(tab === "sent" ? email.to : email.from);
-            const profile = findProfile(sender.email, candidates, clients);
+            const profile = findProfile(sender.email, candidates, clients, accounts);
             const isSelected = selectedId === email.id;
 
             return (
